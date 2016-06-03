@@ -157,7 +157,7 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release']
+                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones']
         }
         
         this._loadWsapiRecords(config).then({
@@ -192,7 +192,6 @@ Ext.define("TSDependencyStatusReport", {
             this.baseFeaturesByOID[feature.get('ObjectID')] = feature;
             promises.push(function() { return this._getPredecessors(feature); });
             promises.push(function() { return this._getSuccessors(feature); });
-            
         },this);
         
         Deft.Chain.sequence(promises,this).then({
@@ -243,7 +242,7 @@ Ext.define("TSDependencyStatusReport", {
             filters: Rally.data.wsapi.Filter.or(filters),
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release']
         };
         
@@ -279,7 +278,7 @@ Ext.define("TSDependencyStatusReport", {
         
         feature.getCollection('Predecessors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
             filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
@@ -436,6 +435,17 @@ Ext.define("TSDependencyStatusReport", {
         
         columns.push({dataIndex:'PlannedStartDate',text: 'Planned Start Date'});
         columns.push({dataIndex:'PlannedEndDate',text: 'Planned End Date'});
+        columns.push({dataIndex:'Milestones',text: 'Milestones', renderer: function(value,meta,record){
+            console.log('--',value);
+            if ( Ext.isEmpty(value) || value.Count === 0 ) {
+                return "";
+            }
+            
+            
+            return Ext.Array.map(value._tagsNameArray, function(ms){
+                return ms.Name;
+            }).join(', ');
+        }});
 
         return columns;
     },
