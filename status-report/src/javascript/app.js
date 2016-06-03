@@ -14,9 +14,21 @@ Ext.define("TSDependencyStatusReport", {
     integrationHeaders : {
         name : "TSDependencyStatusReport"
     },
+    
+    config: {
+        defaultSettings: {
+            typeField: null
+        }
+    },
 
     launch: function() {
         var me = this;
+        if (Ext.isEmpty(this.getSetting('typeField')) ) {
+            Ext.Msg.alert('Configuration...', 'Please got to Edit App Settings and choose a feature field used to define Platform or Business');
+            return;
+        }
+        this.type_field = this.getSetting('typeField');
+        
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
     },
@@ -99,17 +111,15 @@ Ext.define("TSDependencyStatusReport", {
     },
     
     _getChildFeatures: function() {
+        if ( Ext.isEmpty(this.PIs) ) { this.PIs = []; }
+
         this.setLoading('Fetching descendant features...');
         
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
-            
-        if ( Ext.isEmpty(this.PIs) ) { this.PIs = []; }
         
         var release = this.down('rallyreleasecombobox').getRecord();
-        
-        this.logger.log("_getChildFeatures release is: ", release);
-        
+                
         var filters = null;
 
         var release_filter = null;
@@ -138,6 +148,8 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         if ( Ext.isEmpty(filters) ) { return []; }
+
+        filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Business'}));
         
         var config = {
             model: 'PortfolioItem/Feature',
@@ -270,6 +282,7 @@ Ext.define("TSDependencyStatusReport", {
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
+            filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
             callback: function(records, operation, success) {
                 feature.set('_predecessors', records);
                 deferred.resolve(records);
@@ -294,6 +307,7 @@ Ext.define("TSDependencyStatusReport", {
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
+            filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
             callback: function(records, operation, success) {
                 feature.set('_successors', records);
                 deferred.resolve(records);
@@ -542,10 +556,20 @@ Ext.define("TSDependencyStatusReport", {
         return typeof(this.getAppId()) == 'undefined';
     },
     
-    //onSettingsUpdate:  Override
-    onSettingsUpdate: function (settings){
-        this.logger.log('onSettingsUpdate',settings);
-        // Ext.apply(this, settings);
-        this.launch();
+    
+    getSettingsFields: function() {
+        return [{
+            name: 'typeField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            _isNotHidden: function(field) {
+                //console.log(field);
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }
+        }];
     }
 });

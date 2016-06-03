@@ -2,6 +2,10 @@
 
 Features belong to a chosen Initiative or Theme.  This table ALSO finds features that are predecessors/successors of the features (only one level).  
 
+The app depends on the selection of a field to determine the type of a feature.  The app will look for features that are of type "Business" and then
+find predecessors/successors that are of type "Platform".
+
+
 ## Development Notes
 
 * Caution: PI names are hard coded.
