@@ -26,13 +26,12 @@
                     {
 
                         xtype: 'rallybutton',
-                        text: 'Choose PI',
+                        text: 'Choose Portfolio Item',
                         itemId: 'portfolioItemButton',
                         cls: 'piButton primary small'
                     },
                     {
                         xtype: 'container',
-                        cls: 'piDisplayField',
                         items: [
                             {
                                 xtype: 'container',

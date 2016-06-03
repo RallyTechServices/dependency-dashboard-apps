@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue May 24 2016 21:13:39 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Jun 02 2016 19:03:50 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue May 24 2016 21:13:39 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Thu Jun 02 2016 19:03:50 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 19590023797;
+        var CHECKSUM = 19569216066;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -44,13 +44,12 @@
                     {
 
                         xtype: 'rallybutton',
-                        text: 'Choose PI',
+                        text: 'Choose Portfolio Item',
                         itemId: 'portfolioItemButton',
                         cls: 'piButton primary small'
                     },
                     {
                         xtype: 'container',
-                        cls: 'piDisplayField',
                         items: [
                             {
                                 xtype: 'container',
@@ -950,7 +949,7 @@ Ext.define("TSDependencyStatusReport", {
     background-color: #fff;
     color: black !important;
     border: none;
-    padding: 3px;
+    margin: 3px;
 }
 
 
