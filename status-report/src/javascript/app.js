@@ -7,7 +7,7 @@ Ext.define("TSDependencyStatusReport", {
     layout: 'border',
     
     items: [
-        {xtype:'container',itemId:'selector_box', region: 'north'},
+        {xtype:'container',itemId:'selector_box', region: 'north', layout: 'hbox'},
         {xtype:'container',itemId:'display_box', region: 'center', layout: 'fit'}
     ],
 
@@ -18,6 +18,7 @@ Ext.define("TSDependencyStatusReport", {
     launch: function() {
         var me = this;
         this._addPortfolioItemSelector(this.down('#selector_box'));
+        this._addExportButton(this.down('#selector_box'));
     },
       
     _addPortfolioItemSelector: function(container) {
@@ -36,8 +37,29 @@ Ext.define("TSDependencyStatusReport", {
         });
     },
     
+    _addExportButton: function(container) {
+        container.add({xtype:'container',flex: 1});
+        
+        container.add({
+            xtype:'rallybutton',
+            itemId:'export_button',
+            cls: 'secondary',
+            text: '<span class="icon-export"> </span>',
+            disabled: true,
+            listeners: {
+                scope: this,
+                click: function() {
+                    this._export();
+                }
+            }
+        });
+    },
+    
     _updateData: function() {
         this.logger.log("_updateData", this.PIs);
+        this.down('#export_button').setDisabled(true);
+        
+        this.rows = [];
         
         Deft.Chain.pipeline([
             this._getChildFeatures,
@@ -46,8 +68,8 @@ Ext.define("TSDependencyStatusReport", {
         ],this).then({
             scope: this,
             success: function(results) {
-                var rows = this._makeRowsFromHash(this.baseFeaturesByOID);
-                this._makeGrid(rows);
+                this.rows = this._makeRowsFromHash(this.baseFeaturesByOID);
+                this._makeGrid(this.rows);
             },
             failure: function(msg) {
                 Ext.Msg.alert('Problem Fetching Data', msg);
@@ -292,7 +314,6 @@ Ext.define("TSDependencyStatusReport", {
         var me = this,
             container = this.down('#display_box');
             
-        this.rows = [];
         container.removeAll();
         
         var store = Ext.create('Rally.data.custom.Store',{ data: rows});
@@ -303,6 +324,8 @@ Ext.define("TSDependencyStatusReport", {
             columnCfgs: this._getColumns(),
             showRowActionsColumn: false
         });
+        
+        this.down('#export_button').setDisabled(false);
     },
     
     _getColumns: function() {
@@ -376,6 +399,73 @@ Ext.define("TSDependencyStatusReport", {
             store: store,
             columnCfgs: field_names
         });
+    },
+    
+    _export: function(){
+        var me = this;
+        this.logger.log('_export');
+       
+        var grid = this.down('rallygrid');
+        var rows = this.rows;
+                
+        this.logger.log('number of rows:', rows.length);
+        
+        if (!rows ) { return; }
+        
+        var store = Ext.create('Rally.data.custom.Store',{ data: rows });
+        
+        if ( !grid ) {
+            grid = Ext.create('Rally.ui.grid.Grid',{
+                store: store,
+                columnCfgs: [{
+                    dataIndex: 'FormattedID',
+                    text: 'ID'
+                },
+                {
+                    dataIndex: 'Name',
+                    text: 'Name'
+                },
+                {
+                    dataIndex: 'Project',
+                    text: 'Project',
+                    renderer: function(value,meta,record){
+                        if ( Ext.isEmpty(value) ) { 
+                            return "";
+                        }
+                        return value._refObjectName
+                    }
+                },
+                {
+                    dataIndex: '__ruleText',
+                    text:'Rules',
+                    renderer: function(value,meta,record){                        
+                        return value.join('\r\n');
+                    }
+                }
+                
+                ]
+            });
+        }
+        
+        var filename = 'timesheet-report.csv';
+
+        this.logger.log('saving file:', filename);
+        
+        this.setLoading("Generating CSV");
+        Deft.Chain.sequence([
+            function() { return Rally.technicalservices.FileUtilities.getCSVFromRows(this,grid,rows); } 
+        ]).then({
+            scope: this,
+            success: function(csv){
+                this.logger.log('got back csv ', csv.length);
+                if (csv && csv.length > 0){
+                    Rally.technicalservices.FileUtilities.saveCSVToFile(csv,filename);
+                } else {
+                    Rally.ui.notify.Notifier.showWarning({message: 'No data to export'});
+                }
+                
+            }
+        }).always(function() { me.setLoading(false); });
     },
     
     getOptions: function() {
