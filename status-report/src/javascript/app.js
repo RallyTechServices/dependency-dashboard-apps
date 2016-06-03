@@ -71,6 +71,10 @@ Ext.define("TSDependencyStatusReport", {
     _updateData: function() {
         this.logger.log("_updateData", this.PIs);
         
+        var release = this.down('rallyreleasecombobox').getRecord();
+        if ( release && release.get('Name') == "-- Clear --") {
+            return;
+        }
         this.down('#export_button').setDisabled(true);
         this.down('#display_box').removeAll();
         
@@ -128,7 +132,7 @@ Ext.define("TSDependencyStatusReport", {
         if ( pi_filter_configs.length > 0 ) {
             pi_filters = Rally.data.wsapi.Filter.or(Ext.Array.flatten(pi_filter_configs));
             filters = pi_filters;
-            if ( !Ext.isEmpty(release_filters) ) {
+            if ( !Ext.isEmpty(release_filter) ) {
                 filters = release_filter.and(pi_filters);
             }
         }

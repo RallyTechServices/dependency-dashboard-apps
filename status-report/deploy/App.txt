@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Thu Jun 02 2016 19:56:47 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Jun 02 2016 20:04:01 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Thu Jun 02 2016 19:56:47 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Thu Jun 02 2016 20:04:01 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 46453512102;
+        var CHECKSUM = 46769476895;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -960,6 +960,10 @@ Ext.define("TSDependencyStatusReport", {
     _updateData: function() {
         this.logger.log("_updateData", this.PIs);
         
+        var release = this.down('rallyreleasecombobox').getRecord();
+        if ( release && release.get('Name') == "-- Clear --") {
+            return;
+        }
         this.down('#export_button').setDisabled(true);
         this.down('#display_box').removeAll();
         
@@ -1017,7 +1021,7 @@ Ext.define("TSDependencyStatusReport", {
         if ( pi_filter_configs.length > 0 ) {
             pi_filters = Rally.data.wsapi.Filter.or(Ext.Array.flatten(pi_filter_configs));
             filters = pi_filters;
-            if ( !Ext.isEmpty(release_filters) ) {
+            if ( !Ext.isEmpty(release_filter) ) {
                 filters = release_filter.and(pi_filters);
             }
         }
