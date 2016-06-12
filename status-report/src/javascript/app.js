@@ -11,7 +11,7 @@ Ext.define("TSDependencyStatusReport", {
         {xtype:'container',itemId:'display_box', region: 'center', layout: 'fit'}
     ],
     
-    clearText: '',
+    clearText: '-- all releases --',
 
     integrationHeaders : {
         name : "TSDependencyStatusReport"

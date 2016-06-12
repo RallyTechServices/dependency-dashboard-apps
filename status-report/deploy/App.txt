@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 12 2016 12:59:52 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Jun 12 2016 13:01:23 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 12 2016 12:59:52 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Jun 12 2016 13:01:23 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 50107838437;
+        var CHECKSUM = 50152486733;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -900,7 +900,7 @@ Ext.define("TSDependencyStatusReport", {
         {xtype:'container',itemId:'display_box', region: 'center', layout: 'fit'}
     ],
     
-    clearText: '',
+    clearText: '-- all releases --',
 
     integrationHeaders : {
         name : "TSDependencyStatusReport"
