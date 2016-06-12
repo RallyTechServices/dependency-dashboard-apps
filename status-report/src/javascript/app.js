@@ -10,6 +10,8 @@ Ext.define("TSDependencyStatusReport", {
         {xtype:'container',itemId:'selector_box', region: 'north', layout: 'hbox'},
         {xtype:'container',itemId:'display_box', region: 'center', layout: 'fit'}
     ],
+    
+    clearText: '',
 
     integrationHeaders : {
         name : "TSDependencyStatusReport"
@@ -54,6 +56,10 @@ Ext.define("TSDependencyStatusReport", {
             margins: '3 0 0 50',
             labelWidth: 45,
             allowClear: true,
+            clearText: this.clearText,
+            getDefaultValue: function() {
+                return null;
+            },
             listeners: {
                 scope: this,
                 change: this._updateData
@@ -81,14 +87,15 @@ Ext.define("TSDependencyStatusReport", {
     },
     
     _updateData: function() {
-        this.logger.log("_updateData", this.PIs);
-        
-        var release = this.down('rallyreleasecombobox').getRecord();
-        if ( release && release.get('Name') == "-- Clear --") {
-            return;
-        }
         this.down('#export_button').setDisabled(true);
         this.down('#display_box').removeAll();
+        
+        var release = this.down('rallyreleasecombobox').getRecord();
+        this.logger.log("_updateData", this.PIs, release);
+        
+        if ( ( Ext.isEmpty(release) || release.get('Name') == this.clearText ) && ( Ext.isEmpty(this.PIs) || this.PIs.length === 0 ) ) {
+            return;
+        }
         
         this.rows = [];
         
@@ -123,7 +130,7 @@ Ext.define("TSDependencyStatusReport", {
         var filters = null;
 
         var release_filter = null;
-        if ( release && release.get('Name') ) {
+        if ( release && release.get('Name') != this.clearText ) {
             release_filter = Ext.create('Rally.data.wsapi.Filter',{
                 property:'Release.Name',
                 value: release.get('Name')
