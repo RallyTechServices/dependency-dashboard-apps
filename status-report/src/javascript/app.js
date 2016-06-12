@@ -12,7 +12,8 @@ Ext.define("TSDependencyStatusReport", {
     ],
     
     clearText: '-- all releases --',
-
+    PIs: [],
+    
     integrationHeaders : {
         name : "TSDependencyStatusReport"
     },
@@ -46,27 +47,97 @@ Ext.define("TSDependencyStatusReport", {
                     if ( this.PIs.length > 0 ) {
                         this._updateData();
                     }
+                    
+                    this._changeReleaseBox();
                 }
             }
         });
         
-        container.add({ 
-            xtype:'rallyreleasecombobox',
-            fieldLabel: 'And/Or Step 2: Choose Business Release:',
-            margins: '3 0 0 50',
-            labelWidth: 215,
-            width: 515,
-            allowClear: true,
-            clearText: this.clearText,
-            getDefaultValue: function() {
-                return null;
-            },
-            listeners: {
-                scope: this,
-                change: this._updateData
-            }
+        container.add({
+            xtype:'container',
+            itemId:'release_box'
         });
         
+        this._changeReleaseBox();
+       
+    },
+    
+    _changeReleaseBox: function() {
+        var container = this.down('#release_box');
+        if ( Ext.isEmpty(container) ) { return; }
+        container.removeAll();
+        
+        if ( this.PIs.length === 0 ) {
+            container.add({ 
+                xtype:'rallyreleasecombobox',
+                fieldLabel: 'And/Or Step 2: Choose Business Release:',
+                margins: '3 0 0 50',
+                labelWidth: 215,
+                width: 515,
+                allowClear: true,
+                clearText: this.clearText,
+                getDefaultValue: function() {
+                    return null;
+                },
+                listeners: {
+                    scope: this,
+                    change: this._updateData
+                }
+            });
+            
+            return;
+        }
+        
+        this._getChildFeatures().then({
+            scope: this,
+            success: function(features) {
+                console.log('features', features);
+                var timebox_oids_by_name = {};
+                Ext.Array.each(features, function(feature) {
+                    var release = feature.get('Release');
+                    if ( !Ext.isEmpty(release) ) {
+                        console.log(release);
+                        timebox_oids_by_name[release.Name] = release.ObjectID;
+                    }
+                });
+                
+                var filters = Ext.Array.map(Ext.Object.getValues(timebox_oids_by_name), function(oid){
+                    return { property:'ObjectID',value:oid };
+                });
+                
+                if ( filters.length === 0 ) {
+                    container.add({xtype:'container', html:'No Releases on Features for This Item'});
+                } else {
+                    container.add({ 
+                        xtype:'rallyreleasecombobox',
+                        fieldLabel: 'And/Or Step 2: Choose Business Release:',
+                        margins: '3 0 0 50',
+                        labelWidth: 215,
+                        width: 515,
+                        allowClear: true,
+                        clearText: this.clearText,
+                        getDefaultValue: function() {
+                            return null;
+                        },
+                        storeConfig: {
+                            context: {
+                                project: null
+                            },
+                            filters: filters,
+                            remoteFilter: true
+                        },
+                        listeners: {
+                            scope: this,
+                            change: this._updateData
+                        }
+                    });
+                }
+                
+            },
+            failure: function(msg) {
+                Ext.Msg.alert('',msg);
+            }
+        });
     },
     
     _addExportButton: function(container) {
@@ -91,7 +162,12 @@ Ext.define("TSDependencyStatusReport", {
         this.down('#export_button').setDisabled(true);
         this.down('#display_box').removeAll();
         
-        var release = this.down('rallyreleasecombobox').getRecord();
+        var release = null;
+        
+        if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
+            release = this.down('rallyreleasecombobox').getRecord();
+        }
+        
         this.logger.log("_updateData", this.PIs, release);
         
         if ( ( Ext.isEmpty(release) || release.get('Name') == this.clearText ) && ( Ext.isEmpty(this.PIs) || this.PIs.length === 0 ) ) {
@@ -126,8 +202,12 @@ Ext.define("TSDependencyStatusReport", {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
         
-        var release = this.down('rallyreleasecombobox').getRecord();
-                
+        var release = null;
+        
+        if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
+            release = this.down('rallyreleasecombobox').getRecord();
+        }
+        
         var filters = null;
 
         var release_filter = null;

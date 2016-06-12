@@ -117,7 +117,6 @@
         },
 
         _onPortfolioItemsRetrieved: function (store,records) {
-            console.log('_onPortfolioItemsRetrieved',store,records);
             this._handleStoreResults(records);
         },
 
@@ -152,7 +151,6 @@
             return Ext.Array.map(this.portfolioItems, function(pi){
                 //var text = Ext.String.format("{0}: {1} <span class='icon-delete'></span>", pi.FormattedID, pi.Name);
                 var text = Ext.String.format("{0}: {1}", pi.FormattedID, pi.Name);
-                console.log('text', text);
                 return {
                     xtype:'button',
                     
@@ -204,7 +202,6 @@
         },
 
         _handleStoreResults: function(store) {
-            console.log("_handleStoreResults",store);
             if (store) {
                 if ( Ext.isArray(store) ) {
                     var pis = Ext.Array.map(store, function(pi) { 
