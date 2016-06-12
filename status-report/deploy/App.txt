@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 12 2016 16:28:38 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Jun 12 2016 16:37:31 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 12 2016 16:28:38 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Jun 12 2016 16:37:31 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 57058180807;
+        var CHECKSUM = 57793224914;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1428,8 +1428,22 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         columns.push({dataIndex:'Name',text:'Name'});
-        columns.push({dataIndex:'PercentDoneByStoryCount',text: '% Complete by Story Count'});
-        columns.push({dataIndex:'PercentDoneByStoryPlanEstimate',text: '% Complete by Story Points'});
+        columns.push({
+            dataIndex:'PercentDoneByStoryCount',
+            text: '% Complete by Story Count',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.String.format('{0}%', 100 * value);
+            }
+        });
+        columns.push({
+            dataIndex:'PercentDoneByStoryPlanEstimate',
+            text: '% Complete by Story Points',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.String.format('{0}%', 100 * value);
+            }
+        });
         columns.push({
             dataIndex:'Project',
             text:'Project/Team', 

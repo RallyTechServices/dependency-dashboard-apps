@@ -542,8 +542,22 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         columns.push({dataIndex:'Name',text:'Name'});
-        columns.push({dataIndex:'PercentDoneByStoryCount',text: '% Complete by Story Count'});
-        columns.push({dataIndex:'PercentDoneByStoryPlanEstimate',text: '% Complete by Story Points'});
+        columns.push({
+            dataIndex:'PercentDoneByStoryCount',
+            text: '% Complete by Story Count',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.String.format('{0}%', 100 * value);
+            }
+        });
+        columns.push({
+            dataIndex:'PercentDoneByStoryPlanEstimate',
+            text: '% Complete by Story Points',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.String.format('{0}%', 100 * value);
+            }
+        });
         columns.push({
             dataIndex:'Project',
             text:'Project/Team', 
