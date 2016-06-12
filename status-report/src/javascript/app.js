@@ -410,55 +410,66 @@ Ext.define("TSDependencyStatusReport", {
         
         Ext.Object.each(base_features_by_oid, function(oid,feature){
             var initiative_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
-            
+            var theme = null;
             var theme_fid = null;
             var theme_name = null;
             if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                 theme_fid = me.parentsByOID[initiative_oid].Parent.FormattedID;
                 theme_name = me.parentsByOID[initiative_oid].Parent.Name;
+                theme = me.parentsByOID[initiative_oid].Parent;
             }
             var row = Ext.Object.merge({
                 _level: 0,
+                _theme: theme,
                 _theme_fid: theme_fid,
                 _theme_name: theme_name,
                 _initiative_fid: feature.get('Parent') && feature.get('Parent').FormattedID,
-                _initiative_name: feature.get('Parent') && feature.get('Parent').Name
+                _initiative_name: feature.get('Parent') && feature.get('Parent').Name,
+                _initiative: feature.get('Parent')
             }, feature.getData());
             
             rows.push(row);
             
             Ext.Array.each(feature.get('_predecessors'), function(dependency){
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
+                theme = null;
                 theme_fid = null;
                 theme_name = null;
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                     theme_fid = me.parentsByOID[initiative_oid].Parent.FormattedID;
                     theme_name = me.parentsByOID[initiative_oid].Parent.Name;
+                    theme = me.parentsByOID[initiative_oid].Parent;
                 }
                 
                 rows.push(Ext.Object.merge({
                     _level: 1,
+                    _theme: theme,
                     _theme_fid: theme_fid,
                     _theme_name: theme_name,
                     _initiative_fid: dependency.get('Parent') && dependency.get('Parent').FormattedID,
-                    _initiative_name: dependency.get('Parent') && dependency.get('Parent').Name
+                    _initiative_name: dependency.get('Parent') && dependency.get('Parent').Name,
+                    _initiative: feature.get('Parent')
                 }, dependency.getData()));
             });
             
             Ext.Array.each(feature.get('_successors'), function(dependency){
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
+                theme = null;
                 theme_fid = null;
                 theme_name = null;
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                     theme_fid = me.parentsByOID[initiative_oid].Parent.FormattedID;
                     theme_name = me.parentsByOID[initiative_oid].Parent.Name;
+                    theme = me.parentsByOID[initiative_oid].Parent;
                 }
                 rows.push(Ext.Object.merge({
                     _level: 1,
+                    _theme: theme,
                     _theme_fid: theme_fid,
                     _theme_name: theme_name,
                     _initiative_fid: dependency.get('Parent') && dependency.get('Parent').FormattedID,
-                    _initiative_name: dependency.get('Parent') && dependency.get('Parent').Name
+                    _initiative_name: dependency.get('Parent') && dependency.get('Parent').Name,
+                    _initiative: feature.get('Parent')
                 }, dependency.getData()));
             });
         });
@@ -486,12 +497,50 @@ Ext.define("TSDependencyStatusReport", {
     _getColumns: function() {
         var columns = [];
 
-        columns.push({dataIndex:'_theme_name',text:'Theme'});
+        columns.push({
+            dataIndex:'_theme_fid',
+            text:'Theme ID',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "";
+                }
+                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                    Rally.nav.Manager.getDetailUrl(record.get('_theme')),
+                    value
+                );
+            }
+        });
+        columns.push({dataIndex:'_theme_name',text:'Theme Name'});
 
-        columns.push({dataIndex:'_initiative_fid',text:'Initiative ID'});
+        columns.push({
+            dataIndex:'_initiative_fid',
+            text:'Initiative ID',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "";
+                }
+                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                    Rally.nav.Manager.getDetailUrl(record.get('_initiative')),
+                    value
+                );
+            }
+        });
+        
         columns.push({dataIndex:'_initiative_name',text:'Initiative Name'});
         
-        columns.push({dataIndex:'FormattedID',text:'id'});
+        columns.push({
+            dataIndex:'FormattedID',
+            text:'id',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "";
+                }
+                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                    Rally.nav.Manager.getDetailUrl(record),
+                    value
+                );
+            }
+        });
         columns.push({dataIndex:'Name',text:'Name'});
         columns.push({dataIndex:'PercentDoneByStoryCount',text: '% Complete by Story Count'});
         columns.push({dataIndex:'PercentDoneByStoryPlanEstimate',text: '% Complete by Story Points'});
