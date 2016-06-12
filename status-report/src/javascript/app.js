@@ -52,9 +52,10 @@ Ext.define("TSDependencyStatusReport", {
         
         container.add({ 
             xtype:'rallyreleasecombobox',
-            fieldLabel: 'Release:',
+            fieldLabel: 'And/Or Step 2: Choose Business Release:',
             margins: '3 0 0 50',
-            labelWidth: 45,
+            labelWidth: 215,
+            width: 515,
             allowClear: true,
             clearText: this.clearText,
             getDefaultValue: function() {

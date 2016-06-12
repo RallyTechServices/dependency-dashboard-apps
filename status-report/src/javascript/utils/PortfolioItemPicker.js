@@ -26,7 +26,7 @@
                     {
 
                         xtype: 'rallybutton',
-                        text: 'Choose Portfolio Item',
+                        text: 'Step 1: Choose Business Theme / Initiative',
                         itemId: 'portfolioItemButton',
                         cls: 'piButton primary small'
                     },
