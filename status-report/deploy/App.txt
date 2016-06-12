@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 12 2016 13:41:06 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Jun 12 2016 16:11:47 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 12 2016 13:41:06 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Jun 12 2016 16:11:47 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 54100682339;
+        var CHECKSUM = 54036061618;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -977,7 +977,6 @@ Ext.define("TSDependencyStatusReport", {
         this._getChildFeatures().then({
             scope: this,
             success: function(features) {
-                console.log('features', features);
                 var timebox_oids_by_name = {};
                 Ext.Array.each(features, function(feature) {
                     var release = feature.get('Release');
@@ -1255,7 +1254,7 @@ Ext.define("TSDependencyStatusReport", {
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
-            filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
+            filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'}),
             callback: function(records, operation, success) {
                 feature.set('_predecessors', records);
                 deferred.resolve(records);

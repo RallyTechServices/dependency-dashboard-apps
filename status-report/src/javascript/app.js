@@ -91,7 +91,6 @@ Ext.define("TSDependencyStatusReport", {
         this._getChildFeatures().then({
             scope: this,
             success: function(features) {
-                console.log('features', features);
                 var timebox_oids_by_name = {};
                 Ext.Array.each(features, function(feature) {
                     var release = feature.get('Release');
@@ -369,7 +368,7 @@ Ext.define("TSDependencyStatusReport", {
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
-            filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
+            filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'}),
             callback: function(records, operation, success) {
                 feature.set('_predecessors', records);
                 deferred.resolve(records);
