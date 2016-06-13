@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 12 2016 17:53:26 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Jun 12 2016 17:58:37 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 12 2016 17:53:26 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Jun 12 2016 17:58:37 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 65359464691;
+        var CHECKSUM = 66804583669;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1140,7 +1140,8 @@ Ext.define("TSDependencyStatusReport", {
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate',me.type_field]
+                'TargetDate',me.type_field,
+                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         }
         
         this._loadWsapiRecords(config).then({
@@ -1226,7 +1227,8 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field]
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field,
+                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         };
         
         this._loadWsapiRecords(config).then({
@@ -1526,7 +1528,18 @@ Ext.define("TSDependencyStatusReport", {
             }
             
         });
-        
+        columns.push({
+            dataIndex:'State', 
+            text: 'State',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "";
+                }
+                
+                return value._refObjectName;
+            }
+            
+        });
         columns.push({
             dataIndex:'PercentDoneByStoryCount',
             text: '% Complete by Story Count',
@@ -1543,6 +1556,9 @@ Ext.define("TSDependencyStatusReport", {
                 return Ext.String.format('{0}%', 100 * value);
             }
         });
+        columns.push({dataIndex:'LeafStoryCount',text:'Leaf Story Count'});
+        columns.push({dataIndex:'LeafStoryPlanEstimateTotal',text:'Leaf Story Plan Estimate Total'});
+        
         columns.push({
             dataIndex:'Project',
             text:'Team', 

@@ -254,7 +254,8 @@ Ext.define("TSDependencyStatusReport", {
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate',me.type_field]
+                'TargetDate',me.type_field,
+                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         }
         
         this._loadWsapiRecords(config).then({
@@ -340,7 +341,8 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field]
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field,
+                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         };
         
         this._loadWsapiRecords(config).then({
@@ -640,7 +642,18 @@ Ext.define("TSDependencyStatusReport", {
             }
             
         });
-        
+        columns.push({
+            dataIndex:'State', 
+            text: 'State',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "";
+                }
+                
+                return value._refObjectName;
+            }
+            
+        });
         columns.push({
             dataIndex:'PercentDoneByStoryCount',
             text: '% Complete by Story Count',
@@ -657,6 +670,9 @@ Ext.define("TSDependencyStatusReport", {
                 return Ext.String.format('{0}%', 100 * value);
             }
         });
+        columns.push({dataIndex:'LeafStoryCount',text:'Leaf Story Count'});
+        columns.push({dataIndex:'LeafStoryPlanEstimateTotal',text:'Leaf Story Plan Estimate Total'});
+        
         columns.push({
             dataIndex:'Project',
             text:'Team', 
