@@ -5,6 +5,9 @@ Features belong to a chosen Initiative or Theme.  This table ALSO finds features
 The app depends on the selection of a field to determine the type of a feature.  The app will look for features that are of type "Business" and then
 find predecessors/successors that are of type "Platform".
 
+The app assumes that if the type field is empty, then the feature is a "Platform" feature.
+
+Business feature rows are colored light blue.  Platform are white.
 
 ## Development Notes
 

@@ -616,7 +616,7 @@ Ext.define("TSDependencyStatusReport", {
         
         columns.push({
             dataIndex:'FormattedID',
-            text:'id',
+            text:'Feature ID',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -627,7 +627,7 @@ Ext.define("TSDependencyStatusReport", {
                 );
             }
         });
-        columns.push({dataIndex:'Name',text:'Name'});
+        columns.push({dataIndex:'Name',text:'Feature Name'});
         columns.push({
             dataIndex:me.type_field, 
             text: 'Type',
