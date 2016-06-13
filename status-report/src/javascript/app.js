@@ -377,7 +377,7 @@ Ext.define("TSDependencyStatusReport", {
         
         feature.getCollection('Predecessors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
                 'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
             filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'}),
@@ -402,8 +402,8 @@ Ext.define("TSDependencyStatusReport", {
         
         feature.getCollection('Successors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
             scope: this,
             filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
             callback: function(records, operation, success) {
