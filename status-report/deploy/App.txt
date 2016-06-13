@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 12 2016 17:24:30 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Jun 12 2016 17:34:45 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 12 2016 17:24:30 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Jun 12 2016 17:34:45 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 62859032448;
+        var CHECKSUM = 63464431393;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1140,7 +1140,7 @@ Ext.define("TSDependencyStatusReport", {
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate']
+                'TargetDate',me.type_field]
         }
         
         this._loadWsapiRecords(config).then({
@@ -1226,7 +1226,7 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release']
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field]
         };
         
         this._loadWsapiRecords(config).then({
@@ -1484,6 +1484,19 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         columns.push({dataIndex:'Name',text:'Name'});
+        columns.push({
+            dataIndex:me.type_field, 
+            text: 'Type',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "Platform";
+                }
+                
+                return value;
+            }
+            
+        });
+        
         columns.push({
             dataIndex:'PercentDoneByStoryCount',
             text: '% Complete by Story Count',

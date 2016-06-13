@@ -254,7 +254,7 @@ Ext.define("TSDependencyStatusReport", {
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate']
+                'TargetDate',me.type_field]
         }
         
         this._loadWsapiRecords(config).then({
@@ -340,7 +340,7 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release']
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field]
         };
         
         this._loadWsapiRecords(config).then({
@@ -598,6 +598,19 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         columns.push({dataIndex:'Name',text:'Name'});
+        columns.push({
+            dataIndex:me.type_field, 
+            text: 'Type',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "Platform";
+                }
+                
+                return value;
+            }
+            
+        });
+        
         columns.push({
             dataIndex:'PercentDoneByStoryCount',
             text: '% Complete by Story Count',
