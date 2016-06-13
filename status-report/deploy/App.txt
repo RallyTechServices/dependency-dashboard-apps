@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Jun 13 2016 14:27:34 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Jun 13 2016 16:15:57 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Jun 13 2016 14:27:34 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Jun 13 2016 16:15:57 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 67786538306;
+        var CHECKSUM = 67831622427;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1288,8 +1288,8 @@ Ext.define("TSDependencyStatusReport", {
         
         feature.getCollection('Successors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
+                'PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
             scope: this,
             filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Platform'}),
             callback: function(records, operation, success) {
