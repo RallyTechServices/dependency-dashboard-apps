@@ -28,7 +28,7 @@ Ext.define("TSDependencyStatusReport", {
     launch: function() {
         var me = this;
         if (Ext.isEmpty(this.getSetting('typeField')) ) {
-            Ext.Msg.alert('Configuration...', 'Please got to Edit App Settings and choose a feature field used to define Platform or Business');
+            Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose a feature field used to define Platform or Business');
             return;
         }
         this.type_field = this.getSetting('typeField');
@@ -122,7 +122,7 @@ Ext.define("TSDependencyStatusReport", {
                             context: {
                                 project: null
                             },
-                            filters: filters,
+                            filters: Rally.data.wsapi.Filter.or(filters),
                             remoteFilter: true
                         },
                         listeners: {
@@ -492,19 +492,28 @@ Ext.define("TSDependencyStatusReport", {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
         this.setLoading('Fetching Milestone Information...');
+        this.logger.log('Finding milestones from rows:', rows);
         
-        var milestone_oids = Ext.Array.unique(
-            Ext.Array.flatten(
-                Ext.Array.map(rows, function(row){
-                    if ( row.Milestones.Count === 0 ) {
-                        return -1;
-                    }
-                    return Ext.Array.map(row.Milestones._tagsNameArray, function(tag){
-                        return me._getOidFromRef(tag._ref);
-                    });
-                })
-            )
-        );
+        var milestone_oids = [-1];
+        
+        if ( rows.length > 0 ) {
+            milestone_oids = Ext.Array.unique(
+                Ext.Array.flatten(
+                    Ext.Array.map(rows, function(row){
+                        me.logger.log('--', row, row.Milestones);
+                    
+                        if ( Ext.isEmpty(row.Milestones) || row.Milestones.Count === 0 || row.Milestones._tagsNameArray.length === 0 ) {
+                            return -1;
+                        }
+                        return Ext.Array.map(row.Milestones._tagsNameArray, function(tag){
+                            return me._getOidFromRef(tag._ref);
+                        });
+                    })
+                )
+            );
+        }
+        
+        this.logger.log('Milestone OIDs:', milestone_oids);
         
         var config = {
             model:'Milestone',
