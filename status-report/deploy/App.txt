@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 12 2016 17:23:42 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Jun 12 2016 17:24:30 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 12 2016 17:23:42 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Jun 12 2016 17:24:30 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 62887038422;
+        var CHECKSUM = 62859032448;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1502,7 +1502,7 @@ Ext.define("TSDependencyStatusReport", {
         });
         columns.push({
             dataIndex:'Project',
-            text:'Project/Team', 
+            text:'Team', 
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return "--"; }
                 return value._refObjectName;

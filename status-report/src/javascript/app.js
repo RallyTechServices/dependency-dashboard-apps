@@ -616,7 +616,7 @@ Ext.define("TSDependencyStatusReport", {
         });
         columns.push({
             dataIndex:'Project',
-            text:'Project/Team', 
+            text:'Team', 
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return "--"; }
                 return value._refObjectName;
