@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Jun 13 2016 16:25:35 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Jun 13 2016 16:42:15 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Jun 13 2016 16:25:35 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Jun 13 2016 16:42:15 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 67925810931;
+        var CHECKSUM = 69039267379;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1483,6 +1483,10 @@ Ext.define("TSDependencyStatusReport", {
         columns.push({
             dataIndex:'_theme_fid',
             text:'Theme ID',
+            exportRenderer: function(value,meta,record) {
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            },
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -1493,11 +1497,19 @@ Ext.define("TSDependencyStatusReport", {
                 );
             }
         });
-        columns.push({dataIndex:'_theme_name',text:'Theme Name'});
+        columns.push({
+            dataIndex:'_theme_name',
+            text:'Theme Name',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            }
+        });
 
         columns.push({
             dataIndex:'_initiative_fid',
             text:'Initiative ID',
+            _csvIgnoreRender: true,
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -1509,11 +1521,19 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         
-        columns.push({dataIndex:'_initiative_name',text:'Initiative Name'});
+        columns.push({
+            dataIndex:'_initiative_name',
+            text:'Initiative Name',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            }
+        });
         
         columns.push({
             dataIndex:'FormattedID',
             text:'Feature ID',
+            _csvIgnoreRender: true,
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -1634,7 +1654,7 @@ Ext.define("TSDependencyStatusReport", {
 
         return columns;
     },
-    
+     
     _loadWsapiRecords: function(config){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;

@@ -597,6 +597,10 @@ Ext.define("TSDependencyStatusReport", {
         columns.push({
             dataIndex:'_theme_fid',
             text:'Theme ID',
+            exportRenderer: function(value,meta,record) {
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            },
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -607,11 +611,19 @@ Ext.define("TSDependencyStatusReport", {
                 );
             }
         });
-        columns.push({dataIndex:'_theme_name',text:'Theme Name'});
+        columns.push({
+            dataIndex:'_theme_name',
+            text:'Theme Name',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            }
+        });
 
         columns.push({
             dataIndex:'_initiative_fid',
             text:'Initiative ID',
+            _csvIgnoreRender: true,
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -623,11 +635,19 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         
-        columns.push({dataIndex:'_initiative_name',text:'Initiative Name'});
+        columns.push({
+            dataIndex:'_initiative_name',
+            text:'Initiative Name',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            }
+        });
         
         columns.push({
             dataIndex:'FormattedID',
             text:'Feature ID',
+            _csvIgnoreRender: true,
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
@@ -748,7 +768,7 @@ Ext.define("TSDependencyStatusReport", {
 
         return columns;
     },
-    
+     
     _loadWsapiRecords: function(config){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
