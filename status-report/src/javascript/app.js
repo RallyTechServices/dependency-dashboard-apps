@@ -185,7 +185,7 @@ Ext.define("TSDependencyStatusReport", {
                 if ( this.base_features.length === 0 ) { return; }
                                 
                 var rows = this._makeRowsFromHash(this.baseFeaturesByOID);
-                this._addMilestoneInformationToRows(rows).then({
+                this._fetchMilestoneInformation(rows).then({
                     scope: this,
                     success: function(results) {
                         this.rows = results;
@@ -486,9 +486,11 @@ Ext.define("TSDependencyStatusReport", {
         return rows;
     },
     
-    _addMilestoneInformationToRows: function(rows) {
+    _fetchMilestoneInformation: function(rows) {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
+        this.setLoading('Fetching Milestone Information...');
+        
         var milestone_oids = Ext.Array.unique(
             Ext.Array.flatten(
                 Ext.Array.map(rows, function(row){
@@ -526,7 +528,7 @@ Ext.define("TSDependencyStatusReport", {
             failure: function(msg) {
                 deferred.reject(msg);
             }
-        });
+        }).always(function() { me.setLoading(false); });
         
         return deferred.promise;
     },
@@ -543,7 +545,35 @@ Ext.define("TSDependencyStatusReport", {
             xtype:'rallygrid',
             store: store,
             columnCfgs: this._getColumns(),
-            showRowActionsColumn: false
+            showRowActionsColumn: false,
+            viewConfig: {
+                listeners: {
+                    refresh: function(view){
+                        var nodes = view.getNodes();
+                        for (var i = 0; i < nodes.length; i++) {
+                            
+                            var node = nodes[i];
+                            
+                            // get node record
+                            var record = view.getRecord(node);
+                            
+                            // get color from record data
+                            var color = '#fff';
+                            if ( record.get(me.type_field) == "Business" ) {
+                                color = "#e7f5fe";
+                            }
+                            
+                            // get all td elements
+                            var cells = Ext.get(node).query('td');  
+                            
+                            // set bacground color to all row td elements
+                            for(var j = 0; j < cells.length; j++) {
+                                Ext.fly(cells[j]).setStyle('background-color', color);
+                            }                                       
+                        }
+                    }
+                }
+            }
         });
         
         this.down('#export_button').setDisabled(false);
