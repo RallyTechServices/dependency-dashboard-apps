@@ -13,6 +13,7 @@ Ext.define("TSDependencyStatusReport", {
     
     clearText: '-- all releases --',
     PIs: [],
+    MilestonesByOID: {},
     
     integrationHeaders : {
         name : "TSDependencyStatusReport"
@@ -95,7 +96,6 @@ Ext.define("TSDependencyStatusReport", {
                 Ext.Array.each(features, function(feature) {
                     var release = feature.get('Release');
                     if ( !Ext.isEmpty(release) ) {
-                        console.log(release);
                         timebox_oids_by_name[release.Name] = release.ObjectID;
                     }
                 });
@@ -184,8 +184,17 @@ Ext.define("TSDependencyStatusReport", {
             success: function(results) {
                 if ( this.base_features.length === 0 ) { return; }
                                 
-                this.rows = this._makeRowsFromHash(this.baseFeaturesByOID);
-                this._makeGrid(this.rows);
+                var rows = this._makeRowsFromHash(this.baseFeaturesByOID);
+                this._addMilestoneInformationToRows(rows).then({
+                    scope: this,
+                    success: function(results) {
+                        this.rows = results;
+                        this._makeGrid(this.rows);
+                    },
+                    failure: function(msg) {
+                        Ext.Msg.alert('Problem getting milestone data', msg);
+                    }
+                });
             },
             failure: function(msg) {
                 Ext.Msg.alert('Problem Fetching Data', msg);
@@ -244,7 +253,8 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones']
+                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+                'TargetDate']
         }
         
         this._loadWsapiRecords(config).then({
@@ -330,7 +340,7 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release']
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release']
         };
         
         this._loadWsapiRecords(config).then({
@@ -366,7 +376,7 @@ Ext.define("TSDependencyStatusReport", {
         feature.getCollection('Predecessors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
             filters: Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'}),
             callback: function(records, operation, success) {
@@ -476,6 +486,51 @@ Ext.define("TSDependencyStatusReport", {
         return rows;
     },
     
+    _addMilestoneInformationToRows: function(rows) {
+        var deferred = Ext.create('Deft.Deferred'),
+            me = this;
+        var milestone_oids = Ext.Array.unique(
+            Ext.Array.flatten(
+                Ext.Array.map(rows, function(row){
+                    if ( row.Milestones.Count === 0 ) {
+                        return -1;
+                    }
+                    return Ext.Array.map(row.Milestones._tagsNameArray, function(tag){
+                        return me._getOidFromRef(tag._ref);
+                    });
+                })
+            )
+        );
+        
+        var config = {
+            model:'Milestone',
+            filters: Rally.data.wsapi.Filter.or(
+                Ext.Array.map(milestone_oids, function(oid){
+                    return { property:'ObjectID',value:oid };
+                })
+            ),
+            limit: Infinity,
+            fetch: ['TargetDate','Name','ObjectID']
+        };
+        
+        this._loadWsapiRecords(config).then({
+            scope: this,
+            success: function(results) {
+                me.MilestonesByOID = {};
+                Ext.Array.each(results, function(result){
+                    me.MilestonesByOID[result.get('ObjectID')] = result;
+                });
+                
+                deferred.resolve(rows);
+            },
+            failure: function(msg) {
+                deferred.reject(msg);
+            }
+        });
+        
+        return deferred.promise;
+    },
+    
     _makeGrid: function(rows) {
         var me = this,
             container = this.down('#display_box');
@@ -495,7 +550,8 @@ Ext.define("TSDependencyStatusReport", {
     },
     
     _getColumns: function() {
-        var columns = [];
+        var columns = [],
+            me = this;
 
         columns.push({
             dataIndex:'_theme_fid',
@@ -583,19 +639,44 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         
-        columns.push({dataIndex:'PlannedStartDate',text: 'Planned Start Date'});
-        columns.push({dataIndex:'PlannedEndDate',text: 'Planned End Date'});
-        columns.push({dataIndex:'Milestones',text: 'Milestones', renderer: function(value,meta,record){
-            console.log('--',value);
-            if ( Ext.isEmpty(value) || value.Count === 0 ) {
-                return "";
+        columns.push({
+            dataIndex:'PlannedStartDate',
+            text: 'Planned Start Date',
+            renderer: function(value,meta,record) {
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.Date.format(value, 'd-M-Y T');
             }
-            
-            
-            return Ext.Array.map(value._tagsNameArray, function(ms){
-                return ms.Name;
-            }).join(', ');
-        }});
+        });
+        columns.push({
+            dataIndex:'PlannedEndDate',
+            text: 'Planned End Date',
+            renderer: function(value,meta,record) {
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.Date.format(value, 'd-M-Y T');
+            }
+        });
+        columns.push({
+            dataIndex:'Milestones',
+            text: 'Milestones', 
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) || value.Count === 0 ) {
+                    return "";
+                }
+                
+                return Ext.Array.map(value._tagsNameArray, function(ms){
+                    var oid = me._getOidFromRef(ms._ref);
+                    var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
+                    
+                    if ( !Ext.isEmpty(d) ) {
+                        d = Ext.Date.format(d, 'd-M-Y T');
+                    }
+                    return Ext.String.format("{0} - {1}",
+                        ms.Name,
+                        d
+                    );
+                }).join(', ');
+            }
+        });
 
         return columns;
     },
@@ -716,6 +797,10 @@ Ext.define("TSDependencyStatusReport", {
         return typeof(this.getAppId()) == 'undefined';
     },
     
+    _getOidFromRef: function(ref) {
+        var ref_array = ref.replace(/\.js$/,'').split(/\//);
+        return ref_array[ref_array.length-1];
+    },
     
     getSettingsFields: function() {
         return [{
@@ -723,7 +808,6 @@ Ext.define("TSDependencyStatusReport", {
             xtype: 'rallyfieldcombobox',
             model: 'PortfolioItem',
             _isNotHidden: function(field) {
-                //console.log(field);
                 if ( field.hidden ) { return false; }
                 var defn = field.attributeDefinition;
                 if ( Ext.isEmpty(defn) ) { return false; }
