@@ -423,66 +423,52 @@ Ext.define("TSDependencyStatusReport", {
         Ext.Object.each(base_features_by_oid, function(oid,feature){
             var initiative_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
             var theme = null;
-            var theme_fid = null;
-            var theme_name = null;
+
             if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-                theme_fid = me.parentsByOID[initiative_oid].Parent.FormattedID;
-                theme_name = me.parentsByOID[initiative_oid].Parent.Name;
                 theme = me.parentsByOID[initiative_oid].Parent;
             }
-            var row = Ext.Object.merge({
-                _level: 0,
-                _theme: theme,
-                _theme_fid: theme_fid,
-                _theme_name: theme_name,
-                _initiative_fid: feature.get('Parent') && feature.get('Parent').FormattedID,
-                _initiative_name: feature.get('Parent') && feature.get('Parent').Name,
-                _initiative: feature.get('Parent')
-            }, feature.getData());
+            var row = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                    _Level: 0,
+                    Theme: theme,
+                    Initiative: feature.get('Parent'),
+                    Feature: feature
+                }, feature.getData() )
+            );
             
             rows.push(row);
             
             Ext.Array.each(feature.get('_predecessors'), function(dependency){
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
+                
                 theme = null;
-                theme_fid = null;
-                theme_name = null;
+
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-                    theme_fid = me.parentsByOID[initiative_oid].Parent.FormattedID;
-                    theme_name = me.parentsByOID[initiative_oid].Parent.Name;
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
-                
-                rows.push(Ext.Object.merge({
-                    _level: 1,
-                    _theme: theme,
-                    _theme_fid: theme_fid,
-                    _theme_name: theme_name,
-                    _initiative_fid: dependency.get('Parent') && dependency.get('Parent').FormattedID,
-                    _initiative_name: dependency.get('Parent') && dependency.get('Parent').Name,
-                    _initiative: feature.get('Parent')
-                }, dependency.getData()));
+//                
+                rows.push(Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                        _Level: 1,
+                        Theme: theme,
+                        Initiative: feature.get('Parent'),
+                        Feature: feature
+                    }, dependency.getData() )
+                ));
             });
-            
+////            
             Ext.Array.each(feature.get('_successors'), function(dependency){
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 theme = null;
-                theme_fid = null;
-                theme_name = null;
+
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-                    theme_fid = me.parentsByOID[initiative_oid].Parent.FormattedID;
-                    theme_name = me.parentsByOID[initiative_oid].Parent.Name;
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
-                rows.push(Ext.Object.merge({
-                    _level: 1,
-                    _theme: theme,
-                    _theme_fid: theme_fid,
-                    _theme_name: theme_name,
-                    _initiative_fid: dependency.get('Parent') && dependency.get('Parent').FormattedID,
-                    _initiative_name: dependency.get('Parent') && dependency.get('Parent').Name,
-                    _initiative: feature.get('Parent')
-                }, dependency.getData()));
+                rows.push(Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                        _Level: 1,
+                        Theme: theme,
+                        Initiative: feature.get('Parent'),
+                        Feature: feature
+                    }, dependency.getData())
+                ));
             });
         });
         return rows;
@@ -500,12 +486,13 @@ Ext.define("TSDependencyStatusReport", {
             milestone_oids = Ext.Array.unique(
                 Ext.Array.flatten(
                     Ext.Array.map(rows, function(row){
-                        me.logger.log('--', row, row.Milestones);
+                        var row_ms = row.get('Milestones');
+                        me.logger.log('--', row, row_ms );
                     
-                        if ( Ext.isEmpty(row.Milestones) || row.Milestones.Count === 0 || row.Milestones._tagsNameArray.length === 0 ) {
+                        if ( Ext.isEmpty(row_ms) || row_ms.Count === 0 || row_ms._tagsNameArray.length === 0 ) {
                             return -1;
                         }
-                        return Ext.Array.map(row.Milestones._tagsNameArray, function(tag){
+                        return Ext.Array.map(row_ms._tagsNameArray, function(tag){
                             return me._getOidFromRef(tag._ref);
                         });
                     })
@@ -570,7 +557,7 @@ Ext.define("TSDependencyStatusReport", {
                             
                             // get color from record data
                             var color = '#fff';
-                            if ( record.get(me.type_field) == "Business" ) {
+                            if ( record.get("__Type") === "Business" ) {
                                 color = "#e7f5fe";
                             }
                             
@@ -595,7 +582,7 @@ Ext.define("TSDependencyStatusReport", {
             me = this;
 
         columns.push({
-            dataIndex:'_theme_fid',
+            dataIndex:'__ThemeFID',
             text:'Theme ID',
             exportRenderer: function(value,meta,record) {
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -606,13 +593,13 @@ Ext.define("TSDependencyStatusReport", {
                     return "";
                 }
                 return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
-                    Rally.nav.Manager.getDetailUrl(record.get('_theme')),
+                    Rally.nav.Manager.getDetailUrl(record.get('Theme')),
                     value
                 );
             }
         });
         columns.push({
-            dataIndex:'_theme_name',
+            dataIndex:'__ThemeName',
             text:'Theme Name',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -621,7 +608,7 @@ Ext.define("TSDependencyStatusReport", {
         });
 
         columns.push({
-            dataIndex:'_initiative_fid',
+            dataIndex:'__InitiativeFID',
             text:'Initiative ID',
             _csvIgnoreRender: true,
             renderer: function(value,meta,record){
@@ -629,14 +616,14 @@ Ext.define("TSDependencyStatusReport", {
                     return "";
                 }
                 return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
-                    Rally.nav.Manager.getDetailUrl(record.get('_initiative')),
+                    Rally.nav.Manager.getDetailUrl(record.get('Initiative')),
                     value
                 );
             }
         });
         
         columns.push({
-            dataIndex:'_initiative_name',
+            dataIndex:'__InitiativeName',
             text:'Initiative Name',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -649,6 +636,8 @@ Ext.define("TSDependencyStatusReport", {
             text:'Feature ID',
             _csvIgnoreRender: true,
             renderer: function(value,meta,record){
+                console.log('++', record);
+                
                 if ( Ext.isEmpty(value) ) {
                     return "";
                 }
@@ -660,7 +649,7 @@ Ext.define("TSDependencyStatusReport", {
         });
         columns.push({dataIndex:'Name',text:'Feature Name'});
         columns.push({
-            dataIndex:me.type_field, 
+            dataIndex:'__Type', 
             text: 'Type',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
@@ -755,12 +744,14 @@ Ext.define("TSDependencyStatusReport", {
                     var oid = me._getOidFromRef(ms._ref);
                     var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
                     
+                    console.log(oid, d, me.MilestonesByOID);
+                    
                     if ( !Ext.isEmpty(d) ) {
-                        d = Ext.Date.format(d, 'd-M-Y T');
+                        d = '- ' + Ext.Date.format(d, 'd-M-Y T');
                     }
-                    return Ext.String.format("{0} - {1}",
+                    return Ext.String.format("{0} {1}",
                         ms.Name,
-                        d
+                        d || ''
                     );
                 }).join(', ');
             }
