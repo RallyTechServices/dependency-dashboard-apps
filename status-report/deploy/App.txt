@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 14 2016 13:56:15 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 14 2016 16:37:21 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 14 2016 13:56:15 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 14 2016 16:37:21 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 74790347547;
+        var CHECKSUM = 74783126821;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1591,7 +1591,7 @@ Ext.define("TSDependencyStatusReport", {
                 if ( Ext.isEmpty(value) ) {
                     return "";
                 }
-                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                return Ext.String.format("<a href='{0}' target='_top'>{1}</a>",
                     Rally.nav.Manager.getDetailUrl(record.get('Theme')),
                     value
                 );

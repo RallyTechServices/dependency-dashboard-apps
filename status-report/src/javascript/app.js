@@ -592,7 +592,7 @@ Ext.define("TSDependencyStatusReport", {
                 if ( Ext.isEmpty(value) ) {
                     return "";
                 }
-                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                return Ext.String.format("<a href='{0}' target='_top'>{1}</a>",
                     Rally.nav.Manager.getDetailUrl(record.get('Theme')),
                     value
                 );
