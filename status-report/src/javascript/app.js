@@ -706,7 +706,7 @@ Ext.define("TSDependencyStatusReport", {
             text: '% Complete by Story Count',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
-                return Ext.String.format('{0}%', 100 * value);
+                return Ext.String.format('{0}%',Math.round(100 * value));
             }
         });
         columns.push({
@@ -714,7 +714,7 @@ Ext.define("TSDependencyStatusReport", {
             text: '% Complete by Story Points',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
-                return Ext.String.format('{0}%', 100 * value);
+                return Ext.String.format('{0}%', Math.round(100 * value));
             }
         });
         columns.push({dataIndex:'__LeafStoryCount',text:'Leaf Story Count'});

@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 14 2016 17:25:50 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 14 2016 17:27:19 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 14 2016 17:25:50 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 14 2016 17:27:19 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 89054095991;
+        var CHECKSUM = 89147455911;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1801,7 +1801,7 @@ Ext.define("TSDependencyStatusReport", {
             text: '% Complete by Story Count',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
-                return Ext.String.format('{0}%', 100 * value);
+                return Ext.String.format('{0}%',Math.round(100 * value));
             }
         });
         columns.push({
@@ -1809,7 +1809,7 @@ Ext.define("TSDependencyStatusReport", {
             text: '% Complete by Story Points',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
-                return Ext.String.format('{0}%', 100 * value);
+                return Ext.String.format('{0}%', Math.round(100 * value));
             }
         });
         columns.push({dataIndex:'__LeafStoryCount',text:'Leaf Story Count'});
