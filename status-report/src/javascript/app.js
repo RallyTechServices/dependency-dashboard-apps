@@ -642,9 +642,7 @@ Ext.define("TSDependencyStatusReport", {
             dataIndex:'FormattedID',
             text:'Feature ID',
             _csvIgnoreRender: true,
-            renderer: function(value,meta,record){
-                console.log('++', record);
-                
+            renderer: function(value,meta,record){                
                 if ( Ext.isEmpty(value) ) {
                     return "";
                 }
@@ -750,9 +748,7 @@ Ext.define("TSDependencyStatusReport", {
                 return Ext.Array.map(value._tagsNameArray, function(ms){
                     var oid = me._getOidFromRef(ms._ref);
                     var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
-                    
-                    console.log(oid, d, me.MilestonesByOID);
-                    
+                                        
                     if ( !Ext.isEmpty(d) ) {
                         d = '- ' + Ext.Date.format(d, 'd-M-Y T');
                     }
@@ -804,7 +800,7 @@ Ext.define("TSDependencyStatusReport", {
         var grid = this.down('rallygrid');
         var rows = this.rows;
                 
-        this.logger.log('number of rows:', rows.length);
+        this.logger.log('number of rows:', rows.length, rows);
         
         if (!rows ) { return; }
         
@@ -843,7 +839,7 @@ Ext.define("TSDependencyStatusReport", {
             });
         }
         
-        var filename = 'timesheet-report.csv';
+        var filename = 'E2E Value Stream/MVP Status.csv';
 
         this.logger.log('saving file:', filename);
         

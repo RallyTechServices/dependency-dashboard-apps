@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 14 2016 17:05:29 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 14 2016 17:15:55 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 14 2016 17:05:29 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 14 2016 17:15:55 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 84308922660;
+        var CHECKSUM = 84464045386;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -880,7 +880,10 @@ Ext.define('Rally.technicalservices.FileUtilities', {
         csv.push('"' + this._getHeadersFromGrid(grid).join('","') + '"');
         
         Ext.Array.each(rows,function(row){
-            
+            if ( Ext.isFunction(row.getData) ) {
+                csv.push( me._getCSVFromRecord(row, grid, store) );
+                return;
+            }
             csv.push( me._getCSVFromRecord(Ext.create('recordHolder', { data:row}), grid, store) );
         });
         
@@ -1704,9 +1707,7 @@ Ext.define("TSDependencyStatusReport", {
             dataIndex:'FormattedID',
             text:'Feature ID',
             _csvIgnoreRender: true,
-            renderer: function(value,meta,record){
-                console.log('++', record);
-                
+            renderer: function(value,meta,record){                
                 if ( Ext.isEmpty(value) ) {
                     return "";
                 }
@@ -1812,9 +1813,7 @@ Ext.define("TSDependencyStatusReport", {
                 return Ext.Array.map(value._tagsNameArray, function(ms){
                     var oid = me._getOidFromRef(ms._ref);
                     var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
-                    
-                    console.log(oid, d, me.MilestonesByOID);
-                    
+                                        
                     if ( !Ext.isEmpty(d) ) {
                         d = '- ' + Ext.Date.format(d, 'd-M-Y T');
                     }
@@ -1866,7 +1865,7 @@ Ext.define("TSDependencyStatusReport", {
         var grid = this.down('rallygrid');
         var rows = this.rows;
                 
-        this.logger.log('number of rows:', rows.length);
+        this.logger.log('number of rows:', rows.length, rows);
         
         if (!rows ) { return; }
         
@@ -1905,7 +1904,7 @@ Ext.define("TSDependencyStatusReport", {
             });
         }
         
-        var filename = 'timesheet-report.csv';
+        var filename = 'E2E Value Stream/MVP Status.csv';
 
         this.logger.log('saving file:', filename);
         

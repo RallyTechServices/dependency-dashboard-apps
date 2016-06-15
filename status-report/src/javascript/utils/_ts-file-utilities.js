@@ -207,7 +207,10 @@ Ext.define('Rally.technicalservices.FileUtilities', {
         csv.push('"' + this._getHeadersFromGrid(grid).join('","') + '"');
         
         Ext.Array.each(rows,function(row){
-            
+            if ( Ext.isFunction(row.getData) ) {
+                csv.push( me._getCSVFromRecord(row, grid, store) );
+                return;
+            }
             csv.push( me._getCSVFromRecord(Ext.create('recordHolder', { data:row}), grid, store) );
         });
         
