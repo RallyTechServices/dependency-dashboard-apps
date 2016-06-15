@@ -431,7 +431,7 @@ Ext.define("TSDependencyStatusReport", {
                     _Level: 0,
                     Theme: theme,
                     Initiative: feature.get('Parent'),
-                    Feature: feature
+                    BusinessFeature: feature.getData()
                 }, feature.getData() )
             );
             
@@ -450,7 +450,7 @@ Ext.define("TSDependencyStatusReport", {
                         _Level: 1,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
-                        Feature: feature
+                        BusinessFeature: feature.getData()
                     }, dependency.getData() )
                 );
                 
@@ -470,7 +470,7 @@ Ext.define("TSDependencyStatusReport", {
                         _Level: 1,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
-                        Feature: feature
+                        BusinessFeature: feature.getData()
                     }, dependency.getData() )
                 );
                 
@@ -632,6 +632,30 @@ Ext.define("TSDependencyStatusReport", {
         columns.push({
             dataIndex:'__InitiativeName',
             text:'Initiative Name',
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return value;
+            }
+        });
+        
+        columns.push({
+            dataIndex:'__BusinessFeatureFID',
+            text:'Business Feature ID',
+            _csvIgnoreRender: true,
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) {
+                    return "";
+                }
+                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                    Rally.nav.Manager.getDetailUrl(record.get('BusinessFeature')),
+                    value
+                );
+            }
+        });
+        
+        columns.push({
+            dataIndex:'__BusinessFeatureName',
+            text:'Business Feature Name',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return value;

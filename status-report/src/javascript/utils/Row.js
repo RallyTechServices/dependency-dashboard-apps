@@ -11,7 +11,6 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'ObjectID', type:'integer' },
         { name: 'Theme', type:'object' },
         { name: 'Initiative', type: 'object' },
-        { name: 'Feature', type: 'object' },
         { name: 'FormattedID', type: 'string' },
         { name: 'Name', type:'string' },
         { name: 'State', type:'object' },
@@ -26,6 +25,13 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'PercentDoneByStoryPlanEstimate', type: 'float' },
         { name: 'RelatedRecords', type:'object', defaultValue: [] },
         { name: 'Release', type:'object' },
+        { name: 'BusinessFeature', type: 'object', convert: 
+            function(value,record) {
+                console.log('value', value);
+                if ( !Ext.isEmpty(value) ) { return value; }
+                return record.get('Feature');
+            }
+        },
         
         { name: '_type', type: 'string' },
         { name: '_ref', type: 'string' },
@@ -108,6 +114,30 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
                 return item.Name || null;
             }
         },
+        
+        { name: '__BusinessFeatureFID', type: 'string', defaultValue: null, convert: 
+            function(value,record) {
+                console.log('++', record);
+                if ( !Ext.isEmpty(value) ) { return value; }
+                
+                var item = record.get('BusinessFeature');
+                
+                if ( Ext.isEmpty(item) ) { return null; }
+                return item.FormattedID || null;
+            }
+        },
+        
+        { name: '__BusinessFeatureName', type: 'string', defaultValue: null, convert: 
+            function(value,record) {
+                if ( !Ext.isEmpty(value) ) { return value; }
+                
+                var item = record.get('BusinessFeature');
+                
+                if ( Ext.isEmpty(item) ) { return null; }
+                return item.Name || null;
+            }
+        },
+        
         { name: '__LeafStoryCount', type:'integer', convert: function(value,record) {
             if ( !Ext.isEmpty(value) ) { return value; }
             return record.get('LeafStoryCount') || 0;
