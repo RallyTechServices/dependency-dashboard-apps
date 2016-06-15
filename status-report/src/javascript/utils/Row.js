@@ -1,11 +1,6 @@
-Ext.define('CA.techservices.timesheet.RowUtils',{
-    singleton: true
-});
 
 Ext.define('CA.techservices.timesheet.TimeRow',{
     extend: 'Ext.data.Model',
-
-    createTEVProcess: {},
     
     fields: [
         { name: 'ObjectID', type:'integer' },
@@ -23,11 +18,10 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
         { name: 'PercentDoneByStoryCount', type: 'float' },
         { name: 'PercentDoneByStoryPlanEstimate', type: 'float' },
-        { name: 'RelatedRecords', type:'object', defaultValue: [] },
+        { name: '__RelatedRecords', type:'auto'},
         { name: 'Release', type:'object' },
         { name: 'BusinessFeature', type: 'object', convert: 
             function(value,record) {
-                console.log('value', value);
                 if ( !Ext.isEmpty(value) ) { return value; }
                 return record.get('Feature');
             }
@@ -117,7 +111,6 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         
         { name: '__BusinessFeatureFID', type: 'string', defaultValue: null, convert: 
             function(value,record) {
-                console.log('++', record);
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
                 var item = record.get('BusinessFeature');
@@ -157,9 +150,24 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
     ],
     
     addRelatedRecord: function( record ) {
-        var records = this.get('RelatedRecords') || [];
-        records.push(record);
-        this.set('RelatedRecords', records);
+        var records = this.get('__RelatedRecords') || [];
+        var new_record_oid = record.get('ObjectID');
+        var ok_to_add = true;
+        Ext.Array.each(records, function(record){
+            if ( record.get('ObjectID') == new_record_oid ) {
+                ok_to_add = false;
+            }
+        });
+        
+        if ( ok_to_add ) {
+            records.push(record);
+        }
+//        
+//        console.log(this.get('FormattedID'), record.get('FormattedID'), 'related records: ', records, this.get('__RelatedRecords'));
+//        
+          this.set('__RelatedRecords', records);
+//        
+        this.set('__LeafStoryCount',0);
         
         var my_count = this.get('LeafStoryCount');
         var my_count_ratio = this.get('PercentDoneByStoryCount');

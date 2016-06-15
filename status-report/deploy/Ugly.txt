@@ -3,10 +3,10 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue May 24 2016 18:14:26 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Jun 15 2016 10:18:02 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue May 24 2016 18:14:26 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Wed Jun 15 2016 10:18:02 GMT-0700 (PDT)";
         var CHECKSUM = [%= checksum %];
     </script>
     
@@ -41,6 +41,46 @@
     margin-right: 5px;
     cursor: pointer;
 }
+
+.x-border-layout-ct {
+    background-color: #ffffff;
+}
+.pi-box {
+    font: 9px arial, sans-serif !important;
+    background-color: #D3D3D3;
+    color: black;
+    border: 1px solid black;
+    padding: 3px;
+    margin: 3px;
+}
+
+.pi-button {
+    font: 16px arial, sans-serif !important;
+    background-color: #fff;
+    color: black !important;
+    border: none;
+    margin: 3px;
+}
+
+
+.pi-button.x-btn-default-small .x-btn-inner {
+    font: 16px arial, sans-serif !important;
+    color: black !important;
+}
+
+.pi-delete-button {
+    font: 9px arial, sans-serif !important;
+    background-color: #fff;
+    color: black;
+    border: none;
+    padding: 3px;
+}
+
+.pi-delete-button.x-btn-default-small .x-btn-inner {
+    font: 9px arial, sans-serif !important;
+    color: black;
+}
+
     </style>
 
 </head>

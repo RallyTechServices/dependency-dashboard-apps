@@ -3,14 +3,14 @@
 <head>
     <title>TS Status Report</title>
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue May 24 2016 18:14:26 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Wed Jun 15 2016 10:18:02 GMT-0700 (PDT)";
     </script>
     
     <script type="text/javascript" src="https://rally1.rallydev.com/apps/2.1/sdk-debug.js?apiKey=_PUT_APIKEY_HERE_"></script>
 
     <script type="text/javascript">
         Rally.onReady(function() {
-            Rally.loadScripts(["src/javascript/utils/__ts-info-link.js","src/javascript/utils/__ts-logger.js","src/javascript/app.js"],
+            Rally.loadScripts(["src/javascript/utils/PortfolioItemPicker.js","src/javascript/utils/Row.js","src/javascript/utils/__ts-info-link.js","src/javascript/utils/__ts-logger.js","src/javascript/utils/_ts-file-utilities.js","src/javascript/app.js"],
 	            function() {
 	                Rally.launchApp('TSDependencyStatusReport', {
 	                    name: 'TS Status Report'
@@ -18,7 +18,7 @@
 	            }, true);
         });
     </script>
-<link rel="stylesheet" type="text/css" href="src/style/app.css">
+<link rel="stylesheet" type="text/css" href="src/style/app.css"><link rel="stylesheet" type="text/css" href="src/style/pi-picker.css">
 
 </head>
 <body></body>
