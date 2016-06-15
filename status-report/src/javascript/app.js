@@ -427,7 +427,7 @@ Ext.define("TSDependencyStatusReport", {
             if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                 theme = me.parentsByOID[initiative_oid].Parent;
             }
-            var row = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+            var business_feature = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
                     _Level: 0,
                     Theme: theme,
                     Initiative: feature.get('Parent'),
@@ -435,7 +435,7 @@ Ext.define("TSDependencyStatusReport", {
                 }, feature.getData() )
             );
             
-            rows.push(row);
+            rows.push(business_feature);
             
             Ext.Array.each(feature.get('_predecessors'), function(dependency){
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
@@ -445,14 +445,17 @@ Ext.define("TSDependencyStatusReport", {
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
-//                
-                rows.push(Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+//              
+                var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
                         _Level: 1,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         Feature: feature
                     }, dependency.getData() )
-                ));
+                );
+                
+                business_feature.addRelatedRecord(related_record);
+                rows.push(related_record);
             });
 ////            
             Ext.Array.each(feature.get('_successors'), function(dependency){
@@ -462,13 +465,17 @@ Ext.define("TSDependencyStatusReport", {
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
-                rows.push(Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                
+                var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
                         _Level: 1,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         Feature: feature
-                    }, dependency.getData())
-                ));
+                    }, dependency.getData() )
+                );
+                
+                business_feature.addRelatedRecord(related_record);
+                rows.push(related_record);
             });
         });
         return rows;
@@ -673,7 +680,7 @@ Ext.define("TSDependencyStatusReport", {
             
         });
         columns.push({
-            dataIndex:'PercentDoneByStoryCount',
+            dataIndex:'__PercentDoneByStoryCount',
             text: '% Complete by Story Count',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -681,15 +688,15 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         columns.push({
-            dataIndex:'PercentDoneByStoryPlanEstimate',
+            dataIndex:'__PercentDoneByStoryPlanEstimate',
             text: '% Complete by Story Points',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return Ext.String.format('{0}%', 100 * value);
             }
         });
-        columns.push({dataIndex:'LeafStoryCount',text:'Leaf Story Count'});
-        columns.push({dataIndex:'LeafStoryPlanEstimateTotal',text:'Leaf Story Plan Estimate Total'});
+        columns.push({dataIndex:'__LeafStoryCount',text:'Leaf Story Count'});
+        columns.push({dataIndex:'__LeafStoryPlanEstimateTotal',text:'Leaf Story Plan Estimate Total'});
         
         columns.push({
             dataIndex:'Project',

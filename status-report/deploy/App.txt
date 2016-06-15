@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 14 2016 16:37:21 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 14 2016 17:05:29 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 14 2016 16:37:21 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 14 2016 17:05:29 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 74783126821;
+        var CHECKSUM = 84308922660;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -334,7 +334,7 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
         { name: 'PercentDoneByStoryCount', type: 'float' },
         { name: 'PercentDoneByStoryPlanEstimate', type: 'float' },
-        
+        { name: 'RelatedRecords', type:'object', defaultValue: [] },
         { name: 'Release', type:'object' },
         
         { name: '_type', type: 'string' },
@@ -417,8 +417,71 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.Name || null;
             }
+        },
+        { name: '__LeafStoryCount', type:'integer', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('LeafStoryCount') || 0;
+        }},
+        { name: '__LeafStoryPlanEstimateTotal', type: 'float', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('LeafStoryPlanEstimateTotal') || 0;
+        } },
+        { name: '__PercentDoneByStoryCount', type: 'float', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('PercentDoneByStoryCount') || 0;
+        } },
+        { name: '__PercentDoneByStoryPlanEstimate', type: 'float', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('PercentDoneByStoryPlanEstimate') || 0;
+        } }
+    ],
+    
+    addRelatedRecord: function( record ) {
+        var records = this.get('RelatedRecords') || [];
+        records.push(record);
+        this.set('RelatedRecords', records);
+        
+        var my_count = this.get('LeafStoryCount');
+        var my_count_ratio = this.get('PercentDoneByStoryCount');
+        var my_size = this.get('LeafStoryPlanEstimateTotal');
+        var my_size_ratio = this.get('PercentDoneByStoryPlanEstimate');
+        
+        var counts = Ext.Array.map(records, function(record){ return record.get('LeafStoryCount') || 0 });
+        this.set('__LeafStoryCount', Ext.Array.sum(counts) + my_count);
+        
+        var sizes = Ext.Array.map(records, function(record){ return record.get('LeafStoryPlanEstimateTotal') || 0 });
+        this.set('__LeafStoryPlanEstimateTotal', Ext.Array.sum(sizes) + my_size );
+        
+        var accepted_counts = Ext.Array.map(records, function(record){
+            var count = record.get('LeafStoryCount') || 0;
+            var ratio = record.get('PercentDoneByStoryCount') || 0;
+            
+            return count * ratio;
+        });
+        var my_accepted_count = my_count * my_count_ratio;
+        
+        var count_ratio = 0;
+        if ( this.get('__LeafStoryCount') > 0 ) {
+            count_ratio = ( Ext.Array.sum(accepted_counts) + my_accepted_count ) / this.get('__LeafStoryCount');
         }
-    ]
+        
+        this.set('__PercentDoneByStoryCount', count_ratio);
+        
+        var accepted_sizes = Ext.Array.map(records, function(record){
+            var count = record.get('LeafStoryPlanEstimateTotal') || 0;
+            var ratio = record.get('PercentDoneByStoryPlanEstimate') || 0;
+            
+            return count * ratio;
+        });
+        var my_accepted_size = my_size * my_size_ratio;
+        
+        var size_ratio = 0;
+        if ( this.get('__LeafStoryPlanEstimateTotal') > 0 ) {
+            size_ratio = ( Ext.Array.sum(accepted_sizes) + my_accepted_size ) / this.get('__LeafStoryPlanEstimateTotal');
+        }
+        
+        this.set('__PercentDoneByStoryPlanEstimate', size_ratio);
+    }
 });
 
 /**
@@ -1426,7 +1489,7 @@ Ext.define("TSDependencyStatusReport", {
             if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                 theme = me.parentsByOID[initiative_oid].Parent;
             }
-            var row = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+            var business_feature = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
                     _Level: 0,
                     Theme: theme,
                     Initiative: feature.get('Parent'),
@@ -1434,7 +1497,7 @@ Ext.define("TSDependencyStatusReport", {
                 }, feature.getData() )
             );
             
-            rows.push(row);
+            rows.push(business_feature);
             
             Ext.Array.each(feature.get('_predecessors'), function(dependency){
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
@@ -1444,14 +1507,17 @@ Ext.define("TSDependencyStatusReport", {
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
-//                
-                rows.push(Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+//              
+                var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
                         _Level: 1,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         Feature: feature
                     }, dependency.getData() )
-                ));
+                );
+                
+                business_feature.addRelatedRecord(related_record);
+                rows.push(related_record);
             });
 ////            
             Ext.Array.each(feature.get('_successors'), function(dependency){
@@ -1461,13 +1527,17 @@ Ext.define("TSDependencyStatusReport", {
                 if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
-                rows.push(Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                
+                var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
                         _Level: 1,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         Feature: feature
-                    }, dependency.getData())
-                ));
+                    }, dependency.getData() )
+                );
+                
+                business_feature.addRelatedRecord(related_record);
+                rows.push(related_record);
             });
         });
         return rows;
@@ -1672,7 +1742,7 @@ Ext.define("TSDependencyStatusReport", {
             
         });
         columns.push({
-            dataIndex:'PercentDoneByStoryCount',
+            dataIndex:'__PercentDoneByStoryCount',
             text: '% Complete by Story Count',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -1680,15 +1750,15 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         columns.push({
-            dataIndex:'PercentDoneByStoryPlanEstimate',
+            dataIndex:'__PercentDoneByStoryPlanEstimate',
             text: '% Complete by Story Points',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return Ext.String.format('{0}%', 100 * value);
             }
         });
-        columns.push({dataIndex:'LeafStoryCount',text:'Leaf Story Count'});
-        columns.push({dataIndex:'LeafStoryPlanEstimateTotal',text:'Leaf Story Plan Estimate Total'});
+        columns.push({dataIndex:'__LeafStoryCount',text:'Leaf Story Count'});
+        columns.push({dataIndex:'__LeafStoryPlanEstimateTotal',text:'Leaf Story Plan Estimate Total'});
         
         columns.push({
             dataIndex:'Project',
