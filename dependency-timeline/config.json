@@ -1,0 +1,5 @@
+{
+    "name": "Dependency Timeline",
+    "sdk": "2.1",
+    "className": "TSDependencyTimeline"
+}
