@@ -5,7 +5,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     layout: 'border', 
     
     items: [
-        {xtype:'container', itemId:'selector_box', region: 'west', layout: 'vbox' },
+        {xtype:'container', itemId:'vertical_scroll_box', region: 'west', layout: 'vbox' },
         {xtype:'container', itemId:'display_box',  region:'center'}
     ],
     
@@ -20,7 +20,9 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         plannedEndField  : 'PlannedEndDate',
         
         actualStartField : 'ActualStartDate',
-        actualEndField   : 'ActualEndDate'
+        actualEndField   : 'ActualEndDate',
+        
+        allowHorizontalScroll : false // not yet implemented
     },
 
     initComponent: function() {
@@ -44,14 +46,28 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             this.pageSize = this.records.length - 1;
         }
         
-        var selector_box = this.down('#selector_box');
+        var vertical_scroll_box = this.down('#vertical_scroll_box');
         
         var display_box  = this.down('#display_box');
         
-        selector_box.add(this._getUpButtonConfig());
-        selector_box.add({ xtype:'container', flex: 1 });
-        selector_box.add(this._getDownButtonConfig());
+        vertical_scroll_box.add(this._getUpButtonConfig());
+        vertical_scroll_box.add({ xtype:'container', flex: 1 });
+        vertical_scroll_box.add(this._getDownButtonConfig());
                 
+        
+        if ( this.allowHorizontalScroll ) {
+            var horizontal_scroll_box = this.add({
+                xtype:'container', 
+                itemId:'horizontal_scroll_box', 
+                region: 'south', 
+                layout: 'hbox'
+            });
+            
+            horizontal_scroll_box.add(this._getLeftButtonConfig());
+            horizontal_scroll_box.add({ xtype:'container', flex: 1 });
+            horizontal_scroll_box.add(this._getRightButtonConfig());
+        }
+        
         this.highchart = display_box.add(this._getTimelineConfig());
     },
     
@@ -66,7 +82,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             chartConfig: this._getChartConfig()
         };
         
-        if ( this.height ) { config.height = this.height; }
+        if ( this.height ) { config.height = this.height - 10; }
         
         return config;
     },
@@ -157,7 +173,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     
     /**
      * Generate x axis categories and y axis series data for the chart
-     * (This chart is sideway, so categories represent the vertical axis)
+     * (This chart is sideways, so categories represent the vertical axis)
      */
     _getChartData: function() {
         
@@ -317,17 +333,60 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         up_button.setDisabled(true);
         down_button.setDisabled(true);
         
-        if ( this.highchart ) {
-            var extremes = this._getExtremes(this.highchart,'xAxis');
+        if ( this.allowHorizontalScroll ) {
             
-            if ( extremes.min > 0 ) {
+        }
+        
+        if ( this.highchart ) {
+            var vertical_extremes = this._getExtremes(this.highchart,'xAxis');
+            
+            if ( vertical_extremes.min > 0 ) {
                 up_button.setDisabled(false);
             }
             
-            if ( extremes.max < extremes.dataMax ) {
+            if ( vertical_extremes.max < vertical_extremes.dataMax ) {
                 down_button.setDisabled(false);
             }
+            
         }
+    },
+    
+    _getLeftButtonConfig: function() {
+        return { 
+            xtype:'rallybutton', 
+            itemId: 'left_button', 
+            text: '<span class="icon-left"> </span>', 
+            disabled: false, 
+            cls: 'secondary small',
+            margin: '5 0 3 200',
+            listeners: {
+                scope: this,
+                click: function() {
+                    if ( this.highchart ) {
+                        this._scrollUp(this.highchart);
+                    }
+                }
+            }
+        };
+    },
+    
+    _getRightButtonConfig: function() {
+        return { 
+            xtype:'rallybutton', 
+            itemId: 'right_button', 
+            text: '<span class="icon-right"> </span>', 
+            disabled: false, 
+            cls: 'secondary small',
+            margin: '5 10 3 0',
+            listeners: {
+                scope: this,
+                click: function() {
+                    if ( this.highchart ) {
+                        this._scrollRight(this.highchart);
+                    }
+                }
+            }
+        };
     },
     
     _getUpButtonConfig: function() {
@@ -373,6 +432,19 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         axis.setExtremes(min,max);
         this._enableChartButtons();
+    },
+        
+    _scrollRight: function(chart) {
+//        var extremes = this._getExtremes(chart,'xAxis');
+//        var new_max = extremes.max - 1;
+//        var new_min = extremes.min - 1;
+//        
+//        if ( new_min < 0 ) { new_min = 0; }
+//        if ( new_max < new_min + this.pageSize - 1) { 
+//            new_max = new_min + this.pageSize - 1;
+//        }
+//        
+//        this._setExtremes(chart,'xAxis',new_min,new_max);
     },
     
     _scrollUp: function(chart) {

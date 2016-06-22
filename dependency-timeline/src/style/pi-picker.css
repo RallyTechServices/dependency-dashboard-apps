@@ -1,0 +1,35 @@
+.pi-box {
+    font: 9px arial, sans-serif !important;
+    background-color: #D3D3D3;
+    color: black;
+    border: 1px solid black;
+    padding: 3px;
+    margin: 3px;
+}
+
+.pi-button {
+    font: 16px arial, sans-serif !important;
+    background-color: #fff;
+    color: black !important;
+    border: none;
+    margin: 3px;
+}
+
+
+.pi-button.x-btn-default-small .x-btn-inner {
+    font: 16px arial, sans-serif !important;
+    color: black !important;
+}
+
+.pi-delete-button {
+    font: 9px arial, sans-serif !important;
+    background-color: #fff;
+    color: black;
+    border: none;
+    padding: 3px;
+}
+
+.pi-delete-button.x-btn-default-small .x-btn-inner {
+    font: 9px arial, sans-serif !important;
+    color: black;
+}
