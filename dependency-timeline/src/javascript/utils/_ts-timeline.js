@@ -13,6 +13,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         records: [],
         
         chartStartDate: Rally.util.DateTime.add(new Date(),'month', -3),
+        chartEndDate:   Rally.util.DateTime.add(new Date(),'month', 8),
         
         pageSize: 7,
         
@@ -23,12 +24,14 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         actualEndField   : 'ActualEndDate',
         
         allowHorizontalScroll : false // not yet implemented
+        
     },
 
     initComponent: function() {
         this.callParent(arguments);
 
         this.chartStartDate = this._moveToStartOfMonth(this.chartStartDate);
+        this.chartEndDate = this._moveToEndOfMonth(this.chartEndDate);
         
         this._buildChart(this.records);
     },
@@ -37,6 +40,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         var day_of_month = start_date.getDate();
         var shift = -1 * ( day_of_month - 1 );         
         return Rally.util.DateTime.add(start_date, 'day', shift);
+    },
+    
+    _moveToEndOfMonth: function(end_date) {
+        var start_of_month = Rally.util.DateTime.add(this._moveToStartOfMonth(end_date), 'month', 1);
+        
+        return Rally.util.DateTime.add(start_of_month, 'day', -1);
     },
     
     _buildChart: function(records) {
@@ -114,13 +123,22 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         ];
     },
     
+    _getNumberOfDays: function() {
+        return Rally.util.DateTime.getDifference(this.chartEndDate, this.chartStartDate, 'day');
+    },
+    
     _getDateCategories: function() {
         var start_date = this.chartStartDate;
+        var end_date = this.chartEndDate;
         
-        return Ext.Array.map( _.range(0,365), function(index) {
+        var diff = this._getNumberOfDays();
+        
+        var categories = Ext.Array.map( _.range(0,diff), function(index) {
             var date = Rally.util.DateTime.add(start_date, 'day', index);
             return this._getCategoryFromDate(date);
         },this);
+        
+        return categories;
     },
    
     _getCategoryFromDate: function(date) {
@@ -191,46 +209,65 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
 
     _getPlotBands: function() {
         var me = this;
-        var start_date = me.chartStartDate;
-        var bands = Ext.Array.map( _.range(0,12), function(index) {
-            var band_start_date = Rally.util.DateTime.add(start_date, 'month', index);
-            var band_end_date = Rally.util.DateTime.add(band_start_date, 'month', 1);
-            
-            var value = Ext.Date.format(band_start_date,'M');
-            
-            var to = Ext.Array.indexOf(me.dateCategories,me._getCategoryFromDate(band_end_date)) - 1;
-            if ( to < 0 ) { to = 364; }
-            
-            return {
-                color: '#eee',
-                from: Ext.Array.indexOf(me.dateCategories,me._getCategoryFromDate(band_start_date)) +1,
-                to: to,
-                label: {
-                    text: value,
-                    align: 'center',
-                    y: -2
-                },
-                zIndex: 3
+        
+        var bands = [];
+        var range = this._getNumberOfDays();
+        
+        var header = null;
+        var month_start = null;
+        
+        Ext.Array.each( _.range(0,range), function(index) {
+            var from_date = Rally.util.DateTime.add(me.chartStartDate, 'day', index);
+            var month_name = Ext.Date.format(from_date, 'M');
+            if ( month_name != header ) { 
+                header = month_name;
+                var from = index;
+                var to_date = Rally.util.DateTime.add(from_date, 'month', 1);
+                var diff = Rally.util.DateTime.getDifference(to_date, from_date, 'day');
+                
+                var to = from + diff - 1;
+                
+                bands.push({
+                    color: '#eee',
+                    from: from,
+                    to: to,
+                    label: {
+                        text: header,
+                        align: 'center',
+                        y: -2
+                    },
+                    zIndex: 3
+                });
             }
-        },this);
+        });
+        
+//        var bands = Ext.Array.map( _.range(0,12), function(index) {
+//            var band_start_date = Rally.util.DateTime.add(start_date, 'month', index);
+//            var band_end_date = Rally.util.DateTime.add(band_start_date, 'month', 1);
+//            
+//            var value = Ext.Date.format(band_start_date,'M');
+//            
+//            var to = Ext.Array.indexOf(me.dateCategories,me._getCategoryFromDate(band_end_date)) - 1;
+//            if ( to < 0 ) { to = 364; }
+//            
+//            return {
+//                color: '#eee',
+//                from: Ext.Array.indexOf(me.dateCategories,me._getCategoryFromDate(band_start_date)) +1,
+//                to: to,
+//                label: {
+//                    text: value,
+//                    align: 'center',
+//                    y: -2
+//                },
+//                zIndex: 3
+//            }
+//        },this);
         
         return bands;
     },
     
     _getPlotLines: function() {
         var me = this;
-        
-        var start_date = me.chartStartDate;
-        var month_lines = Ext.Array.map( _.range(0,12), function(index) {
-            var date = Rally.util.DateTime.add(start_date, 'month', index);
-            var value = Ext.Date.format(date,'z');
-            
-            return {
-                color: '#ccc',
-                width: 1,
-                value: value
-            }
-        },this);
                 
         var today_line = {
             color: '#c00',
@@ -239,7 +276,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             zIndex: 4
         };
         
-        return Ext.Array.merge( month_lines, today_line );
+        return [today_line];
     },
     
     
@@ -274,10 +311,10 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             },
             yAxis: {
                 id: 'yAxis',
-                tickInterval: 366,
+                //tickInterval: 366,
                 categories: this.categories,
                 min: 0,
-                max: 366,
+                max: this._getNumberOfDays(),
                 title: {
                     text: ' '
                 },
@@ -414,7 +451,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             text: '<span class="icon-down"> </span>', 
             disabled: true, 
             cls: 'secondary small',
-            margin: '0 0 2 0',
+            margin: '0 0 25 0',
             listeners: {
                 scope: this,
                 click: function() {

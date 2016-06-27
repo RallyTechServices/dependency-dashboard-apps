@@ -549,16 +549,73 @@ Ext.define("TSDependencyTimeline", {
     },
         
     _makeChart: function(rows) {
-        this.logger.log('_makeChart', rows);
         this.down('#display_box').removeAll();
 
-        this.down('#display_box').add({
+        this.down('#display_box').add(this._getChartConfig(rows));
+    },
+    
+    _getChartConfig: function(rows) {
+        var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
             width: this.getWidth() - 20,
             records: rows,
             pageSize: 7
+        };
+        
+        var start_date = this._getStartDate();
+        if ( !Ext.isEmpty(start_date) ) { config.chartStartDate = start_date; }
+        
+        var end_date = this._getEndDate();
+        if ( !Ext.isEmpty(end_date) ) { config.chartEndDate = end_date; }
+
+        return config;
+    },
+    
+    _getStartDate: function() {
+        var earliest_pi_start = null,
+            release_start = null;
+        Ext.Array.each(this.PIs, function(pi){
+            if ( Ext.isEmpty(pi.get('PlannedStartDate')) ) { return; }
+            if ( Ext.isEmpty(earliest_pi_start) ) { earliest_pi_start = pi.get('PlannedStartDate'); }
+            if ( earliest_pi_start > pi.get('PlannedStartDate') ) { earliest_pi_start = pi.get('PlannedStartDate'); }
+            
         });
+        
+        var start = null;
+        if ( !Ext.isEmpty(earliest_pi_start) ) { start = earliest_pi_start; }
+        
+        var release = this.down('rallyreleasecombobox') && this.down('rallyreleasecombobox').getRecord();
+        if ( !Ext.isEmpty(release) && !Ext.isEmpty(release.get('ReleaseStartDate')) ) {
+            release_start = release.get('ReleaseStartDate');
+            if ( Ext.isEmpty(start) ) { start = release_start; }
+            if ( release_start < start ) { start = release_start; }
+        }
+                
+        return start;
+    },
+    
+    _getEndDate: function() {
+        var latest_pi_end = null,
+            release_end = null;
+        Ext.Array.each(this.PIs, function(pi){
+            if ( Ext.isEmpty(pi.get('PlannedEndDate')) ) { return; }
+            if ( Ext.isEmpty(latest_pi_end) ) { latest_pi_end = pi.get('PlannedStartDate'); }
+            if ( latest_pi_end < pi.get('PlannedEndDate') ) { latest_pi_end = pi.get('PlannedEndDate'); }
+            
+        });
+        
+        var end = null;
+        if ( !Ext.isEmpty(latest_pi_end) ) { end = latest_pi_end; }
+        
+        var release = this.down('rallyreleasecombobox') && this.down('rallyreleasecombobox').getRecord();
+        if ( !Ext.isEmpty(release) && !Ext.isEmpty(release.get('ReleaseDate')) ) {
+            release_end = release.get('ReleaseStartDate');
+            if ( Ext.isEmpty(end) ) { end = release_end; }
+            if ( release_end > end ) { end = release_end; }
+        }
+                
+        return end;
     },
     
     getOptions: function() {
