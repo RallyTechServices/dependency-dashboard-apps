@@ -17,8 +17,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         pageSize: 7,
         
-        plannedStartField: 'PlannedStartDate',
-        plannedEndField  : 'PlannedEndDate',
+        /*
+         * Override mapping provided by type in the plannedStartMap and plannedEndMap
+         * (If provided, will use these fields for all record types)
+         */
+        plannedStartField: null,
+        plannedEndField  : null,
         
         actualStartField : 'ActualStartDate',
         actualEndField   : 'ActualEndDate',
@@ -96,16 +100,26 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         return config;
     },
     
-    _processItems: function(records) {
+    // override to make labels differently
+    getCategoryString: function(record) {
+        var type = record.get('_type');
+        if ( type == 'iteration' || type == 'release' ) {
+            return record.get('Name');
+        }
         
+        return Ext.String.format( '{0}: {1}',
+            record.get('FormattedID'),
+            record.get('Name')
+        );
+    },
+    
+    _processItems: function(records) {
         this.dateCategories = this._getDateCategories();
         
         this.categories = Ext.Array.map(records, function(record) { 
-            return Ext.String.format( '{0}: {1}',
-                record.get('FormattedID'),
-                record.get('Name')
-            );
-        });
+            return this.getCategoryString(record);
+        },this);
+        
                 
         var planned_series = { 
             name: 'Planned',
@@ -157,11 +171,40 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         return 0;
     },
     
+    plannedStartFieldMap: {
+        iteration: "StartDate",
+        release: "ReleaseStartDate",
+        "default": "PlannedStartDate"
+    },
+    
+    plannedEndFieldMap: {
+        "iteration": "EndDate",
+        "release": "ReleaseDate",
+        "default": "PlannedEndDate"
+    },
+    
+    _getPlannedEndField: function(type) {
+        if ( !Ext.isEmpty(this.plannedEndField) ) { return this.plannedEndField; }
+        if ( !Ext.isEmpty(this.plannedEndFieldMap[type]) ) { return this.plannedEndFieldMap[type]; }
+        if ( !Ext.isEmpty(this.plannedEndFieldMap['default']) ) { return this.plannedEndFieldMap['default']; }
+        
+        return 'PlannedEndDate';
+    },
+    
+    _getPlannedStartField: function(type) {
+        if ( !Ext.isEmpty(this.plannedStartField) ) { return this.plannedStartField; }
+        if ( !Ext.isEmpty(this.plannedStartFieldMap[type]) ) { return this.plannedStartFieldMap[type]; }
+        if ( !Ext.isEmpty(this.plannedStartFieldMap['default']) ) { return this.plannedStartFieldMap['default']; }
+        
+        return 'PlannedStartDate';
+    },
+    
     _getPlannedRangesFromItems: function(items, categories) {
-        var plannedStartField = this.plannedStartField;
-        var plannedEndField   = this.plannedEndField;
         
         return Ext.Array.map(items, function(item) {
+            var plannedStartField = this._getPlannedStartField(item.get('_type'));
+            var plannedEndField   = this._getPlannedEndField(item.get('_type'));
+                        
             var start_index = this._getPositionOnTimeline(categories, item.get(plannedStartField) );
             var end_index   = this._getPositionOnTimeline(categories, item.get(plannedEndField) );
             
@@ -312,7 +355,8 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                 max: max,
                 labels: {
                     align: 'left',
-                    x: -1 * vertical_axis_width
+                    x: -1 * vertical_axis_width,
+                    useHTML: true
                 }
             },
             yAxis: {

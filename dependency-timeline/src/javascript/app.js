@@ -400,7 +400,27 @@ Ext.define("TSDependencyTimeline", {
     _makeRowsFromHash: function(base_features_by_oid){
         var me = this,
             rows = [];
-        // this.parentsByOID
+        
+        var release = this.down('rallyreleasecombobox') && this.down('rallyreleasecombobox').getRecord();
+        if ( !Ext.isEmpty(release) && release.get('Name') != this.clearText ) {
+            rows.push(Ext.create('CA.techservices.timesheet.TimeRow',Ext.Object.merge({
+                    _Level: 0
+                },
+                release.getData()
+            )));
+        }
+        
+        Ext.Array.each(this.PIs, function(chosen_pi){
+            var row = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                    _Level: 1,
+                    Theme: null,
+                    Initiative: null,
+                    BusinessFeature: null
+                }, chosen_pi.getData() )
+            );
+            
+            rows.push(row);
+        });
         
         Ext.Object.each(base_features_by_oid, function(oid,feature){
            var initiative_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
@@ -410,7 +430,7 @@ Ext.define("TSDependencyTimeline", {
                 theme = me.parentsByOID[initiative_oid].Parent;
             }
             var business_feature = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                    _Level: 0,
+                    _Level: 2,
                     Theme: theme,
                     Initiative: feature.get('Parent'),
                     BusinessFeature: feature.getData()
@@ -418,7 +438,6 @@ Ext.define("TSDependencyTimeline", {
             );
             
             rows.push(business_feature);
-            console.log('bf:', business_feature);
             
             Ext.Array.each(feature.get('_predecessors'), function(dependency){
                 console.log(dependency);
@@ -431,10 +450,8 @@ Ext.define("TSDependencyTimeline", {
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
 //              
-                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
-                
                 var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                        _Level: 1,
+                        _Level: 3,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         BusinessFeature: feature.getData()
@@ -457,7 +474,7 @@ Ext.define("TSDependencyTimeline", {
                 me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
                 
                 var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                        _Level: 1,
+                        _Level: 3,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         BusinessFeature: feature.getData()
@@ -554,13 +571,31 @@ Ext.define("TSDependencyTimeline", {
         this.down('#display_box').add(this._getChartConfig(rows));
     },
     
+    // override to make labels differently
+    getCategoryString: function(record) {
+        var type = record.get('_type');
+        var string = Ext.String.format( '{0}: {1}',
+            record.get('FormattedID'),
+            record.get('Name')
+        );
+        
+        if ( type == 'iteration' || type == 'release' ) {
+            string = record.get('Name');
+        }
+        var level = record.get('_Level') || 0;
+        var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
+        
+        return prefix + string;
+    },
+    
     _getChartConfig: function(rows) {
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
             width: this.getWidth() - 20,
             records: rows,
-            pageSize: 7
+            pageSize: 7,
+            getCategoryString: this.getCategoryString
         };
         
         var start_date = this._getStartDate();

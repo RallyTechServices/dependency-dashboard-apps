@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 28 2016 13:05:18 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 28 2016 14:58:26 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 28 2016 13:05:18 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 28 2016 14:58:26 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 80687720555;
+        var CHECKSUM = 88370651311;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -765,8 +765,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         pageSize: 7,
         
-        plannedStartField: 'PlannedStartDate',
-        plannedEndField  : 'PlannedEndDate',
+        /*
+         * Override mapping provided by type in the plannedStartMap and plannedEndMap
+         * (If provided, will use these fields for all record types)
+         */
+        plannedStartField: null,
+        plannedEndField  : null,
         
         actualStartField : 'ActualStartDate',
         actualEndField   : 'ActualEndDate',
@@ -844,16 +848,26 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         return config;
     },
     
-    _processItems: function(records) {
+    // override to make labels differently
+    getCategoryString: function(record) {
+        var type = record.get('_type');
+        if ( type == 'iteration' || type == 'release' ) {
+            return record.get('Name');
+        }
         
+        return Ext.String.format( '{0}: {1}',
+            record.get('FormattedID'),
+            record.get('Name')
+        );
+    },
+    
+    _processItems: function(records) {
         this.dateCategories = this._getDateCategories();
         
         this.categories = Ext.Array.map(records, function(record) { 
-            return Ext.String.format( '{0}: {1}',
-                record.get('FormattedID'),
-                record.get('Name')
-            );
-        });
+            return this.getCategoryString(record);
+        },this);
+        
                 
         var planned_series = { 
             name: 'Planned',
@@ -905,11 +919,40 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         return 0;
     },
     
+    plannedStartFieldMap: {
+        iteration: "StartDate",
+        release: "ReleaseStartDate",
+        "default": "PlannedStartDate"
+    },
+    
+    plannedEndFieldMap: {
+        "iteration": "EndDate",
+        "release": "ReleaseDate",
+        "default": "PlannedEndDate"
+    },
+    
+    _getPlannedEndField: function(type) {
+        if ( !Ext.isEmpty(this.plannedEndField) ) { return this.plannedEndField; }
+        if ( !Ext.isEmpty(this.plannedEndFieldMap[type]) ) { return this.plannedEndFieldMap[type]; }
+        if ( !Ext.isEmpty(this.plannedEndFieldMap['default']) ) { return this.plannedEndFieldMap['default']; }
+        
+        return 'PlannedEndDate';
+    },
+    
+    _getPlannedStartField: function(type) {
+        if ( !Ext.isEmpty(this.plannedStartField) ) { return this.plannedStartField; }
+        if ( !Ext.isEmpty(this.plannedStartFieldMap[type]) ) { return this.plannedStartFieldMap[type]; }
+        if ( !Ext.isEmpty(this.plannedStartFieldMap['default']) ) { return this.plannedStartFieldMap['default']; }
+        
+        return 'PlannedStartDate';
+    },
+    
     _getPlannedRangesFromItems: function(items, categories) {
-        var plannedStartField = this.plannedStartField;
-        var plannedEndField   = this.plannedEndField;
         
         return Ext.Array.map(items, function(item) {
+            var plannedStartField = this._getPlannedStartField(item.get('_type'));
+            var plannedEndField   = this._getPlannedEndField(item.get('_type'));
+                        
             var start_index = this._getPositionOnTimeline(categories, item.get(plannedStartField) );
             var end_index   = this._getPositionOnTimeline(categories, item.get(plannedEndField) );
             
@@ -1060,7 +1103,8 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                 max: max,
                 labels: {
                     align: 'left',
-                    x: -1 * vertical_axis_width
+                    x: -1 * vertical_axis_width,
+                    useHTML: true
                 }
             },
             yAxis: {
@@ -1669,7 +1713,27 @@ Ext.define("TSDependencyTimeline", {
     _makeRowsFromHash: function(base_features_by_oid){
         var me = this,
             rows = [];
-        // this.parentsByOID
+        
+        var release = this.down('rallyreleasecombobox') && this.down('rallyreleasecombobox').getRecord();
+        if ( !Ext.isEmpty(release) && release.get('Name') != this.clearText ) {
+            rows.push(Ext.create('CA.techservices.timesheet.TimeRow',Ext.Object.merge({
+                    _Level: 0
+                },
+                release.getData()
+            )));
+        }
+        
+        Ext.Array.each(this.PIs, function(chosen_pi){
+            var row = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                    _Level: 1,
+                    Theme: null,
+                    Initiative: null,
+                    BusinessFeature: null
+                }, chosen_pi.getData() )
+            );
+            
+            rows.push(row);
+        });
         
         Ext.Object.each(base_features_by_oid, function(oid,feature){
            var initiative_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
@@ -1679,7 +1743,7 @@ Ext.define("TSDependencyTimeline", {
                 theme = me.parentsByOID[initiative_oid].Parent;
             }
             var business_feature = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                    _Level: 0,
+                    _Level: 2,
                     Theme: theme,
                     Initiative: feature.get('Parent'),
                     BusinessFeature: feature.getData()
@@ -1687,7 +1751,6 @@ Ext.define("TSDependencyTimeline", {
             );
             
             rows.push(business_feature);
-            console.log('bf:', business_feature);
             
             Ext.Array.each(feature.get('_predecessors'), function(dependency){
                 console.log(dependency);
@@ -1700,10 +1763,8 @@ Ext.define("TSDependencyTimeline", {
                     theme = me.parentsByOID[initiative_oid].Parent;
                 }
 //              
-                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
-                
                 var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                        _Level: 1,
+                        _Level: 3,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         BusinessFeature: feature.getData()
@@ -1726,7 +1787,7 @@ Ext.define("TSDependencyTimeline", {
                 me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
                 
                 var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                        _Level: 1,
+                        _Level: 3,
                         Theme: theme,
                         Initiative: feature.get('Parent'),
                         BusinessFeature: feature.getData()
@@ -1823,13 +1884,31 @@ Ext.define("TSDependencyTimeline", {
         this.down('#display_box').add(this._getChartConfig(rows));
     },
     
+    // override to make labels differently
+    getCategoryString: function(record) {
+        var type = record.get('_type');
+        var string = Ext.String.format( '{0}: {1}',
+            record.get('FormattedID'),
+            record.get('Name')
+        );
+        
+        if ( type == 'iteration' || type == 'release' ) {
+            string = record.get('Name');
+        }
+        var level = record.get('_Level') || 0;
+        var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
+        
+        return prefix + string;
+    },
+    
     _getChartConfig: function(rows) {
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
             width: this.getWidth() - 20,
             records: rows,
-            pageSize: 7
+            pageSize: 7,
+            getCategoryString: this.getCategoryString
         };
         
         var start_date = this._getStartDate();
