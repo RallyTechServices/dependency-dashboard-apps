@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 28 2016 07:36:39 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 28 2016 13:05:18 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 28 2016 07:36:40 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 28 2016 13:05:18 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 80272557849;
+        var CHECKSUM = 80687720555;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1035,10 +1035,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         var me = this;
         
         var max = this.pageSize;
+        var vertical_axis_width = 200;
         
         var chart_config = {
             chart: {
                 inverted: true,
+                marginLeft: vertical_axis_width,
                 type: 'columnrange',
                 events: {
                     load: function(evt) {
@@ -1055,7 +1057,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             xAxis: {
                 min: 0,
                 id: 'xAxis',
-                max: max
+                max: max,
+                labels: {
+                    align: 'left',
+                    x: -1 * vertical_axis_width
+                }
             },
             yAxis: {
                 id: 'yAxis',

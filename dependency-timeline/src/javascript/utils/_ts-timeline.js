@@ -287,10 +287,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         var me = this;
         
         var max = this.pageSize;
+        var vertical_axis_width = 200;
         
         var chart_config = {
             chart: {
                 inverted: true,
+                marginLeft: vertical_axis_width,
                 type: 'columnrange',
                 events: {
                     load: function(evt) {
@@ -307,7 +309,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             xAxis: {
                 min: 0,
                 id: 'xAxis',
-                max: max
+                max: max,
+                labels: {
+                    align: 'left',
+                    x: -1 * vertical_axis_width
+                }
             },
             yAxis: {
                 id: 'yAxis',
