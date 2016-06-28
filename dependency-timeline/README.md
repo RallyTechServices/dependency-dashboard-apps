@@ -11,6 +11,7 @@ The app assumes that if the type field is empty, then the feature is a "Platform
 ## Development Notes
 
 * Caution: PI level names are hard coded.
+* PLEASE don't change the _ts-timeline.js file here.  If it needs to be changed, either subclass, or even better add functionality to the timeline component in https://github.com/RallyTechServices/ts-components/tree/master/alternative-timeline
 
 ### First Load
 

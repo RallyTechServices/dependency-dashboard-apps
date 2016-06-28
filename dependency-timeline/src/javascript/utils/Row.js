@@ -14,6 +14,8 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'Milestones', type:'object' },
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
+        { name: 'ActualStartDate', type: 'object' },
+        { name: 'ActualEndDate', type: 'object' },
         { name: 'LeafStoryCount', type:'integer' },
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
         { name: 'PercentDoneByStoryCount', type: 'float' },

@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 28 2016 15:21:38 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 28 2016 15:41:04 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 28 2016 15:21:38 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 28 2016 15:41:04 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 88927748561;
+        var CHECKSUM = 89843984199;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -360,6 +360,8 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'Milestones', type:'object' },
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
+        { name: 'ActualStartDate', type: 'object' },
+        { name: 'ActualEndDate', type: 'object' },
         { name: 'LeafStoryCount', type:'integer' },
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
         { name: 'PercentDoneByStoryCount', type: 'float' },
@@ -1548,7 +1550,8 @@ Ext.define("TSDependencyTimeline", {
             context: { project: null },
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+                'PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release','Milestones',
                 'TargetDate',me.type_field,
                 'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         }
@@ -1636,7 +1639,8 @@ Ext.define("TSDependencyTimeline", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field,
+                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release',me.type_field,
                 'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         };
         
@@ -1673,7 +1677,8 @@ Ext.define("TSDependencyTimeline", {
         feature.getCollection('Predecessors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
+                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release'],
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -1698,7 +1703,8 @@ Ext.define("TSDependencyTimeline", {
         feature.getCollection('Successors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
+                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release'], 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -1909,6 +1915,8 @@ Ext.define("TSDependencyTimeline", {
     
     _getChartConfig: function(rows) {
         var me = this;
+        console.log(rows);
+        
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,

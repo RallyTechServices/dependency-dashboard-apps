@@ -235,7 +235,8 @@ Ext.define("TSDependencyTimeline", {
             context: { project: null },
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+                'PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release','Milestones',
                 'TargetDate',me.type_field,
                 'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         }
@@ -323,7 +324,8 @@ Ext.define("TSDependencyTimeline", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field,
+                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release',me.type_field,
                 'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         };
         
@@ -360,7 +362,8 @@ Ext.define("TSDependencyTimeline", {
         feature.getCollection('Predecessors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
+                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release'],
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -385,7 +388,8 @@ Ext.define("TSDependencyTimeline", {
         feature.getCollection('Successors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
+                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
+                'Project','Owner','Release'], 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -596,6 +600,8 @@ Ext.define("TSDependencyTimeline", {
     
     _getChartConfig: function(rows) {
         var me = this;
+        console.log(rows);
+        
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
