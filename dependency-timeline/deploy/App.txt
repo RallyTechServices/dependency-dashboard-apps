@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Jun 26 2016 20:19:44 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 28 2016 07:36:39 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Jun 26 2016 20:19:44 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 28 2016 07:36:40 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 79944903352;
+        var CHECKSUM = 80272557849;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -716,9 +716,10 @@ Ext.define('Rally.technicalservices.InfoLink',{
                 cls: 'build-info',
                 padding: 2,
                 dock: 'bottom',
-                html: Ext.String.format("Build date/time: {0} ({1})",
+                html: Ext.String.format("Build date/time: {0}<br/>({1} for {2})",
                     APP_BUILD_DATE,
-                    BUILDER)
+                    BUILDER,
+                    "US387")
             });
         }
     }
@@ -1913,6 +1914,10 @@ Ext.define("TSDependencyTimeline", {
                 return ( defn.Constrained && defn.AttributeType == 'STRING' );
             }
         }];
+    },
+    
+    isExternal: function(){
+        return typeof(this.getAppId()) == 'undefined';
     }
 });
 

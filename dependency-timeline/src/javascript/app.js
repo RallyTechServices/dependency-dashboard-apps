@@ -651,5 +651,9 @@ Ext.define("TSDependencyTimeline", {
                 return ( defn.Constrained && defn.AttributeType == 'STRING' );
             }
         }];
+    },
+    
+    isExternal: function(){
+        return typeof(this.getAppId()) == 'undefined';
     }
 });

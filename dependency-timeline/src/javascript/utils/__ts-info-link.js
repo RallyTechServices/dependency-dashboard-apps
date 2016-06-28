@@ -156,9 +156,10 @@ Ext.define('Rally.technicalservices.InfoLink',{
                 cls: 'build-info',
                 padding: 2,
                 dock: 'bottom',
-                html: Ext.String.format("Build date/time: {0} ({1})",
+                html: Ext.String.format("Build date/time: {0}<br/>({1} for {2})",
                     APP_BUILD_DATE,
-                    BUILDER)
+                    BUILDER,
+                    "US387")
             });
         }
     }
