@@ -573,13 +573,19 @@ Ext.define("TSDependencyTimeline", {
     
     // override to make labels differently
     getCategoryString: function(record) {
-        var type = record.get('_type');
+        var record_type = record.get('_type');
+        var level = record.get('_Level');
+        
         var string = Ext.String.format( '{0}: {1}',
             record.get('FormattedID'),
             record.get('Name')
         );
         
-        if ( type == 'iteration' || type == 'release' ) {
+       
+        if ( level == 2 ) {
+            string = "<span style='background-color:#e7f5fe;'>" + string + "</span>";
+        }
+        if ( record_type == 'iteration' || record_type == 'release' ) {
             string = record.get('Name');
         }
         var level = record.get('_Level') || 0;
@@ -589,13 +595,14 @@ Ext.define("TSDependencyTimeline", {
     },
     
     _getChartConfig: function(rows) {
+        var me = this;
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
             width: this.getWidth() - 20,
             records: rows,
             pageSize: 7,
-            getCategoryString: this.getCategoryString
+            getCategoryString: me.getCategoryString
         };
         
         var start_date = this._getStartDate();
