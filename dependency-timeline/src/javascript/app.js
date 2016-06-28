@@ -443,9 +443,7 @@ Ext.define("TSDependencyTimeline", {
             
             rows.push(business_feature);
             
-            Ext.Array.each(feature.get('_predecessors'), function(dependency){
-                console.log(dependency);
-                
+            Ext.Array.each(feature.get('_predecessors'), function(dependency){                
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 
                 theme = null;
@@ -467,7 +465,6 @@ Ext.define("TSDependencyTimeline", {
             });
 ////            
             Ext.Array.each(feature.get('_successors'), function(dependency){
-                console.log(dependency);
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 theme = null;
 
@@ -600,7 +597,6 @@ Ext.define("TSDependencyTimeline", {
     
     _getChartConfig: function(rows) {
         var me = this;
-        console.log(rows);
         
         var config = {
             xtype: 'tsalternativetimeline',

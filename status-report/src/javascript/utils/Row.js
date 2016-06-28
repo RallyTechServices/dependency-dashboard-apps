@@ -18,8 +18,8 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'ActualEndDate', type: 'object' },
         { name: 'LeafStoryCount', type:'integer' },
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
-        { name: 'PercentDoneByStoryCount', type: 'float' },
-        { name: 'PercentDoneByStoryPlanEstimate', type: 'float' },
+        { name: 'PercentDoneByStoryCount', type: 'float', defaultValue: -1 },
+        { name: 'PercentDoneByStoryPlanEstimate', type: 'float', defaultValue: -1 },
         { name: '__RelatedRecords', type:'auto'},
         { name: 'Release', type:'object' },
         { name: 'BusinessFeature', type: 'object', convert: 

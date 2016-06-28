@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 28 2016 15:41:04 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 28 2016 16:25:33 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 28 2016 15:41:04 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 28 2016 16:25:33 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 89843984199;
+        var CHECKSUM = 91412649774;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -360,12 +360,14 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'Milestones', type:'object' },
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
+        { name: 'ReleaseStartDate', type:'object'},
+        { name: 'ReleaseDate', type:'object' },
         { name: 'ActualStartDate', type: 'object' },
         { name: 'ActualEndDate', type: 'object' },
         { name: 'LeafStoryCount', type:'integer' },
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
-        { name: 'PercentDoneByStoryCount', type: 'float' },
-        { name: 'PercentDoneByStoryPlanEstimate', type: 'float' },
+        { name: 'PercentDoneByStoryCount', type: 'float', defaultValue: -1 },
+        { name: 'PercentDoneByStoryPlanEstimate', type: 'float', defaultValue: -1 },
         { name: '__RelatedRecords', type:'auto'},
         { name: 'Release', type:'object' },
         { name: 'BusinessFeature', type: 'object', convert: 
@@ -958,7 +960,21 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             var start_index = this._getPositionOnTimeline(categories, item.get(plannedStartField) );
             var end_index   = this._getPositionOnTimeline(categories, item.get(plannedEndField) );
             
-            return [ start_index, end_index ];
+            var colorObject = Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(item.data, 'PercentDoneByStoryCount');
+
+            if ( Ext.isEmpty(item.get('PercentDoneByStoryCount') ) || item.get('PercentDoneByStoryCount') < 0 ){
+                colorObject = {
+                    hex: '#000',
+                    label: 'Has no Percent Done by Story Count'
+                }
+            }
+            
+            return {
+                color: colorObject.hex,
+                low: start_index, 
+                high: end_index ,
+                _status: colorObject.label
+            };
         },this);
     },
     
@@ -1313,6 +1329,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     
     
 });
+
 Ext.define("TSDependencyTimeline", {
     extend: 'Rally.app.App',
     componentCls: 'app',
@@ -1758,9 +1775,7 @@ Ext.define("TSDependencyTimeline", {
             
             rows.push(business_feature);
             
-            Ext.Array.each(feature.get('_predecessors'), function(dependency){
-                console.log(dependency);
-                
+            Ext.Array.each(feature.get('_predecessors'), function(dependency){                
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 
                 theme = null;
@@ -1782,7 +1797,6 @@ Ext.define("TSDependencyTimeline", {
             });
 ////            
             Ext.Array.each(feature.get('_successors'), function(dependency){
-                console.log(dependency);
                 var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 theme = null;
 
@@ -1915,7 +1929,6 @@ Ext.define("TSDependencyTimeline", {
     
     _getChartConfig: function(rows) {
         var me = this;
-        console.log(rows);
         
         var config = {
             xtype: 'tsalternativetimeline',
