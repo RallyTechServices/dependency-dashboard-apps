@@ -129,7 +129,7 @@
         _onButtonClick: function () {
             this._destroyChooser();
 
-            this.dialog = Ext.create("Rally.ui.dialog.ArtifactChooserDialog", this._getChooserConfig());
+            this.dialog = Ext.create("CA.techservices.dialog.TypedArtifactChooserDialog", this._getChooserConfig());
             this.dialog.show();
         },
 

@@ -1,17 +1,25 @@
 #TS Status Report
 
-Features belong to a chosen Initiative or Theme.  This table ALSO finds features that are predecessors/successors of the features (only one level).  
+![picker](./images/picker.png "Item Chooser")
 
-The app depends on the selection of a field to determine the type of a feature.  The app will look for features that are of type "Business" and then
+The user can choose either an initiative or theme.  The app will find the direct children and create a drop-down of releases that are associated with the children (if any).  
+
+Choosing the release will further filter the chosen base items (business features if an initiative was chosen, business initiatives if a theme was chosen).
+
+Dependent items of the same type (aka, platform items) will be predecessors/successors of the business items that were found as children of the chosen item.
+
+![grid](./images/grid.png "Grid")
+
+The app depends on the selection of a field to determine the type of a feature.  The app will look for children that are of type "Business" and then
 find predecessors/successors that are of type "Platform".
 
-The app assumes that if the type field is empty, then the feature is a "Platform" feature.
+The app assumes that if the type field is empty, then the item is a "Platform" item.
 
-Business feature rows are colored light blue.  Platform are white.
+Business item rows are colored light blue.  Platform are white.
 
 ## Development Notes
 
-* Caution: PI names are hard coded.
+* Caution: PI names (feature/initiative/theme) are hard coded.
 
 ### First Load
 

@@ -28,7 +28,7 @@ Ext.define("TSDependencyStatusReport", {
     launch: function() {
         var me = this;
         if (Ext.isEmpty(this.getSetting('typeField')) ) {
-            Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose a feature field used to define Platform or Business');
+            Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose an item field used to define Platform or Business');
             return;
         }
         this.type_field = this.getSetting('typeField');
@@ -89,12 +89,12 @@ Ext.define("TSDependencyStatusReport", {
             return;
         }
         
-        this._getChildFeatures().then({
+        this._getChildItems().then({
             scope: this,
-            success: function(features) {
+            success: function(items) {
                 var timebox_oids_by_name = {};
-                Ext.Array.each(features, function(feature) {
-                    var release = feature.get('Release');
+                Ext.Array.each(items, function(item) {
+                    var release = item.get('Release');
                     if ( !Ext.isEmpty(release) ) {
                         timebox_oids_by_name[release.Name] = release.ObjectID;
                     }
@@ -105,7 +105,7 @@ Ext.define("TSDependencyStatusReport", {
                 });
                 
                 if ( filters.length === 0 ) {
-                    container.add({xtype:'container', html:'No Releases on Features for This Item'});
+                    container.add({xtype:'container', html:'No Releases on Children for This Item'});
                 } else {
                     container.add({ 
                         xtype:'rallyreleasecombobox',
@@ -163,9 +163,13 @@ Ext.define("TSDependencyStatusReport", {
         
         var release = null;
         this.rows = [];
-        this.base_features = [];
-        this.baseFeaturesByOID = {};
+        this.base_items = [];
+        this.baseItemsByOID = {};
 
+        if ( !Ext.isEmpty(this.PIs) && this.PIs.length > 0 ) {
+            console.log(this.PIs[0].get('_type') );
+        }
+        
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
             release = this.down('rallyreleasecombobox').getRecord();
         }
@@ -179,15 +183,15 @@ Ext.define("TSDependencyStatusReport", {
         this.rows = [];
         
         Deft.Chain.pipeline([
-            this._getChildFeatures,
-            this._getRelatedFeatures,
+            this._getChildItems,
+            this._getRelatedItems,
             this._getParents
         ],this).then({
             scope: this,
             success: function(results) {
-                if ( this.base_features.length === 0 ) { return; }
+                if ( this.base_items.length === 0 ) { return; }
                 
-                var rows = this._makeRowsFromHash(this.baseFeaturesByOID);
+                var rows = this._makeRowsFromHash(this.baseItemsByOID);
                 this._fetchMilestoneInformation(rows).then({
                     scope: this,
                     success: function(results) {
@@ -205,10 +209,28 @@ Ext.define("TSDependencyStatusReport", {
         });
     },
     
-    _getChildFeatures: function() {
+    _getParentType: function() {
+        if ( Ext.isEmpty(this.PIs) || this.PIs.length == 0 ) {
+            return null;
+        }
+        
+        return this.PIs[0].get('_type');
+    },
+    
+    _getChildType: function(type) {
+        var type_map = {
+            'parent'                  : 'child',
+            'portfolioitem/initiative': 'portfolioitem/Feature',
+            'portfolioitem/theme'     : 'portfolioitem/Initiative'
+        };
+        
+        return type_map[type] || 'hierarchicalrequirement';
+    },
+    
+    _getChildItems: function() {
         if ( Ext.isEmpty(this.PIs) ) { this.PIs = []; }
 
-        this.setLoading('Fetching descendant features...');
+        this.setLoading('Fetching child items...');
         
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
@@ -232,8 +254,7 @@ Ext.define("TSDependencyStatusReport", {
         
         var pi_filter_configs = Ext.Array.map(this.PIs, function(pi) {
             return [
-                {property:'Parent.ObjectID',value:pi.get('ObjectID')},
-                {property:'Parent.Parent.ObjectID',value:pi.get('ObjectID')}
+                {property:'Parent.ObjectID',value:pi.get('ObjectID')}
             ];
         });
         
@@ -251,7 +272,7 @@ Ext.define("TSDependencyStatusReport", {
         filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Business'}));
         
         var config = {
-            model: 'PortfolioItem/Feature',
+            model: this._getChildType(this._getParentType()),
             filters: filters,
             context: { project: null },
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
@@ -263,9 +284,9 @@ Ext.define("TSDependencyStatusReport", {
         
         this._loadWsapiRecords(config).then({
             scope: this,
-            success: function(features) {
-                this.logger.log("First level features:", features);
-                deferred.resolve(features);
+            success: function(items) {
+                this.logger.log("Direct child items:", items);
+                deferred.resolve(items);
             },
             failure: function(msg) {
                 deferred.reject(msg);
@@ -275,34 +296,33 @@ Ext.define("TSDependencyStatusReport", {
         return deferred.promise;
     },
     
-    _getRelatedFeatures: function(base_features) {
+    _getRelatedItems: function(base_items) {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
         this.setLoading('Fetching predecessors/successors...');
-        this.base_features = base_features;
+        this.base_items = base_items;
         
-        if ( this.base_features.length === 0 ) {
-            Ext.Msg.alert('','No Features Found');
+        if ( this.base_items.length === 0 ) {
+            Ext.Msg.alert('','No Children Found');
             this.setLoading(false);
             return [];
         }
         var promises = [];
-        this.baseFeaturesByOID = {};
+        this.baseItemsByOID = {};
         
-        Ext.Array.each(base_features, function(feature){
-            this.baseFeaturesByOID[feature.get('ObjectID')] = feature;
-            promises.push(function() { return this._getPredecessors(feature); });
-            promises.push(function() { return this._getSuccessors(feature); });
+        Ext.Array.each(base_items, function(item){
+            this.baseItemsByOID[item.get('ObjectID')] = item;
+            promises.push(function() { return this._getPredecessors(item); });
+            promises.push(function() { return this._getSuccessors(item); });
         },this);
         
         Deft.Chain.sequence(promises,this).then({
             scope: this,
             success: function(results) {
-                this.relatedFeatures = Ext.Array.flatten(results);
+                var related_items = Ext.Array.flatten(results);
                 
-                this.logger.log("RETURNED:", this.relatedFeatures);
-                this.logger.log('Base Features', this.baseFeaturesByOID);
-                deferred.resolve(this.relatedFeatures);
+                this.logger.log('Base Items', this.baseItemsByOID);
+                deferred.resolve(related_items);
             },
             failure: function(msg) {
                 deferred.reject(msg);
@@ -313,22 +333,22 @@ Ext.define("TSDependencyStatusReport", {
     },
     
     // getting the parents lets us get the grandparents
-    _getParents: function(leaf_features) {
+    _getParents: function(leaf_items) {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
                     
-        if ( this.base_features.length === 0 ) { return; }
+        if ( this.base_items.length === 0 ) { return; }
         
         var oids = [];
-        Ext.Object.each(this.baseFeaturesByOID, function(key,feature){
-            var parent_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
+        Ext.Object.each(this.baseItemsByOID, function(key,item){
+            var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
             if ( !Ext.isEmpty(parent_oid) ) {
                 oids.push(parent_oid);
             }
         });
         
-        Ext.Array.each(leaf_features, function(feature){
-            var parent_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
+        Ext.Array.each(leaf_items, function(item){
+            var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
             if ( !Ext.isEmpty(parent_oid) ) {
                 oids.push(parent_oid);
             }
@@ -339,7 +359,7 @@ Ext.define("TSDependencyStatusReport", {
         });
         
         var config = {
-            model:'PortfolioItem/Initiative',
+            model: this._getParentType(),
             filters: Rally.data.wsapi.Filter.or(filters),
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
@@ -357,7 +377,7 @@ Ext.define("TSDependencyStatusReport", {
                     me.parentsByOID[oid] = data;
                 });
                 
-                deferred.resolve(leaf_features);
+                deferred.resolve(leaf_items);
             },
             failure: function(msg) {
                 deferred.reject(msg);
@@ -368,24 +388,24 @@ Ext.define("TSDependencyStatusReport", {
         
     },
     
-    _getPredecessors: function(feature) {
+    _getPredecessors: function(item) {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
             
-        //this.logger.log('Finding predecessors for', feature.get('FormattedID'));
-        if ( feature.get('Predecessors').Count === 0 ) {
-            feature.set('_predecessors', []);
+        this.logger.log('Finding predecessors for', item.get('FormattedID'), item);
+        if ( item.get('Predecessors').Count === 0 ) {
+            item.set('_predecessors', []);
             return [];
         }
         
-        feature.getCollection('Predecessors').load({
+        item.getCollection('Predecessors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
                 'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
-                feature.set('_predecessors', records);
+                item.set('_predecessors', records);
                 deferred.resolve(records);
             }
         });
@@ -393,24 +413,23 @@ Ext.define("TSDependencyStatusReport", {
         return deferred.promise;
     },
     
-    _getSuccessors: function(feature) {
+    _getSuccessors: function(item) {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
             
-        //this.logger.log('Finding successors for', feature.get('FormattedID'));
-        if ( feature.get('Successors').Count === 0 ) {
-            feature.set('_successors', []);
+        if ( item.get('Successors').Count === 0 ) {
+            item.set('_successors', []);
             return [];
         }
         
-        feature.getCollection('Successors').load({
+        item.getCollection('Successors').load({
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
                 'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
-                feature.set('_successors', records);
+                item.set('_successors', records);
                 deferred.resolve(records);
             }
         });
@@ -418,76 +437,100 @@ Ext.define("TSDependencyStatusReport", {
         return deferred.promise;
     },
     
-    _makeRowsFromHash: function(base_features_by_oid){
+    _makeRowsFromHash: function(base_items_by_oid){
         var me = this,
             rows = [];
         // this.parentsByOID
         
-        Ext.Object.each(base_features_by_oid, function(oid,feature){
-           var initiative_oid = feature.get('Parent') && feature.get('Parent').ObjectID;
-            var theme = null;
+        Ext.Object.each(base_items_by_oid, function(oid,item){
+            var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
+            var grandparent = null;
 
-            if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-                theme = me.parentsByOID[initiative_oid].Parent;
+            console.log('--', parent_oid, me.parentsByOID);
+            
+            if ( !Ext.isEmpty(parent_oid) && !Ext.isEmpty(me.parentsByOID[parent_oid]) && !Ext.isEmpty(me.parentsByOID[parent_oid].Parent)) {
+                grandparent = me.parentsByOID[parent_oid].Parent;
             }
-            var business_feature = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                        
+            var business_item = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
                     _Level: 0,
-                    Theme: theme,
-                    Initiative: feature.get('Parent'),
-                    BusinessFeature: feature.getData()
-                }, feature.getData() )
+                    Grandparent: grandparent,
+                    Parent: item.get('Parent'),
+                    BusinessItem: item.getData()
+                }, item.getData() )
             );
             
-            rows.push(business_feature);
-            console.log('bf:', business_feature);
+            rows.push(business_item);
             
-            Ext.Array.each(feature.get('_predecessors'), function(dependency){
-                console.log(dependency);
+            var dependencies = Ext.Array.merge(item.get('_predecessors'), item.get('_successors') );
+            Ext.Array.each(dependencies, function(dependency){
+                var parent_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 
-                var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
-                
-                theme = null;
+                grandparent = null;
 
-                if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-                    theme = me.parentsByOID[initiative_oid].Parent;
+                if ( !Ext.isEmpty(parent_oid) && !Ext.isEmpty(me.parentsByOID[parent_oid]) && !Ext.isEmpty(me.parentsByOID[parent_oid].Parent)) {
+                    grandparent = me.parentsByOID[parent_oid].Parent;
                 }
 //              
-                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
+                me.logger.log( 'related', item.get('FormattedID'), dependency.get('FormattedID') );
                 
-                var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
+                var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
                         _Level: 1,
-                        Theme: theme,
-                        Initiative: feature.get('Parent'),
-                        BusinessFeature: feature.getData()
+                        Grandparent: grandparent,
+                        Parent: item.get('Parent'),
+                        BusinessItem: item.getData()
                     }, dependency.getData() )
                 );
                 
-                business_feature.addRelatedRecord(related_record);
+                business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
-            });
-////            
-            Ext.Array.each(feature.get('_successors'), function(dependency){
-                console.log(dependency);
-                var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
-                theme = null;
-
-                if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-                    theme = me.parentsByOID[initiative_oid].Parent;
-                }
-                
-                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
-                
-                var related_record = Ext.create('CA.techservices.timesheet.TimeRow', Ext.Object.merge({
-                        _Level: 1,
-                        Theme: theme,
-                        Initiative: feature.get('Parent'),
-                        BusinessFeature: feature.getData()
-                    }, dependency.getData() )
-                );
-                
-                business_feature.addRelatedRecord(related_record);
-                rows.push(related_record);
-            });
+            });            
+//            
+//            Ext.Array.each(item.get('_predecessors'), function(dependency){
+//                var parent_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
+//                
+//                grandparent = null;
+//
+//                if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
+//                    theme = me.parentsByOID[initiative_oid].Parent;
+//                }
+////              
+//                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
+//                
+//                var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
+//                        _Level: 1,
+//                        Theme: theme,
+//                        Initiative: feature.get('Parent'),
+//                        BusinessFeature: feature.getData()
+//                    }, dependency.getData() )
+//                );
+//                
+//                business_feature.addRelatedRecord(related_record);
+//                rows.push(related_record);
+//            });
+//////            
+//            Ext.Array.each(feature.get('_successors'), function(dependency){
+//                console.log(dependency);
+//                var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
+//                theme = null;
+//
+//                if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
+//                    theme = me.parentsByOID[initiative_oid].Parent;
+//                }
+//                
+//                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
+//                
+//                var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
+//                        _Level: 1,
+//                        Theme: theme,
+//                        Initiative: feature.get('Parent'),
+//                        BusinessFeature: feature.getData()
+//                    }, dependency.getData() )
+//                );
+//                
+//                business_feature.addRelatedRecord(related_record);
+//                rows.push(related_record);
+//            });
         });
         return rows;
     },
@@ -554,6 +597,8 @@ Ext.define("TSDependencyStatusReport", {
             
         container.removeAll();
         
+        this.logger.log('Making grid with rows:', rows);
+        
         var store = Ext.create('Rally.data.custom.Store',{ data: rows});
         
         container.add({
@@ -597,9 +642,17 @@ Ext.define("TSDependencyStatusReport", {
     _getColumns: function() {
         var columns = [],
             me = this;
+            
+        var child_name = this._getChildType(this._getParentType()).replace(/.*\//,'');
+        
+        var theme_level = 'Grandparent';
+        
+        if ( child_name == "Initiative" ) {
+            theme_level = 'Parent';
+        }
 
         columns.push({
-            dataIndex:'__ThemeFID',
+            dataIndex: '__' + theme_level + 'FID',
             text:'Theme ID',
             exportRenderer: function(value,meta,record) {
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -610,13 +663,13 @@ Ext.define("TSDependencyStatusReport", {
                     return "";
                 }
                 return Ext.String.format("<a href='{0}' target='_top'>{1}</a>",
-                    Rally.nav.Manager.getDetailUrl(record.get('Theme')),
+                    Rally.nav.Manager.getDetailUrl(record.get(theme_level)),
                     value
                 );
             }
         });
         columns.push({
-            dataIndex:'__ThemeName',
+            dataIndex: '__' + theme_level + 'Name',
             text:'Theme Name',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
@@ -624,48 +677,50 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
 
+        if ( theme_level == 'Grandparent' ) {
+            columns.push({
+                dataIndex:'__ParentFID',
+                text:'Initiative ID',
+                _csvIgnoreRender: true,
+                renderer: function(value,meta,record){
+                    if ( Ext.isEmpty(value) ) {
+                        return "";
+                    }
+                    return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
+                        Rally.nav.Manager.getDetailUrl(record.get('Parent')),
+                        value
+                    );
+                }
+            });
+            
+            columns.push({
+                dataIndex:'__ParentName',
+                text:'Initiative Name',
+                renderer: function(value,meta,record){
+                    if ( Ext.isEmpty(value) ) { return ""; }
+                    return value;
+                }
+            });
+        }
+        
         columns.push({
-            dataIndex:'__InitiativeFID',
-            text:'Initiative ID',
+            dataIndex:'__BusinessItemFID',
+            text: Ext.String.format('Business {0} ID',child_name),
             _csvIgnoreRender: true,
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) {
                     return "";
                 }
                 return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
-                    Rally.nav.Manager.getDetailUrl(record.get('Initiative')),
+                    Rally.nav.Manager.getDetailUrl(record.get('BusinessItem')),
                     value
                 );
             }
         });
         
         columns.push({
-            dataIndex:'__InitiativeName',
-            text:'Initiative Name',
-            renderer: function(value,meta,record){
-                if ( Ext.isEmpty(value) ) { return ""; }
-                return value;
-            }
-        });
-        
-        columns.push({
-            dataIndex:'__BusinessFeatureFID',
-            text:'Business Feature ID',
-            _csvIgnoreRender: true,
-            renderer: function(value,meta,record){
-                if ( Ext.isEmpty(value) ) {
-                    return "";
-                }
-                return Ext.String.format("<a href='{0}' target='_blank'>{1}</a>",
-                    Rally.nav.Manager.getDetailUrl(record.get('BusinessFeature')),
-                    value
-                );
-            }
-        });
-        
-        columns.push({
-            dataIndex:'__BusinessFeatureName',
-            text:'Business Feature Name',
+            dataIndex:'__BusinessItemName',
+            text: Ext.String.format('Business {0} Name',child_name),
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return value;
@@ -674,7 +729,7 @@ Ext.define("TSDependencyStatusReport", {
         
         columns.push({
             dataIndex:'FormattedID',
-            text:'Feature ID',
+            text: Ext.String.format('{0} ID',child_name),
             _csvIgnoreRender: true,
             renderer: function(value,meta,record){                
                 if ( Ext.isEmpty(value) ) {
@@ -686,7 +741,11 @@ Ext.define("TSDependencyStatusReport", {
                 );
             }
         });
-        columns.push({dataIndex:'Name',text:'Feature Name'});
+        columns.push({
+            dataIndex:'Name',
+            text:'Name'
+        });
+        
         columns.push({
             dataIndex:'__Type', 
             text: 'Type',
@@ -740,7 +799,7 @@ Ext.define("TSDependencyStatusReport", {
         });
         columns.push({
             dataIndex:'Owner',
-            text:'Feature Owner', 
+            text: Ext.String.format('{0} Owner',child_name),
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return "--"; }
                 return value._refObjectName;
@@ -817,14 +876,6 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         return deferred.promise;
-    },
-    
-    _displayGrid: function(store,field_names){
-        this.down('#display_box').add({
-            xtype: 'rallygrid',
-            store: store,
-            columnCfgs: field_names
-        });
     },
     
     _export: function(){

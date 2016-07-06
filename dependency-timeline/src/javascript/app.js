@@ -654,7 +654,7 @@ Ext.define("TSDependencyTimeline", {
         
         var release = this.down('rallyreleasecombobox') && this.down('rallyreleasecombobox').getRecord();
         if ( !Ext.isEmpty(release) && !Ext.isEmpty(release.get('ReleaseDate')) ) {
-            release_end = release.get('ReleaseStartDate');
+            release_end = release.get('ReleaseDate');
             if ( Ext.isEmpty(end) ) { end = release_end; }
             if ( release_end > end ) { end = release_end; }
         }

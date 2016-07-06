@@ -1,11 +1,11 @@
 
-Ext.define('CA.techservices.timesheet.TimeRow',{
+Ext.define('CA.techservices.row.DependencyRow',{
     extend: 'Ext.data.Model',
     
     fields: [
         { name: 'ObjectID', type:'integer' },
-        { name: 'Theme', type:'object' },
-        { name: 'Initiative', type: 'object' },
+        { name: 'Grandparent', type:'object' },
+        { name: 'Parent', type: 'object' },
         { name: 'FormattedID', type: 'string' },
         { name: 'Name', type:'string' },
         { name: 'State', type:'object' },
@@ -22,10 +22,10 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
         { name: 'PercentDoneByStoryPlanEstimate', type: 'float', defaultValue: -1 },
         { name: '__RelatedRecords', type:'auto'},
         { name: 'Release', type:'object' },
-        { name: 'BusinessFeature', type: 'object', convert: 
+        { name: 'BusinessItem', type: 'object', convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
-                return record.get('Feature');
+                return record.get('Item');
             }
         },
         
@@ -45,88 +45,88 @@ Ext.define('CA.techservices.timesheet.TimeRow',{
             }
         },
         
-        { name: '__ThemeFID', type: 'string', defaultValue: null, convert: 
+        { name: '__GrandparentFID', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('Theme');
+                var item = record.get('Grandparent');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.FormattedID;
             }
         },
         
-        { name: '__ThemeName', type: 'string', defaultValue: null, convert: 
+        { name: '__GrandparentName', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('Theme');
+                var item = record.get('Grandparent');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.Name || null
             }
         },
         
-        { name: '__InitiativeFID', type: 'string', defaultValue: null, convert: 
+        { name: '__ParentFID', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('Initiative');
+                var item = record.get('Parent');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.FormattedID || null;
             }
         },
         
-        { name: '__InitiativeName', type: 'string', defaultValue: null, convert: 
+        { name: '__ParentName', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('Initiative');
+                var item = record.get('Parent');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.Name || null;
             }
         },
         
-        { name: '__FeatureFID', type: 'string', defaultValue: null, convert: 
+        { name: '__ItemFID', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('Feature');
+                var item = record.get('Item');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.FormattedID || null;
             }
         },
         
-        { name: '__FeatureName', type: 'string', defaultValue: null, convert: 
+        { name: '__ItemName', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('Feature');
+                var item = record.get('Item');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.Name || null;
             }
         },
         
-        { name: '__BusinessFeatureFID', type: 'string', defaultValue: null, convert: 
+        { name: '__BusinessItemFID', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('BusinessFeature');
+                var item = record.get('BusinessItem');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.FormattedID || null;
             }
         },
         
-        { name: '__BusinessFeatureName', type: 'string', defaultValue: null, convert: 
+        { name: '__BusinessItemName', type: 'string', defaultValue: null, convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }
                 
-                var item = record.get('BusinessFeature');
+                var item = record.get('BusinessItem');
                 
                 if ( Ext.isEmpty(item) ) { return null; }
                 return item.Name || null;

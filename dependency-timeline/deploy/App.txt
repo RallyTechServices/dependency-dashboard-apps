@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jun 28 2016 16:25:33 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jun 28 2016 16:52:40 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jun 28 2016 16:25:33 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jun 28 2016 16:52:40 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 91412649774;
+        var CHECKSUM = 91389732061;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1986,7 +1986,7 @@ Ext.define("TSDependencyTimeline", {
         
         var release = this.down('rallyreleasecombobox') && this.down('rallyreleasecombobox').getRecord();
         if ( !Ext.isEmpty(release) && !Ext.isEmpty(release.get('ReleaseDate')) ) {
-            release_end = release.get('ReleaseStartDate');
+            release_end = release.get('ReleaseDate');
             if ( Ext.isEmpty(end) ) { end = release_end; }
             if ( release_end > end ) { end = release_end; }
         }
