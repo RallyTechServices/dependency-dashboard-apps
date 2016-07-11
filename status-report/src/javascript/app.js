@@ -165,10 +165,6 @@ Ext.define("TSDependencyStatusReport", {
         this.rows = [];
         this.base_items = [];
         this.baseItemsByOID = {};
-
-        if ( !Ext.isEmpty(this.PIs) && this.PIs.length > 0 ) {
-            console.log(this.PIs[0].get('_type') );
-        }
         
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
             release = this.down('rallyreleasecombobox').getRecord();
@@ -312,6 +308,9 @@ Ext.define("TSDependencyStatusReport", {
         
         Ext.Array.each(base_items, function(item){
             this.baseItemsByOID[item.get('ObjectID')] = item;
+            item.set('_successors',[]);
+            item.set('_predecessors',[]);
+            
             promises.push(function() { return this._getPredecessors(item); });
             promises.push(function() { return this._getSuccessors(item); });
         },this);
@@ -341,6 +340,7 @@ Ext.define("TSDependencyStatusReport", {
         
         var oids = [];
         Ext.Object.each(this.baseItemsByOID, function(key,item){
+            
             var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
             if ( !Ext.isEmpty(parent_oid) ) {
                 oids.push(parent_oid);
@@ -364,8 +364,8 @@ Ext.define("TSDependencyStatusReport", {
             context: { project: null },
             fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',
+                me.type_field,'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
         };
         
         this._loadWsapiRecords(config).then({
@@ -440,29 +440,27 @@ Ext.define("TSDependencyStatusReport", {
     _makeRowsFromHash: function(base_items_by_oid){
         var me = this,
             rows = [];
-        // this.parentsByOID
-        
+
+        console.log('--bibo', base_items_by_oid);
         Ext.Object.each(base_items_by_oid, function(oid,item){
             var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
             var grandparent = null;
-
-            console.log('--', parent_oid, me.parentsByOID);
             
             if ( !Ext.isEmpty(parent_oid) && !Ext.isEmpty(me.parentsByOID[parent_oid]) && !Ext.isEmpty(me.parentsByOID[parent_oid].Parent)) {
                 grandparent = me.parentsByOID[parent_oid].Parent;
             }
-                        
+                       
             var business_item = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
                     _Level: 0,
                     Grandparent: grandparent,
-                    Parent: item.get('Parent'),
+                    //Parent: item.get('Parent'),
                     BusinessItem: item.getData()
                 }, item.getData() )
             );
             
             rows.push(business_item);
             
-            var dependencies = Ext.Array.merge(item.get('_predecessors'), item.get('_successors') );
+            var dependencies = Ext.Array.push(item.get('_predecessors'), item.get('_successors') );
             Ext.Array.each(dependencies, function(dependency){
                 var parent_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 
@@ -471,66 +469,19 @@ Ext.define("TSDependencyStatusReport", {
                 if ( !Ext.isEmpty(parent_oid) && !Ext.isEmpty(me.parentsByOID[parent_oid]) && !Ext.isEmpty(me.parentsByOID[parent_oid].Parent)) {
                     grandparent = me.parentsByOID[parent_oid].Parent;
                 }
-//              
-                me.logger.log( 'related', item.get('FormattedID'), dependency.get('FormattedID') );
-                
+//                
                 var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
                         _Level: 1,
                         Grandparent: grandparent,
-                        Parent: item.get('Parent'),
+                        //Parent: item.get('Parent'),
                         BusinessItem: item.getData()
                     }, dependency.getData() )
                 );
-                
+//                
                 business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
             });            
-//            
-//            Ext.Array.each(item.get('_predecessors'), function(dependency){
-//                var parent_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
-//                
-//                grandparent = null;
-//
-//                if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-//                    theme = me.parentsByOID[initiative_oid].Parent;
-//                }
-////              
-//                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
-//                
-//                var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
-//                        _Level: 1,
-//                        Theme: theme,
-//                        Initiative: feature.get('Parent'),
-//                        BusinessFeature: feature.getData()
-//                    }, dependency.getData() )
-//                );
-//                
-//                business_feature.addRelatedRecord(related_record);
-//                rows.push(related_record);
-//            });
-//////            
-//            Ext.Array.each(feature.get('_successors'), function(dependency){
-//                console.log(dependency);
-//                var initiative_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
-//                theme = null;
-//
-//                if ( !Ext.isEmpty(initiative_oid) && !Ext.isEmpty(me.parentsByOID[initiative_oid]) && !Ext.isEmpty(me.parentsByOID[initiative_oid].Parent)) {
-//                    theme = me.parentsByOID[initiative_oid].Parent;
-//                }
-//                
-//                me.logger.log( 'related', feature.get('FormattedID'), dependency.get('FormattedID') );
-//                
-//                var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
-//                        _Level: 1,
-//                        Theme: theme,
-//                        Initiative: feature.get('Parent'),
-//                        BusinessFeature: feature.getData()
-//                    }, dependency.getData() )
-//                );
-//                
-//                business_feature.addRelatedRecord(related_record);
-//                rows.push(related_record);
-//            });
+
         });
         return rows;
     },
