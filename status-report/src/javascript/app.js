@@ -580,6 +580,9 @@ Ext.define("TSDependencyStatusReport", {
                             // set bacground color to all row td elements
                             for(var j = 0; j < cells.length; j++) {
                                 Ext.fly(cells[j]).setStyle('background-color', color);
+                                if ( record.get("__Type") === "Business" ) {
+                                    Ext.fly(cells[j]).addCls('business');
+                                }
                             }                                       
                         }
                     }

@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Jul 11 2016 16:16:40 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Jul 11 2016 16:45:31 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Jul 11 2016 16:16:40 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Jul 11 2016 16:45:31 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 93896266769;
+        var CHECKSUM = 94670424113;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1749,6 +1749,9 @@ Ext.define("TSDependencyStatusReport", {
                             // set bacground color to all row td elements
                             for(var j = 0; j < cells.length; j++) {
                                 Ext.fly(cells[j]).setStyle('background-color', color);
+                                if ( record.get("__Type") === "Business" ) {
+                                    Ext.fly(cells[j]).addCls('business');
+                                }
                             }                                       
                         }
                     }
@@ -2134,6 +2137,12 @@ Ext.define("TSDependencyStatusReport", {
 
 .x-border-layout-ct {
     background-color: #ffffff;
+}
+
+.business .x-grid-cell-inner {
+    font-weight: bold;
+    font-size: 12px !important;
+    font-family: Helvetica,Arial !important;
 }
 .pi-box {
     font: 9px arial, sans-serif !important;

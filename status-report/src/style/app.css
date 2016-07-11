@@ -19,3 +19,9 @@
 .x-border-layout-ct {
     background-color: #ffffff;
 }
+
+.business .x-grid-cell-inner {
+    font-weight: bold;
+    font-size: 12px !important;
+    font-family: Helvetica,Arial !important;
+}
