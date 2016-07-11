@@ -729,13 +729,25 @@ Ext.define("TSDependencyStatusReport", {
             text: '% Complete by Story Count',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
-                return Ext.String.format('{0}%',Math.round(100 * value));
+                return Ext.create('Rally.ui.renderer.template.progressbar.PortfolioItemPercentDoneTemplate',{
+                    percentDoneName: '__PercentDoneByStoryCount'
+                }).apply(record.getData());
+            },
+            exportRenderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.String.format('{0}%', Math.round(100 * value));
             }
         });
         columns.push({
             dataIndex:'__PercentDoneByStoryPlanEstimate',
             text: '% Complete by Story Points',
             renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; }
+                return Ext.create('Rally.ui.renderer.template.progressbar.PortfolioItemPercentDoneTemplate',{
+                    percentDoneName: '__PercentDoneByStoryPlanEstimate'
+                }).apply(record.getData());
+            },
+            exportRenderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return Ext.String.format('{0}%', Math.round(100 * value));
             }
