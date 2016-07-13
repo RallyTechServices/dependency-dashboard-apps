@@ -441,7 +441,6 @@ Ext.define("TSDependencyStatusReport", {
         var me = this,
             rows = [];
 
-        console.log('--bibo', base_items_by_oid);
         Ext.Object.each(base_items_by_oid, function(oid,item){
             var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
             var grandparent = null;
