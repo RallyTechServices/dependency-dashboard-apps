@@ -556,8 +556,8 @@ Ext.define("TSDependencyTimeline", {
         );
         
        
-        if ( level == 2 ) {
-            string = "<span style='background-color:#e7f5fe;'>" + string + "</span>";
+        if ( level == 0 ) {
+            string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
         }
         if ( record_type == 'iteration' || record_type == 'release' ) {
             string = record.get('Name');
