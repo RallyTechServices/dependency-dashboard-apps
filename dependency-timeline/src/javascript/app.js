@@ -526,6 +526,21 @@ Ext.define("TSDependencyTimeline", {
                     me.MilestonesByOID[result.get('ObjectID')] = result;
                 });
                 
+                me.milestoneLines = [];
+                
+                Ext.Array.each(results, function(milestone){
+                    console.log('milestone:', milestone.get('TargetDate'), milestone);
+                    
+                    me.milestoneLines.push({
+                        color: '#0c0',
+                        width: 1,
+                        date: milestone.get('TargetDate'),
+                        dashStyle: 'shortdash',
+                        zIndex: 4
+                    
+                    });
+                });
+                
                 deferred.resolve(rows);
             },
             failure: function(msg) {
@@ -597,7 +612,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
-            
+            additionalPlotlines: this.milestoneLines,
             eventsForPlannedItems: {
                 click: function() {
                     Rally.nav.Manager.showDetail(this._record._ref);

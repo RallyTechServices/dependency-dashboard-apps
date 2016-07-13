@@ -53,8 +53,21 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          */
         eventsForActualItems: null,
         
-        allowHorizontalScroll : false // not yet implemented
+        allowHorizontalScroll : false, // not yet implemented
         
+        /*
+         * additionalPlotlines:  push an array of additional plot lines onto the chart
+         * 
+         * Pass as an array of plotline config objects, but with date instead of value:
+         * [{
+         *    color: '#0c0',
+         *    width: 1,
+         *    date: new Date(),
+         *    zIndex: 4
+         *   }]
+         * 
+         */
+        additionalPlotlines: []
     },
 
     initComponent: function() {
@@ -374,7 +387,17 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             zIndex: 4
         };
         
-        return [today_line];
+        var plotlines = [today_line];
+        
+        if (this.additionalPlotlines) {
+            Ext.Array.each(this.additionalPlotlines, function(config){
+                if ( config.date ) {
+                    config.value = Ext.Array.indexOf(me.dateCategories,me._getCategoryFromDate(config.date));
+                }
+                plotlines.push(config);
+            });
+        }
+        return plotlines;
     },
     
     

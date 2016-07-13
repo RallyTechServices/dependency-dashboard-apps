@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jul 12 2016 21:30:16 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jul 12 2016 21:45:17 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jul 12 2016 21:30:16 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jul 12 2016 21:45:17 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 101840004887;
+        var CHECKSUM = 105100515023;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -875,8 +875,21 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          */
         eventsForActualItems: null,
         
-        allowHorizontalScroll : false // not yet implemented
+        allowHorizontalScroll : false, // not yet implemented
         
+        /*
+         * additionalPlotlines:  push an array of additional plot lines onto the chart
+         * 
+         * Pass as an array of plotline config objects, but with date instead of value:
+         * [{
+         *    color: '#0c0',
+         *    width: 1,
+         *    date: new Date(),
+         *    zIndex: 4
+         *   }]
+         * 
+         */
+        additionalPlotlines: []
     },
 
     initComponent: function() {
@@ -1196,7 +1209,17 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             zIndex: 4
         };
         
-        return [today_line];
+        var plotlines = [today_line];
+        
+        if (this.additionalPlotlines) {
+            Ext.Array.each(this.additionalPlotlines, function(config){
+                if ( config.date ) {
+                    config.value = Ext.Array.indexOf(me.dateCategories,me._getCategoryFromDate(config.date));
+                }
+                plotlines.push(config);
+            });
+        }
+        return plotlines;
     },
     
     
@@ -1977,6 +2000,21 @@ Ext.define("TSDependencyTimeline", {
                     me.MilestonesByOID[result.get('ObjectID')] = result;
                 });
                 
+                me.milestoneLines = [];
+                
+                Ext.Array.each(results, function(milestone){
+                    console.log('milestone:', milestone.get('TargetDate'), milestone);
+                    
+                    me.milestoneLines.push({
+                        color: '#0c0',
+                        width: 1,
+                        date: milestone.get('TargetDate'),
+                        dashStyle: 'shortdash',
+                        zIndex: 4
+                    
+                    });
+                });
+                
                 deferred.resolve(rows);
             },
             failure: function(msg) {
@@ -2048,7 +2086,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
-            
+            additionalPlotlines: this.milestoneLines,
             eventsForPlannedItems: {
                 click: function() {
                     Rally.nav.Manager.showDetail(this._record._ref);
