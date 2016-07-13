@@ -14,6 +14,8 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: 'Milestones', type:'object' },
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
+        { name: 'ReleaseDate', type: 'object' },
+        { name: 'ReleaseStartDate', type: 'object' },
         { name: 'ActualStartDate', type: 'object' },
         { name: 'ActualEndDate', type: 'object' },
         { name: 'LeafStoryCount', type:'integer' },

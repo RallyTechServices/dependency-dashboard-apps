@@ -23,9 +23,35 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          */
         plannedStartField: null,
         plannedEndField  : null,
+        /*
+         * EventsForPlannedItems: pass in an object with events.  Events can use
+         * 'this' to refer to the series point information, and the series is passed
+         *     color: colorObject.hex,
+         *     low: horizontal index for starting, 
+         *     high: horizontal index for end ,
+         *     _status: label for the color,
+         *     _record: the item for the bar (data, not model)
+         *     
+         *  use to define individual clicks on the points in the planned series, eg:
+         *  {
+         *      click: function() { alert(this._record._refObjectName; }
+         *  }
+         */
+        eventsForPlannedItems: null,
         
         actualStartField : 'ActualStartDate',
         actualEndField   : 'ActualEndDate',
+        /*
+         * EventsForActualItems: pass in an object with events.  Events can use
+         * 'this' to refer to the series point information, and the series is passed
+         *     color: colorObject.hex,
+         *     low: horizontal index for starting, 
+         *     high: horizontal index for end ,
+         *     _status: label for the color,
+         *     _record: the item for the bar (data, not model)
+         * 
+         */
+        eventsForActualItems: null,
         
         allowHorizontalScroll : false // not yet implemented
         
@@ -126,6 +152,9 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             data: this._getPlannedRangesFromItems(records,this.dateCategories)
         };
         
+        
+        console.log('planned series:', planned_series);
+        
         var actual_series = {
             name: 'Actual',
             data: this._getActualRangesFromItems(records, this.dateCategories)
@@ -200,7 +229,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     },
     
     _getPlannedRangesFromItems: function(items, categories) {
-        
         return Ext.Array.map(items, function(item) {
             var plannedStartField = this._getPlannedStartField(item.get('_type'));
             var plannedEndField   = this._getPlannedEndField(item.get('_type'));
@@ -216,13 +244,19 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                     label: 'Has no Percent Done by Story Count'
                 }
             }
-            
-            return {
+             
+            var config = {
                 color: colorObject.hex,
                 low: start_index, 
                 high: end_index ,
-                _status: colorObject.label
+                _status: colorObject.label,
+                _record: item.getData()
             };
+            
+            if ( this.eventsForPlannedItems ) {
+                config.events = this.eventsForPlannedItems;
+            }
+            return config;
         },this);
     },
     
@@ -242,7 +276,16 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             if ( Ext.isEmpty(item.get(actualEndField)) ) {
                 end_index = this._getPositionOnTimeline(categories,new Date());
             }
-            return [ start_index, end_index ];
+            var config = {
+                low: start_index, 
+                high: end_index ,
+                _record: item.getData()
+            };
+            if ( this.eventsForActualItems ) {
+                config.events = this.eventsForActualItems;
+            }
+            return config;
+            
         },this);
     },
     

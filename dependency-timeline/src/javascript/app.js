@@ -419,6 +419,16 @@ Ext.define("TSDependencyTimeline", {
     _makeRowsFromHash: function(base_items_by_oid){
         var me = this,
             rows = [];
+            
+        if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
+            release = this.down('rallyreleasecombobox').getRecord();
+            if ( release && release.get('Name') != this.clearText ) {
+                rows.push(Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
+                        _Level: 0
+                    }, release.getData() )
+                ));
+            }
+        }
 
         Ext.Object.each(base_items_by_oid, function(oid,item){
             var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
@@ -429,7 +439,7 @@ Ext.define("TSDependencyTimeline", {
             }
                        
             var business_item = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
-                    _Level: 0,
+                    _Level: 2,
                     Grandparent: grandparent,
                     //Parent: item.get('Parent'),
                     BusinessItem: item.getData()
@@ -449,14 +459,14 @@ Ext.define("TSDependencyTimeline", {
                 }
 //                
                 var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
-                        _Level: 1,
+                        _Level: 3,
                         Grandparent: grandparent,
                         //Parent: item.get('Parent'),
                         BusinessItem: item.getData()
                     }, dependency.getData() )
                 );
 //                
-                business_item.addRelatedRecord(related_record);
+                //business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
             });            
 
@@ -547,8 +557,11 @@ Ext.define("TSDependencyTimeline", {
     
     // override to make labels differently
     getCategoryString: function(record) {
+        
         var record_type = record.get('_type');
         var level = record.get('_Level');
+        
+        console.log(record_type, level);
         
         var string = Ext.String.format( '{0}: {1}',
             record.get('FormattedID'),
@@ -556,7 +569,7 @@ Ext.define("TSDependencyTimeline", {
         );
         
        
-        if ( level == 0 ) {
+        if ( level == 2 ) {
             string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
         }
         if ( record_type == 'iteration' || record_type == 'release' ) {
@@ -577,7 +590,13 @@ Ext.define("TSDependencyTimeline", {
             width: this.getWidth() - 20,
             records: rows,
             pageSize: 7,
-            getCategoryString: me.getCategoryString
+            getCategoryString: me.getCategoryString,
+
+            eventsForPlannedItems: {
+                click: function() {
+                    Rally.nav.Manager.showDetail(this._record._ref);
+                }
+            }
         };
         
         var start_date = this._getStartDate();

@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jul 12 2016 17:42:18 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jul 12 2016 18:35:58 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jul 12 2016 17:42:18 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jul 12 2016 18:35:58 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 90757312661;
+        var CHECKSUM = 96989315746;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -360,6 +360,8 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: 'Milestones', type:'object' },
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
+        { name: 'ReleaseDate', type: 'object' },
+        { name: 'ReleaseStartDate', type: 'object' },
         { name: 'ActualStartDate', type: 'object' },
         { name: 'ActualEndDate', type: 'object' },
         { name: 'LeafStoryCount', type:'integer' },
@@ -837,9 +839,35 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          */
         plannedStartField: null,
         plannedEndField  : null,
+        /*
+         * EventsForPlannedItems: pass in an object with events.  Events can use
+         * 'this' to refer to the series point information, and the series is passed
+         *     color: colorObject.hex,
+         *     low: horizontal index for starting, 
+         *     high: horizontal index for end ,
+         *     _status: label for the color,
+         *     _record: the item for the bar (data, not model)
+         *     
+         *  use to define individual clicks on the points in the planned series, eg:
+         *  {
+         *      click: function() { alert(this._record._refObjectName; }
+         *  }
+         */
+        eventsForPlannedItems: null,
         
         actualStartField : 'ActualStartDate',
         actualEndField   : 'ActualEndDate',
+        /*
+         * EventsForActualItems: pass in an object with events.  Events can use
+         * 'this' to refer to the series point information, and the series is passed
+         *     color: colorObject.hex,
+         *     low: horizontal index for starting, 
+         *     high: horizontal index for end ,
+         *     _status: label for the color,
+         *     _record: the item for the bar (data, not model)
+         * 
+         */
+        eventsForActualItems: null,
         
         allowHorizontalScroll : false // not yet implemented
         
@@ -940,6 +968,9 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             data: this._getPlannedRangesFromItems(records,this.dateCategories)
         };
         
+        
+        console.log('planned series:', planned_series);
+        
         var actual_series = {
             name: 'Actual',
             data: this._getActualRangesFromItems(records, this.dateCategories)
@@ -1014,7 +1045,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     },
     
     _getPlannedRangesFromItems: function(items, categories) {
-        
         return Ext.Array.map(items, function(item) {
             var plannedStartField = this._getPlannedStartField(item.get('_type'));
             var plannedEndField   = this._getPlannedEndField(item.get('_type'));
@@ -1030,13 +1060,19 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                     label: 'Has no Percent Done by Story Count'
                 }
             }
-            
-            return {
+             
+            var config = {
                 color: colorObject.hex,
                 low: start_index, 
                 high: end_index ,
-                _status: colorObject.label
+                _status: colorObject.label,
+                _record: item.getData()
             };
+            
+            if ( this.eventsForPlannedItems ) {
+                config.events = this.eventsForPlannedItems;
+            }
+            return config;
         },this);
     },
     
@@ -1056,7 +1092,16 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             if ( Ext.isEmpty(item.get(actualEndField)) ) {
                 end_index = this._getPositionOnTimeline(categories,new Date());
             }
-            return [ start_index, end_index ];
+            var config = {
+                low: start_index, 
+                high: end_index ,
+                _record: item.getData()
+            };
+            if ( this.eventsForActualItems ) {
+                config.events = this.eventsForActualItems;
+            }
+            return config;
+            
         },this);
     },
     
@@ -1813,6 +1858,16 @@ Ext.define("TSDependencyTimeline", {
     _makeRowsFromHash: function(base_items_by_oid){
         var me = this,
             rows = [];
+            
+        if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
+            release = this.down('rallyreleasecombobox').getRecord();
+            if ( release && release.get('Name') != this.clearText ) {
+                rows.push(Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
+                        _Level: 0
+                    }, release.getData() )
+                ));
+            }
+        }
 
         Ext.Object.each(base_items_by_oid, function(oid,item){
             var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
@@ -1823,7 +1878,7 @@ Ext.define("TSDependencyTimeline", {
             }
                        
             var business_item = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
-                    _Level: 0,
+                    _Level: 2,
                     Grandparent: grandparent,
                     //Parent: item.get('Parent'),
                     BusinessItem: item.getData()
@@ -1843,14 +1898,14 @@ Ext.define("TSDependencyTimeline", {
                 }
 //                
                 var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
-                        _Level: 1,
+                        _Level: 3,
                         Grandparent: grandparent,
                         //Parent: item.get('Parent'),
                         BusinessItem: item.getData()
                     }, dependency.getData() )
                 );
 //                
-                business_item.addRelatedRecord(related_record);
+                //business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
             });            
 
@@ -1941,8 +1996,11 @@ Ext.define("TSDependencyTimeline", {
     
     // override to make labels differently
     getCategoryString: function(record) {
+        
         var record_type = record.get('_type');
         var level = record.get('_Level');
+        
+        console.log(record_type, level);
         
         var string = Ext.String.format( '{0}: {1}',
             record.get('FormattedID'),
@@ -1950,7 +2008,7 @@ Ext.define("TSDependencyTimeline", {
         );
         
        
-        if ( level == 0 ) {
+        if ( level == 2 ) {
             string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
         }
         if ( record_type == 'iteration' || record_type == 'release' ) {
@@ -1971,7 +2029,13 @@ Ext.define("TSDependencyTimeline", {
             width: this.getWidth() - 20,
             records: rows,
             pageSize: 7,
-            getCategoryString: me.getCategoryString
+            getCategoryString: me.getCategoryString,
+
+            eventsForPlannedItems: {
+                click: function() {
+                    Rally.nav.Manager.showDetail(this._record._ref);
+                }
+            }
         };
         
         var start_date = this._getStartDate();
