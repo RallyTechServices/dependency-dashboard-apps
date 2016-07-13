@@ -264,7 +264,6 @@ Ext.define("TSDependencyTimeline", {
         this._loadWsapiRecords(config).then({
             scope: this,
             success: function(items) {
-                this.logger.log("Direct child items:", items);
                 deferred.resolve(items);
             },
             failure: function(msg) {
@@ -300,7 +299,6 @@ Ext.define("TSDependencyTimeline", {
             success: function(results) {
                 var related_items = Ext.Array.flatten(results);
                 
-                this.logger.log('Base Items', this.baseItemsByOID);
                 deferred.resolve(related_items);
             },
             failure: function(msg) {
@@ -486,7 +484,6 @@ Ext.define("TSDependencyTimeline", {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
         this.setLoading('Fetching Milestone Information...');
-        this.logger.log('Finding milestones from rows:', rows);
         
         var milestone_oids = [-1];
         
@@ -529,11 +526,10 @@ Ext.define("TSDependencyTimeline", {
                 me.milestoneLines = [];
                 
                 Ext.Array.each(results, function(milestone){
-                    console.log('milestone:', milestone.get('TargetDate'), milestone);
                     
                     me.milestoneLines.push({
                         color: '#0c0',
-                        width: 1,
+                        width: 3,
                         date: milestone.get('TargetDate'),
                         dashStyle: 'shortdash',
                         zIndex: 4
@@ -580,6 +576,8 @@ Ext.define("TSDependencyTimeline", {
     
     // override to make labels differently
     getCategoryString: function(record) {
+        
+        console.log(record);
         
         var record_type = record.get('_type');
         var level = record.get('_Level');
