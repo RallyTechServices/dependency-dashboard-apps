@@ -153,8 +153,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         };
         
         
-        console.log('planned series:', planned_series);
-        
         var actual_series = {
             name: 'Actual',
             data: this._getActualRangesFromItems(records, this.dateCategories)
@@ -394,12 +392,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                 inverted: true,
                 marginLeft: vertical_axis_width,
                 type: 'columnrange',
+                zoomType: 'y',
                 events: {
                     load: function(evt) {
                         me._setChart(this);
                     }
-                },
-                zoomType: 'y'
+                }
             },
             title: {
                 text: ''
@@ -452,8 +450,15 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
 
                 columnrange: {
                     dataLabels: {
-                        enabled: false,
-                        formatter: function() { return this.y + "!"; }
+                        enabled: true,
+                        formatter: function() { 
+                            // only show on left;
+                            if ( this.series.name == "Actual" && this.point.low == this.y 
+                                && !Ext.isEmpty(this.point._record.PercentDoneByStoryCount) && this.point.high != this.point.low ) {
+                                return parseInt(this.point._record.PercentDoneByStoryCount * 100) + "%"; 
+                            }
+                            return "";
+                        }
                     }
                 },
                 
