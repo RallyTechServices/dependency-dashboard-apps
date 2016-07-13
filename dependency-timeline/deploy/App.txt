@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jul 12 2016 21:12:29 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jul 12 2016 21:16:30 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jul 12 2016 21:12:29 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jul 12 2016 21:16:30 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 101015291817;
+        var CHECKSUM = 101070457671;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1220,7 +1220,8 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                     load: function(evt) {
                         me._setChart(this);
                     }
-                }
+                },
+                zoomType: 'y'
             },
             title: {
                 text: ''
@@ -2042,7 +2043,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
-
+            
             eventsForPlannedItems: {
                 click: function() {
                     Rally.nav.Manager.showDetail(this._record._ref);

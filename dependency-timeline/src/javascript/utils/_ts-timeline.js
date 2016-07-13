@@ -398,7 +398,8 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                     load: function(evt) {
                         me._setChart(this);
                     }
-                }
+                },
+                zoomType: 'y'
             },
             title: {
                 text: ''

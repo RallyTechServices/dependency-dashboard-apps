@@ -597,7 +597,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
-
+            
             eventsForPlannedItems: {
                 click: function() {
                     Rally.nav.Manager.showDetail(this._record._ref);
