@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Jul 13 2016 15:34:42 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Jul 13 2016 16:42:51 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Jul 13 2016 15:34:42 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Wed Jul 13 2016 16:42:51 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 104280061007;
+        var CHECKSUM = 105945303727;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1903,7 +1903,7 @@ Ext.define("TSDependencyTimeline", {
             rows = [];
             
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
-            release = this.down('rallyreleasecombobox').getRecord();
+            var release = this.down('rallyreleasecombobox').getRecord();
             if ( release && release.get('Name') != this.clearText ) {
                 rows.push(Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
                         _Level: 0
@@ -2057,19 +2057,22 @@ Ext.define("TSDependencyTimeline", {
         
         var record_type = record.get('_type');
         var level = record.get('_Level');
-                
-        var string = Ext.String.format( '{0}: {1}',
-            record.get('FormattedID'),
-            record.get('Name')
-        );
+        
+        var string = record.get('Name');
+        
+        if ( record_type !== 'release' ) {
+            string = Ext.String.format( '<a href="{0}" target="blank">{1}</a>: {2}',
+                Rally.nav.Manager.getDetailUrl(record),
+                record.get('FormattedID'),
+                record.get('Name')
+            );
+        }
         
        
         if ( level == 2 ) {
             string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
-        }
-        if ( record_type == 'iteration' || record_type == 'release' ) {
-            string = record.get('Name');
-        }
+        } 
+        
         var level = record.get('_Level') || 0;
         var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
         
@@ -2088,24 +2091,42 @@ Ext.define("TSDependencyTimeline", {
             getCategoryString: me.getCategoryString,
             additionalPlotlines: this.milestoneLines,
             eventsForPlannedItems: {
-                click: function() {
-                    Rally.nav.Manager.showDetail(this._record._ref);
-                },
-                mouseOver: function(evt) {
-                    //console.log('mouse over', evt);
+                
+                click: function(evt) {
+                    
                     if ( this._record._type != 'release' && this._record._type != 'iteration' ) {
+                        
 
                         var pop = Ext.create('Rally.ui.popover.PercentDonePopover', {
-                            target: Ext.get(evt.target.graphic.element),
+                            target: Ext.get(evt.target),//Ext.get(evt.target.graphic.element),
                             delegate: '.mySelectorForAllTargets'
                         });
                                         
                         pop.updateContent(this._record);
                     }
+                },
+                mouseOver: function(evt) {
+                    //console.log('mouse over', evt);
+                    
                       
                 },
                 mouseOut: function(evt) {
                     console.log('mouse out');
+                }
+            },
+            eventsForActualItems: {
+                click: function(evt) {
+                    //Rally.nav.Manager.showDetail(this._record._ref);
+                    if ( this._record._type != 'release' && this._record._type != 'iteration' ) {
+                        
+
+                        var pop = Ext.create('Rally.ui.popover.PercentDonePopover', {
+                            target: Ext.get(evt.target),//Ext.get(evt.target.graphic.element),
+                            delegate: '.mySelectorForAllTargets'
+                        });
+                                        
+                        pop.updateContent(this._record);
+                    }
                 }
             }
         };
