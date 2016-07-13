@@ -18,8 +18,11 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: 'ReleaseStartDate', type: 'object' },
         { name: 'ActualStartDate', type: 'object' },
         { name: 'ActualEndDate', type: 'object' },
+        { name: 'AcceptedLeafStoryCount', type:'integer' },
+        { name: 'AcceptedLeafStoryPlanEstimateTotal', type: 'float' },
         { name: 'LeafStoryCount', type:'integer' },
         { name: 'LeafStoryPlanEstimateTotal', type: 'float' },
+        { name: 'UnEstimatedLeafStoryCount', type:'integer' },
         { name: 'PercentDoneByStoryCount', type: 'float', defaultValue: -1 },
         { name: 'PercentDoneByStoryPlanEstimate', type: 'float', defaultValue: -1 },
         { name: '__RelatedRecords', type:'auto'},
@@ -33,6 +36,7 @@ Ext.define('CA.techservices.row.DependencyRow',{
         
         { name: '_type', type: 'string' },
         { name: '_ref', type: 'string' },
+        { name: 'Workspace', type: 'object' },
         
         { name: '_Level', type: 'integer', defaultValue: 0 },
         
@@ -213,5 +217,7 @@ Ext.define('CA.techservices.row.DependencyRow',{
         }
         
         this.set('__PercentDoneByStoryPlanEstimate', size_ratio);
-    }
+    },
+    
+    isSearch: function() { return false; }
 });

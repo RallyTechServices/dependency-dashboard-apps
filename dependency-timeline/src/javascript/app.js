@@ -256,7 +256,9 @@ Ext.define("TSDependencyTimeline", {
                 'PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
                 'Project','Owner','Release','Milestones',
                 'TargetDate',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+                'LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
+                'UnEstimatedLeafStoryCount']
         }
         
         this._loadWsapiRecords(config).then({
@@ -343,7 +345,9 @@ Ext.define("TSDependencyTimeline", {
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
                 'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
                 'Project','Owner','Release',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+                'LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
+                'UnEstimatedLeafStoryCount']
         };
         
         this._loadWsapiRecords(config).then({
@@ -379,7 +383,9 @@ Ext.define("TSDependencyTimeline", {
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
                 'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
-                'Project','Owner','Release'],
+                'Project','Owner','Release',
+                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
+                'UnEstimatedLeafStoryCount'],
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -404,7 +410,9 @@ Ext.define("TSDependencyTimeline", {
             fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
                 'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
-                'Project','Owner','Release'], 
+                'Project','Owner','Release',
+                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
+                'UnEstimatedLeafStoryCount'], 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -560,9 +568,7 @@ Ext.define("TSDependencyTimeline", {
         
         var record_type = record.get('_type');
         var level = record.get('_Level');
-        
-        console.log(record_type, level);
-        
+                
         var string = Ext.String.format( '{0}: {1}',
             record.get('FormattedID'),
             record.get('Name')
@@ -595,6 +601,22 @@ Ext.define("TSDependencyTimeline", {
             eventsForPlannedItems: {
                 click: function() {
                     Rally.nav.Manager.showDetail(this._record._ref);
+                },
+                mouseOver: function(evt) {
+                    //console.log('mouse over', evt);
+                    if ( this._record._type != 'release' && this._record._type != 'iteration' ) {
+
+                        var pop = Ext.create('Rally.ui.popover.PercentDonePopover', {
+                            target: Ext.get(evt.target.graphic.element),
+                            delegate: '.mySelectorForAllTargets'
+                        });
+                                        
+                        pop.updateContent(this._record);
+                    }
+                      
+                },
+                mouseOut: function(evt) {
+                    console.log('mouse out');
                 }
             }
         };
