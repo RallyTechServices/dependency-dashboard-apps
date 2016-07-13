@@ -42,11 +42,12 @@ Ext.define("TSDependencyTimeline", {
                 scope: this,
                 itemschosen: function(picker,items) {
                     this.PIs = items;
+                    this._changeReleaseBox();
+
                     if ( this.PIs.length > 0 ) {
                         this._updateData();
                     }
                     
-                    this._changeReleaseBox();
                 }
             }
         });
@@ -85,6 +86,7 @@ Ext.define("TSDependencyTimeline", {
             
             return;
         }
+        
         
         this._getChildItems().then({
             scope: this,

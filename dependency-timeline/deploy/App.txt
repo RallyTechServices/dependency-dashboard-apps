@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Jul 13 2016 15:29:21 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Jul 13 2016 15:34:42 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Jul 13 2016 15:29:21 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Wed Jul 13 2016 15:34:42 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 104280063756;
+        var CHECKSUM = 104280061007;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1516,11 +1516,12 @@ Ext.define("TSDependencyTimeline", {
                 scope: this,
                 itemschosen: function(picker,items) {
                     this.PIs = items;
+                    this._changeReleaseBox();
+
                     if ( this.PIs.length > 0 ) {
                         this._updateData();
                     }
                     
-                    this._changeReleaseBox();
                 }
             }
         });
@@ -1559,6 +1560,7 @@ Ext.define("TSDependencyTimeline", {
             
             return;
         }
+        
         
         this._getChildItems().then({
             scope: this,
