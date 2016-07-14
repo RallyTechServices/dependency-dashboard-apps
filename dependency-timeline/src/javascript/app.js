@@ -578,31 +578,70 @@ Ext.define("TSDependencyTimeline", {
     
     // override to make labels differently
     getCategoryString: function(record) {
+        var html = "<table><tr>";
         
-        console.log(record);
-        
-        var record_type = record.get('_type');
-        var level = record.get('_Level');
-        
-        var string = record.get('Name');
-        
-        if ( record_type !== 'release' ) {
-            string = Ext.String.format( '<a href="{0}" target="blank">{1}</a>: {2}',
-                Rally.nav.Manager.getDetailUrl(record),
-                record.get('FormattedID'),
-                record.get('Name')
+        Ext.Array.each(Rally.getApp()._getCategoryColumns(), function(column){
+            var style = column.style;
+            var value = record.get(column.dataIndex);
+            var string = column.renderer(value,null,record);
+            
+            html += Ext.String.format("<td class='ts-cell' style='{0}'>{1}</td>",
+                style,
+                string
             );
-        }
-        
-       
-        if ( level == 2 ) {
-            string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
-        } 
-        
-        var level = record.get('_Level') || 0;
-        var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
-        
-        return prefix + string;
+        });
+        html += "</tr></table>";
+        console.log('html:', html);
+        return html;
+    },
+    
+    _getCategoryColumns: function() {
+        return [
+            {
+                dataIndex: 'ObjectID',
+                style: "width:150px",
+                renderer: function(value,meta,record) {
+                    var record_type = record.get('_type');
+                    var level = record.get('_Level');
+                    
+                    var string = record.get('Name');
+                    
+                    if ( record_type !== 'release' ) {
+                        string = Ext.String.format( '<a href="{0}" target="blank">{1}</a>: {2}',
+                            Rally.nav.Manager.getDetailUrl(record),
+                            record.get('FormattedID'),
+                            record.get('Name')
+                        );
+                    }
+                    
+                   
+                    if ( level == 2 ) {
+                        string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
+                    } 
+                    
+                    var level = record.get('_Level') || 0;
+                    var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
+                    
+                    return prefix + string;
+                }
+            },
+            {
+                dataIndex: 'Project',
+                style: "width:200px",
+                renderer: function(value,meta,record) {
+                    if ( Ext.isEmpty(value) ) { return ""; }
+                    return value._refObjectName;
+                }
+            },
+            {
+                dataIndex: 'Owner',
+                style: "width:100px",
+                renderer: function(value,meta,record) {
+                    if ( Ext.isEmpty(value) ) { return ""; }
+                    return value._refObjectName;
+                }
+            }
+        ];
     },
     
     _getChartConfig: function(rows) {
@@ -612,6 +651,7 @@ Ext.define("TSDependencyTimeline", {
             xtype: 'tsalternativetimeline',
             height: 500,
             width: this.getWidth() - 20,
+            verticalLabelWidth: 500,
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
@@ -630,14 +670,6 @@ Ext.define("TSDependencyTimeline", {
                                         
                         pop.updateContent(this._record);
                     }
-                },
-                mouseOver: function(evt) {
-                    //console.log('mouse over', evt);
-                    
-                      
-                },
-                mouseOut: function(evt) {
-                    console.log('mouse out');
                 }
             },
             eventsForActualItems: {

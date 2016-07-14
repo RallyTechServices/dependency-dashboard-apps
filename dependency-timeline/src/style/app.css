@@ -15,3 +15,12 @@
     margin-right: 5px;
     cursor: pointer;
 }
+
+
+.ts-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}

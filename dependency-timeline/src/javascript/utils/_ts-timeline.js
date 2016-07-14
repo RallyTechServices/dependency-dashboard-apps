@@ -67,7 +67,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          *   }]
          * 
          */
-        additionalPlotlines: []
+        additionalPlotlines: [],
+        /*
+         * width of the labels for the vertical axis
+         */
+        verticalLabelWidth: 200
     },
 
     initComponent: function() {
@@ -408,7 +412,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         var me = this;
         
         var max = this.pageSize;
-        var vertical_axis_width = 200;
+        var vertical_axis_width = this.verticalLabelWidth;
         
         var chart_config = {
             chart: {

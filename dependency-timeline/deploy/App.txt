@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Jul 13 2016 16:42:51 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Jul 13 2016 17:31:11 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Jul 13 2016 16:42:51 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Wed Jul 13 2016 17:31:11 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 105945303727;
+        var CHECKSUM = 109663728752;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -889,7 +889,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          *   }]
          * 
          */
-        additionalPlotlines: []
+        additionalPlotlines: [],
+        /*
+         * width of the labels for the vertical axis
+         */
+        verticalLabelWidth: 200
     },
 
     initComponent: function() {
@@ -1230,7 +1234,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         var me = this;
         
         var max = this.pageSize;
-        var vertical_axis_width = 200;
+        var vertical_axis_width = this.verticalLabelWidth;
         
         var chart_config = {
             chart: {
@@ -2052,31 +2056,70 @@ Ext.define("TSDependencyTimeline", {
     
     // override to make labels differently
     getCategoryString: function(record) {
+        var html = "<table><tr>";
         
-        console.log(record);
-        
-        var record_type = record.get('_type');
-        var level = record.get('_Level');
-        
-        var string = record.get('Name');
-        
-        if ( record_type !== 'release' ) {
-            string = Ext.String.format( '<a href="{0}" target="blank">{1}</a>: {2}',
-                Rally.nav.Manager.getDetailUrl(record),
-                record.get('FormattedID'),
-                record.get('Name')
+        Ext.Array.each(Rally.getApp()._getCategoryColumns(), function(column){
+            var style = column.style;
+            var value = record.get(column.dataIndex);
+            var string = column.renderer(value,null,record);
+            
+            html += Ext.String.format("<td class='ts-cell' style='{0}'>{1}</td>",
+                style,
+                string
             );
-        }
-        
-       
-        if ( level == 2 ) {
-            string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
-        } 
-        
-        var level = record.get('_Level') || 0;
-        var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
-        
-        return prefix + string;
+        });
+        html += "</tr></table>";
+        console.log('html:', html);
+        return html;
+    },
+    
+    _getCategoryColumns: function() {
+        return [
+            {
+                dataIndex: 'ObjectID',
+                style: "width:150px",
+                renderer: function(value,meta,record) {
+                    var record_type = record.get('_type');
+                    var level = record.get('_Level');
+                    
+                    var string = record.get('Name');
+                    
+                    if ( record_type !== 'release' ) {
+                        string = Ext.String.format( '<a href="{0}" target="blank">{1}</a>: {2}',
+                            Rally.nav.Manager.getDetailUrl(record),
+                            record.get('FormattedID'),
+                            record.get('Name')
+                        );
+                    }
+                    
+                   
+                    if ( level == 2 ) {
+                        string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
+                    } 
+                    
+                    var level = record.get('_Level') || 0;
+                    var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
+                    
+                    return prefix + string;
+                }
+            },
+            {
+                dataIndex: 'Project',
+                style: "width:200px",
+                renderer: function(value,meta,record) {
+                    if ( Ext.isEmpty(value) ) { return ""; }
+                    return value._refObjectName;
+                }
+            },
+            {
+                dataIndex: 'Owner',
+                style: "width:100px",
+                renderer: function(value,meta,record) {
+                    if ( Ext.isEmpty(value) ) { return ""; }
+                    return value._refObjectName;
+                }
+            }
+        ];
     },
     
     _getChartConfig: function(rows) {
@@ -2086,6 +2129,7 @@ Ext.define("TSDependencyTimeline", {
             xtype: 'tsalternativetimeline',
             height: 500,
             width: this.getWidth() - 20,
+            verticalLabelWidth: 500,
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
@@ -2104,14 +2148,6 @@ Ext.define("TSDependencyTimeline", {
                                         
                         pop.updateContent(this._record);
                     }
-                },
-                mouseOver: function(evt) {
-                    //console.log('mouse over', evt);
-                    
-                      
-                },
-                mouseOut: function(evt) {
-                    console.log('mouse out');
                 }
             },
             eventsForActualItems: {
@@ -2251,6 +2287,15 @@ Ext.define("TSDependencyTimeline", {
     margin-top: 25px;
     margin-right: 5px;
     cursor: pointer;
+}
+
+
+.ts-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
 }
 .pi-box {
     font: 9px arial, sans-serif !important;
