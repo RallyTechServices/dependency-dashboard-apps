@@ -35,6 +35,7 @@ Ext.define("TSDependencyTimeline", {
     },
       
     _addSelectors: function(container) {
+        
         container.add({ 
             xtype:'portfolioitempickerbutton',
             layout: 'hbox',
@@ -58,6 +59,21 @@ Ext.define("TSDependencyTimeline", {
         });
         
         this._changeReleaseBox();
+        
+        this.metric_selector = container.add({
+            xtype: 'tstogglebutton',
+            toggleState: 'size',
+            itemId: 'metric_selector',
+            margin: '0 10 0 10',
+            stateful: true,
+            stateId: 'techservices-timeline-metriccombo',
+            stateEvents:['change'],
+            listeners: {
+                scope: this,
+                toggle: this._updateData
+            }
+        });
+        
        
     },
     
@@ -144,7 +160,9 @@ Ext.define("TSDependencyTimeline", {
         this.rows = [];
         this.base_features = [];
         this.baseItemsByOID = {};
-        
+        this.metric = this.metric_selector.getValue();
+    
+
         this.down('#display_box').removeAll();
 
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
@@ -656,6 +674,8 @@ Ext.define("TSDependencyTimeline", {
             pageSize: 7,
             getCategoryString: me.getCategoryString,
             additionalPlotlines: this.milestoneLines,
+            percentDoneField: this.metric == 'count' ? 'PercentDoneByStoryCount':'PercentDoneByStoryPlanEstimate',
+
             eventsForPlannedItems: {
                 
                 click: function(evt) {

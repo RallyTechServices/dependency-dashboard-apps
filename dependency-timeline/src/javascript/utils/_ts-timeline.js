@@ -75,7 +75,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         /*
          * width of the labels for the vertical axis
          */
-        verticalLabelWidth: 200
+        verticalLabelWidth: 200,
+        
+        /*
+         * PercentDoneByStoryCount|PercentDoneByStoryPlanEstimate
+         */
+        percentDoneField: null
     },
 
     initComponent: function() {
@@ -509,9 +514,13 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                         enabled: true,
                         formatter: function() { 
                             // only show on left;
+                            var field = 'PercentDoneByStoryPlanEstimate';
+                            if ( me.percentDoneField ) {
+                                field = me.percentDoneField;
+                            }
                             if ( this.series.name == "Actual" && this.point.low == this.y 
-                                && !Ext.isEmpty(this.point._record.PercentDoneByStoryCount) && this.point.high != this.point.low ) {
-                                return parseInt(this.point._record.PercentDoneByStoryCount * 100) + "%"; 
+                                && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
+                                return parseInt(this.point._record[field] * 100) + "%"; 
                             }
                             return "";
                         }
