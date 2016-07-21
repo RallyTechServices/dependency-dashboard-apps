@@ -17,6 +17,9 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         pageSize: 7,
         
+        /* color defaults to showing on Actuals line */
+        showColorOnPlanned: false, 
+        
         /*
          * Override mapping provided by type in the plannedStartMap and plannedEndMap
          * (If provided, will use these fields for all record types)
@@ -67,11 +70,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
          *   }]
          * 
          */
-        additionalPlotlines: [],
-        /*
-         * width of the labels for the vertical axis
-         */
-        verticalLabelWidth: 200
+        additionalPlotlines: []
     },
 
     initComponent: function() {
@@ -251,12 +250,18 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             var start_index = this._getPositionOnTimeline(categories, item.get(plannedStartField) );
             var end_index   = this._getPositionOnTimeline(categories, item.get(plannedEndField) );
             
-            var colorObject = Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(item.data, 'PercentDoneByStoryCount');
-
-            if ( Ext.isEmpty(item.get('PercentDoneByStoryCount') ) || item.get('PercentDoneByStoryCount') < 0 ){
-                colorObject = {
-                    hex: '#000',
-                    label: 'Has no Percent Done by Story Count'
+            var colorObject = {
+                hex: '#acacac'
+            };
+            
+            if ( this.showColorOnPlanned ) {
+                var colorObject = Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(item.data, 'PercentDoneByStoryCount');
+    
+                if ( Ext.isEmpty(item.get('PercentDoneByStoryCount') ) || item.get('PercentDoneByStoryCount') < 0 ){
+                    colorObject = {
+                        hex: '#000',
+                        label: 'Has no Percent Done by Story Count'
+                    }
                 }
             }
              
@@ -291,11 +296,30 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             if ( Ext.isEmpty(item.get(actualEndField)) ) {
                 end_index = this._getPositionOnTimeline(categories,new Date());
             }
+            
+            var colorObject = {
+                hex: '#acacac'
+            };
+            
+            if ( !this.showColorOnPlanned ) {
+                var colorObject = Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(item.data, 'PercentDoneByStoryCount');
+    
+                if ( Ext.isEmpty(item.get('PercentDoneByStoryCount') ) || item.get('PercentDoneByStoryCount') < 0 ){
+                    colorObject = {
+                        hex: '#000',
+                        label: 'Has no Percent Done by Story Count'
+                    }
+                }
+            }
+             
             var config = {
+                color: colorObject.hex,
                 low: start_index, 
                 high: end_index ,
+                _status: colorObject.label,
                 _record: item.getData()
             };
+            
             if ( this.eventsForActualItems ) {
                 config.events = this.eventsForActualItems;
             }
@@ -343,7 +367,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                 var to = from + diff - 1;
                 
                 bands.push({
-                    color: '#eee',
+                    color: '#f6f6f6',
                     from: from,
                     to: to,
                     label: {
@@ -412,7 +436,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         var me = this;
         
         var max = this.pageSize;
-        var vertical_axis_width = this.verticalLabelWidth;
+        var vertical_axis_width = 200;
         
         var chart_config = {
             chart: {
