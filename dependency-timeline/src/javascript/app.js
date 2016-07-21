@@ -591,7 +591,7 @@ Ext.define("TSDependencyTimeline", {
             );
         });
         html += "</tr></table>";
-        console.log('html:', html);
+
         return html;
     },
     
@@ -663,7 +663,7 @@ Ext.define("TSDependencyTimeline", {
                     if ( this._record._type != 'release' && this._record._type != 'iteration' ) {
                         
 
-                        var pop = Ext.create('Rally.ui.popover.PercentDonePopover', {
+                        var pop = Ext.create('CA.techservices.popover.TimelinePopover', {
                             target: Ext.get(evt.target),//Ext.get(evt.target.graphic.element),
                             delegate: '.mySelectorForAllTargets'
                         });
