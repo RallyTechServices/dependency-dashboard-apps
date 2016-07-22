@@ -702,7 +702,7 @@ Ext.define("TSDependencyTimeline", {
                     if ( this._record._type != 'release' && this._record._type != 'iteration' ) {
                         
 
-                        var pop = Ext.create('Rally.ui.popover.PercentDonePopover', {
+                        var pop = Ext.create('CA.techservices.popover.TimelinePopover', {
                             target: Ext.get(evt.target),//Ext.get(evt.target.graphic.element),
                             delegate: '.mySelectorForAllTargets'
                         });
@@ -725,7 +725,7 @@ Ext.define("TSDependencyTimeline", {
     _getStartDate: function() {
         var earliest_pi_start = null,
             release_start = null;
-        Ext.Array.each(this.PIs, function(pi){
+        Ext.Array.each(this.rows, function(pi){
             if ( Ext.isEmpty(pi.get('PlannedStartDate')) ) { return; }
             if ( Ext.isEmpty(earliest_pi_start) ) { earliest_pi_start = pi.get('PlannedStartDate'); }
             if ( earliest_pi_start > pi.get('PlannedStartDate') ) { earliest_pi_start = pi.get('PlannedStartDate'); }
@@ -748,7 +748,7 @@ Ext.define("TSDependencyTimeline", {
     _getEndDate: function() {
         var latest_pi_end = null,
             release_end = null;
-        Ext.Array.each(this.PIs, function(pi){
+        Ext.Array.each(this.rows, function(pi){
             if ( Ext.isEmpty(pi.get('PlannedEndDate')) ) { return; }
             if ( Ext.isEmpty(latest_pi_end) ) { latest_pi_end = pi.get('PlannedStartDate'); }
             if ( latest_pi_end < pi.get('PlannedEndDate') ) { latest_pi_end = pi.get('PlannedEndDate'); }

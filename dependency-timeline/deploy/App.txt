@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Thu Jul 21 2016 20:11:14 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Jul 21 2016 20:16:01 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Thu Jul 21 2016 20:11:14 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Thu Jul 21 2016 20:16:01 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 154355144487;
+        var CHECKSUM = 154398724570;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -2539,7 +2539,7 @@ Ext.define("TSDependencyTimeline", {
                     if ( this._record._type != 'release' && this._record._type != 'iteration' ) {
                         
 
-                        var pop = Ext.create('Rally.ui.popover.PercentDonePopover', {
+                        var pop = Ext.create('CA.techservices.popover.TimelinePopover', {
                             target: Ext.get(evt.target),//Ext.get(evt.target.graphic.element),
                             delegate: '.mySelectorForAllTargets'
                         });
@@ -2562,7 +2562,7 @@ Ext.define("TSDependencyTimeline", {
     _getStartDate: function() {
         var earliest_pi_start = null,
             release_start = null;
-        Ext.Array.each(this.PIs, function(pi){
+        Ext.Array.each(this.rows, function(pi){
             if ( Ext.isEmpty(pi.get('PlannedStartDate')) ) { return; }
             if ( Ext.isEmpty(earliest_pi_start) ) { earliest_pi_start = pi.get('PlannedStartDate'); }
             if ( earliest_pi_start > pi.get('PlannedStartDate') ) { earliest_pi_start = pi.get('PlannedStartDate'); }
@@ -2585,7 +2585,7 @@ Ext.define("TSDependencyTimeline", {
     _getEndDate: function() {
         var latest_pi_end = null,
             release_end = null;
-        Ext.Array.each(this.PIs, function(pi){
+        Ext.Array.each(this.rows, function(pi){
             if ( Ext.isEmpty(pi.get('PlannedEndDate')) ) { return; }
             if ( Ext.isEmpty(latest_pi_end) ) { latest_pi_end = pi.get('PlannedStartDate'); }
             if ( latest_pi_end < pi.get('PlannedEndDate') ) { latest_pi_end = pi.get('PlannedEndDate'); }
