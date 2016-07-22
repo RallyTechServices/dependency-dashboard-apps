@@ -120,7 +120,7 @@ Ext.define("TSDependencyTimeline", {
                 });
                 
                 if ( filters.length === 0 ) {
-                    container.add({xtype:'container', html:'No Releases on Features for This Item'});
+                    //container.add({xtype:'container', html:'No Releases on Features for This Item'});
                 } else {
                     container.add({ 
                         xtype:'rallyreleasecombobox',
@@ -675,7 +675,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
-            additionalPlotlines: this.milestoneLines,
+            additionalPlotlines: [], //this.milestoneLines,
             actualStartField: '__ActualStartDate',
             actualEndField: '__ActualEndDate',
             percentDoneField: this.metric == 'count' ? '__PercentDoneByStoryCount':'__PercentDoneByStoryPlanEstimate',

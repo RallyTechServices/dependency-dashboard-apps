@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Thu Jul 21 2016 20:16:01 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Jul 21 2016 20:19:52 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Thu Jul 21 2016 20:16:01 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Thu Jul 21 2016 20:19:52 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 154398724570;
+        var CHECKSUM = 154424624002;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1957,7 +1957,7 @@ Ext.define("TSDependencyTimeline", {
                 });
                 
                 if ( filters.length === 0 ) {
-                    container.add({xtype:'container', html:'No Releases on Features for This Item'});
+                    //container.add({xtype:'container', html:'No Releases on Features for This Item'});
                 } else {
                     container.add({ 
                         xtype:'rallyreleasecombobox',
@@ -2512,7 +2512,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
-            additionalPlotlines: this.milestoneLines,
+            additionalPlotlines: [], //this.milestoneLines,
             actualStartField: '__ActualStartDate',
             actualEndField: '__ActualEndDate',
             percentDoneField: this.metric == 'count' ? '__PercentDoneByStoryCount':'__PercentDoneByStoryPlanEstimate',
