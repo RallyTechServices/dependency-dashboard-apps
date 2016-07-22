@@ -492,11 +492,12 @@ Ext.define("TSDependencyTimeline", {
                     }, dependency.getData() )
                 );
 //                
-                //business_item.addRelatedRecord(related_record);
+                business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
             });            
 
         });
+        
         return rows;
     },
     
@@ -665,6 +666,7 @@ Ext.define("TSDependencyTimeline", {
     _getChartConfig: function(rows) {
         var me = this;
         
+        
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
@@ -674,7 +676,9 @@ Ext.define("TSDependencyTimeline", {
             pageSize: 7,
             getCategoryString: me.getCategoryString,
             additionalPlotlines: this.milestoneLines,
-            percentDoneField: this.metric == 'count' ? 'PercentDoneByStoryCount':'PercentDoneByStoryPlanEstimate',
+            actualStartField: '__ActualStartDate',
+            actualEndField: '__ActualEndDate',
+            percentDoneField: this.metric == 'count' ? '__PercentDoneByStoryCount':'__PercentDoneByStoryPlanEstimate',
 
             eventsForPlannedItems: {
                 

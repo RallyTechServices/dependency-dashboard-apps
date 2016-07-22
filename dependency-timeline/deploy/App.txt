@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Jul 20 2016 22:32:42 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Jul 21 2016 20:11:14 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Jul 20 2016 22:32:42 GMT-0700 (PDT)";
-        var BUILDER = "curmudgeon";
-        var CHECKSUM = 149433038960;
+        var APP_BUILD_DATE = "Thu Jul 21 2016 20:11:14 GMT-0700 (PDT)";
+        var BUILDER = "jmartin";
+        var CHECKSUM = 154355144487;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -500,6 +500,14 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: '__PercentDoneByStoryPlanEstimate', type: 'float', convert: function(value,record) {
             if ( !Ext.isEmpty(value) ) { return value; }
             return record.get('PercentDoneByStoryPlanEstimate') || 0;
+        } },
+        { name: '__ActualStartDate', type: 'object', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('ActualStartDate') || null;
+        } },
+        { name: '__ActualEndDate', type: 'object', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('ActualEndDate') || null;
         } }
     ],
     
@@ -563,6 +571,23 @@ Ext.define('CA.techservices.row.DependencyRow',{
         }
         
         this.set('__PercentDoneByStoryPlanEstimate', size_ratio);
+        
+        var my_actual_start_date = this.get('__ActualStartDate') || new Date();
+        var my_actual_end_date = this.get('__ActualEndDate') || new Date();
+        
+        var child_start_date = record.get('__ActualStartDate');
+        var child_end_date = record.get('__ActualEndDate');
+        
+        if ( !Ext.isEmpty(child_start_date) && my_actual_start_date > child_start_date ) {
+            my_actual_start_date = child_start_date;
+        }
+        
+        if ( !Ext.isEmpty(child_end_date) && my_actual_end_date < child_end_date ) {
+            my_actual_end_date = child_end_date;
+        }
+        
+        this.set('__ActualStartDate',my_actual_start_date);
+        this.set('__ActualEndDate',my_actual_end_date);
     },
     
     isSearch: function() { return false; }
@@ -1550,6 +1575,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             if ( me.percentDoneField ) {
                                 field = me.percentDoneField;
                             }
+
                             if ( this.series.name == "Actual" && this.point.low == this.y 
                                 && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
                                 return parseInt(this.point._record[field] * 100) + "%"; 
@@ -2303,11 +2329,12 @@ Ext.define("TSDependencyTimeline", {
                     }, dependency.getData() )
                 );
 //                
-                //business_item.addRelatedRecord(related_record);
+                business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
             });            
 
         });
+        
         return rows;
     },
     
@@ -2476,6 +2503,7 @@ Ext.define("TSDependencyTimeline", {
     _getChartConfig: function(rows) {
         var me = this;
         
+        
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
@@ -2485,7 +2513,9 @@ Ext.define("TSDependencyTimeline", {
             pageSize: 7,
             getCategoryString: me.getCategoryString,
             additionalPlotlines: this.milestoneLines,
-            percentDoneField: this.metric == 'count' ? 'PercentDoneByStoryCount':'PercentDoneByStoryPlanEstimate',
+            actualStartField: '__ActualStartDate',
+            actualEndField: '__ActualEndDate',
+            percentDoneField: this.metric == 'count' ? '__PercentDoneByStoryCount':'__PercentDoneByStoryPlanEstimate',
 
             eventsForPlannedItems: {
                 

@@ -154,6 +154,14 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: '__PercentDoneByStoryPlanEstimate', type: 'float', convert: function(value,record) {
             if ( !Ext.isEmpty(value) ) { return value; }
             return record.get('PercentDoneByStoryPlanEstimate') || 0;
+        } },
+        { name: '__ActualStartDate', type: 'object', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('ActualStartDate') || null;
+        } },
+        { name: '__ActualEndDate', type: 'object', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('ActualEndDate') || null;
         } }
     ],
     
@@ -217,6 +225,23 @@ Ext.define('CA.techservices.row.DependencyRow',{
         }
         
         this.set('__PercentDoneByStoryPlanEstimate', size_ratio);
+        
+        var my_actual_start_date = this.get('__ActualStartDate') || new Date();
+        var my_actual_end_date = this.get('__ActualEndDate') || new Date();
+        
+        var child_start_date = record.get('__ActualStartDate');
+        var child_end_date = record.get('__ActualEndDate');
+        
+        if ( !Ext.isEmpty(child_start_date) && my_actual_start_date > child_start_date ) {
+            my_actual_start_date = child_start_date;
+        }
+        
+        if ( !Ext.isEmpty(child_end_date) && my_actual_end_date < child_end_date ) {
+            my_actual_end_date = child_end_date;
+        }
+        
+        this.set('__ActualStartDate',my_actual_start_date);
+        this.set('__ActualEndDate',my_actual_end_date);
     },
     
     isSearch: function() { return false; }

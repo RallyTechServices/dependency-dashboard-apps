@@ -518,6 +518,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             if ( me.percentDoneField ) {
                                 field = me.percentDoneField;
                             }
+
                             if ( this.series.name == "Actual" && this.point.low == this.y 
                                 && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
                                 return parseInt(this.point._record[field] * 100) + "%"; 
