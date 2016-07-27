@@ -551,6 +551,11 @@ Ext.define('CA.techservices.DeepExporter',{
                         d || ''
                     );
                 }).join('| ');
+            }},
+            {fieldName: 'Item', text: 'Feature.DependenciesCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+                
+                return value.PredecessorsAndSuccessors.Count;
             }}
         ];
     },
@@ -665,7 +670,7 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},
-            {fieldName: 'Item', text: 'Feature.Milestones', renderer: function(value,record){                
+            {fieldName: 'Parent', text: 'Feature.Parent.Milestones', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
                 
                 return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
@@ -680,6 +685,11 @@ Ext.define('CA.techservices.DeepExporter',{
                         d || ''
                     );
                 }).join('| ');
+            }},
+            {fieldName: 'Item', text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+                
+                return value.PredecessorsAndSuccessors.Count;
             }}
         ];
     },
@@ -789,7 +799,7 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},
-            {fieldName: 'Item', text: 'Feature.Milestones', renderer: function(value,record){                
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Milestones', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
                 
                 return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
@@ -804,6 +814,11 @@ Ext.define('CA.techservices.DeepExporter',{
                         d || ''
                     );
                 }).join('| ');
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.DependenciesCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+                
+                return value.PredecessorsAndSuccessors.Count;
             }}
         ];
     }
