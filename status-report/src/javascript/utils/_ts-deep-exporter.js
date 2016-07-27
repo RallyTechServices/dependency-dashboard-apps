@@ -7,7 +7,8 @@ Ext.define('CA.techservices.DeepExporter',{
         /*
          * An array of records
          */
-        records: []
+        records: [],
+        MilestonesByOID: {}
     },
     
     constructor: function(config) {
@@ -43,7 +44,6 @@ Ext.define('CA.techservices.DeepExporter',{
                     row.Story = story;
                     rows.push(row);
                 });
-                
                 
                 deferred.resolve(rows);
             },
@@ -84,7 +84,29 @@ Ext.define('CA.techservices.DeepExporter',{
                 
                 Deft.Chain.sequence(promises,this).then({
                     success: function(results) {
-                        deferred.resolve(Ext.Array.flatten(results));
+                        var stories = Ext.Array.flatten(results);
+                        
+                        if ( stories.length == 0 ) {
+                            deferred.resolve(stories);
+                            return;
+                        }
+                        
+                        var promises = Ext.Array.map(stories, function(story){
+                            return function() {
+                                return me._setMilestonesOnStory(story); 
+                            }
+                        });
+                        
+                        Deft.Chain.sequence(promises,me).then({
+                            success: function(stories_with_milestones) {
+                                deferred.resolve(Ext.Array.flatten(stories_with_milestones));
+                            },
+                            failure: function(msg) {
+                                deferred.reject(msg);
+                            }
+                        });
+                        
+                        
                     },
                     failure: function(msg) {
                         deferred.reject(msg);
@@ -98,6 +120,50 @@ Ext.define('CA.techservices.DeepExporter',{
         });
         
         return deferred.promise;
+    },
+    
+    _setMilestonesOnStory:function(story_data){
+        var me = this,
+            deferred = Ext.create('Deft.Deferred');
+        
+        story_data._milestones = [];
+        
+        if ( Ext.isEmpty(story_data.Milestones) || story_data.Milestones.Count === 0 ) {
+            return story_data;
+        }
+        
+        var filters = Ext.Array.map(story_data.Milestones._tagsNameArray, function(ms){
+            var oid = me._getOidFromRef(ms._ref);
+            return { property:'ObjectID', value: oid };
+        });
+        
+        if ( filters.length === 0 ) { return story_data; }
+        
+        var config = {
+            model:'Milestone',
+            filters: Rally.data.wsapi.Filter.or(filters),
+            limit: Infinity,
+            pageSize: 2000,
+            fetch: ['ObjectID','Name','TargetDate']
+        };
+        
+        this._loadWsapiRecords(config).then({
+            success: function(milestones) {
+                var ms_data = Ext.Array.map(milestones, function(milestone){ return milestone.getData(); });
+                
+                story_data._milestones = ms_data;
+                deferred.resolve(story_data);
+            },
+            failure: function(msg) {
+                deferred.reject(msg);
+            }
+        });
+        return deferred.promise;
+    },
+    
+    _getOidFromRef: function(ref) {
+        var ref_array = ref.replace(/\.js$/,'').split(/\//);
+        return ref_array[ref_array.length-1];
     },
     
     _getTestCasesForStory: function(story_data){
@@ -326,12 +392,30 @@ Ext.define('CA.techservices.DeepExporter',{
             {fieldName: 'Story', text: 'Story.Defects', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Defects) ) { return ""; }
                 return value.Defects.Count;
+            }},
+            {fieldName: 'Story', text: 'Story.Milestones', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value._milestones) ) { return ""; }
+                
+                var display_array = Ext.Array.map(value._milestones, function(ms) {
+                    var d = ms.TargetDate;
+                    if ( !Ext.isEmpty(d) && ! Ext.isString(d) ) {
+                        d = '- ' + Ext.Date.format(d, 'd-M-Y T');
+                    }
+                    return Ext.String.format("{0} {1}",
+                        ms.Name,
+                        d || ''
+                    );
+                });
+                
+                return display_array.join('| ');
             }}
+            
                 
         ];
     },
     
     _getItemColumns: function() {
+        var me = this;
         return [
             {fieldName: 'Item', text: 'Feature.FormattedID', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
@@ -451,11 +535,28 @@ Ext.define('CA.techservices.DeepExporter',{
             {fieldName: 'Item', text: 'Feature.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
+            }},
+            {fieldName: 'Item', text: 'Feature.Milestones', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
+                
+                return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
+                    var oid = me._getOidFromRef(ms._ref);
+                    var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
+                                        
+                    if ( !Ext.isEmpty(d) ) {
+                        d = '- ' + Ext.Date.format(d, 'd-M-Y T');
+                    }
+                    return Ext.String.format("{0} {1}",
+                        ms.Name,
+                        d || ''
+                    );
+                }).join('| ');
             }}
         ];
     },
     
     _getParentColumns: function() {
+        var me = this;
         return [
             {fieldName: 'Parent', text: 'Feature.Parent.FormattedID', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
@@ -563,11 +664,28 @@ Ext.define('CA.techservices.DeepExporter',{
             {fieldName: 'Parent', text: 'Feature.Parent.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
+            }},
+            {fieldName: 'Item', text: 'Feature.Milestones', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
+                
+                return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
+                    var oid = me._getOidFromRef(ms._ref);
+                    var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
+                                        
+                    if ( !Ext.isEmpty(d) ) {
+                        d = '- ' + Ext.Date.format(d, 'd-M-Y T');
+                    }
+                    return Ext.String.format("{0} {1}",
+                        ms.Name,
+                        d || ''
+                    );
+                }).join('| ');
             }}
         ];
     },
     
     _getGrandparentColumns: function() {
+        var me = this;
         return [
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.FormattedID', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
@@ -670,6 +788,22 @@ Ext.define('CA.techservices.DeepExporter',{
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
+            }},
+            {fieldName: 'Item', text: 'Feature.Milestones', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
+                
+                return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
+                    var oid = me._getOidFromRef(ms._ref);
+                    var d = me.MilestonesByOID[oid] &&  me.MilestonesByOID[oid].get('TargetDate');
+                                        
+                    if ( !Ext.isEmpty(d) ) {
+                        d = '- ' + Ext.Date.format(d, 'd-M-Y T');
+                    }
+                    return Ext.String.format("{0} {1}",
+                        ms.Name,
+                        d || ''
+                    );
+                }).join('| ');
             }}
         ];
     }

@@ -855,7 +855,8 @@ Ext.define("TSDependencyStatusReport", {
         // rows are an array of DependencyRow objects
         this.logger.log('rows', rows);
         var exporter = Ext.create('CA.techservices.DeepExporter', {
-            records: rows
+            records: rows,
+            MilestonesByOID: this.MilestonesByOID
         });
         
         this.setLoading('Gathering additional data...');
