@@ -32,6 +32,9 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: '_type', type: 'string' },
         { name: '_ref', type: 'string' },
         
+            { name: '_stories', type:'object'},
+            { name: 'PreliminaryState', type: 'object' }, 
+        
         { name: '_Level', type: 'integer', defaultValue: 0 },
         
         { name: '__Type', type: 'string', defaultValue: null, convert: 

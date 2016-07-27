@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Jul 11 2016 16:55:30 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jul 26 2016 18:52:02 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Jul 11 2016 16:55:30 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jul 26 2016 18:52:02 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 96778724443;
+        var CHECKSUM = 153230651499;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -341,6 +341,9 @@ Ext.define('CA.techservices.row.DependencyRow',{
         
         { name: '_type', type: 'string' },
         { name: '_ref', type: 'string' },
+        
+            { name: '_stories', type:'object'},
+            { name: 'PreliminaryState', type: 'object' }, 
         
         { name: '_Level', type: 'integer', defaultValue: 0 },
         
@@ -775,6 +778,383 @@ Ext.define('CA.techservices.dialog.TypedArtifactChooserDialog', {
         return items;
     }
 });
+/*
+ * given a set of records, go get more information for them
+ */
+ 
+Ext.define('CA.techservices.DeepExporter',{
+    config: {
+        /*
+         * An array of records
+         */
+        records: []
+    },
+    
+    constructor: function(config) {
+        config = config || {};
+        this.mergeConfig(config);
+    },
+    
+    gatherDescendantInformation: function() {
+        var me = this,
+            records = this.records;
+        // assume that the row represents a portfolio item of some sort
+        
+        var promises = Ext.Array.map(records, function(record){
+            return function() {
+                return me.gatherDescendantsForPI(record);
+            }
+        });
+        
+        return Deft.Chain.sequence(promises,this)
+    },
+    
+    gatherDescendantsForPI: function(record) {
+        var me = this,
+            deferred = Ext.create('Deft.Deferred');
+        
+        me.gatherStoriesForPI(record).then({
+            success: function(stories) {
+                record.set('_stories',Ext.Array.map(stories, function(story){
+                    return story.getData();
+                }));
+                
+                var rows = [ record.getData() ];
+                Ext.Array.each(stories, function(story){
+                    var row = Ext.clone(record.getData());
+                    row.__story = story.getData();
+                    rows.push(row);
+                });
+                
+                
+                deferred.resolve(rows);
+            },
+            failure: function(msg){
+                deferred.reject(msg);
+            }
+        });
+        
+        return deferred.promise;
+    },
+    
+    gatherStoriesForPI: function(record) {
+        var filters = Rally.data.wsapi.Filter.or([
+            {property:'Feature.ObjectID',value:record.get('ObjectID')},
+            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
+        ]);
+        
+        var config = {
+            model:'HierarchicalRequirement',
+            filters: filters,
+            limit: Infinity,
+            pageSize: 2000
+        };
+        
+        return this._loadWsapiRecords(config);
+    },
+     
+    _loadWsapiRecords: function(config){
+        var deferred = Ext.create('Deft.Deferred');
+        var me = this;
+        var default_config = {
+            model: 'Defect',
+            fetch: ['ObjectID'],
+            compact: false
+        };
+
+        Ext.create('Rally.data.wsapi.Store', Ext.Object.merge(default_config,config)).load({
+            callback : function(records, operation, successful) {
+                if (successful){
+                    deferred.resolve(records);
+                } else {
+                    me.logger.log("Failed: ", operation);
+                    deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
+                }
+            }
+        });
+        return deferred.promise;
+    },
+    
+    // given an array of hashes.  TODO: get columns from the app instead of here
+    saveCSV: function(rows, file_name) {
+        var me = this;
+        
+        var csv = Ext.Array.map(rows, function(row){
+            return me.getCSVFromRow(row,me.getColumns());
+        });
+        
+        csv.unshift(this.getHeadersFromColumns(this.getColumns()));
+        
+        csv = csv.join('\r\n');
+        Rally.technicalservices.FileUtilities.saveCSVToFile(csv,file_name);
+    },
+    
+    getCSVFromRow: function(row, columns) {
+        var nodes = Ext.Array.map(columns, function(column){
+            if ( Ext.isEmpty(column.fieldName) ) {
+                return '';
+            }
+            
+            var value = row[column.fieldName];
+            
+            if ( !Ext.isEmpty(column.renderer) ) {
+                value = column.renderer(value,row);
+            }
+            
+            if ( Ext.isEmpty(value) ) { return ""; }
+            if ( Ext.isString(value) ) { return value.replace(/"/g,'""'); }
+            
+            return value
+        });
+        
+        var csv_string = "";
+        Ext.Array.each(nodes, function(node,idx){
+            if ( idx > 0 ) {
+                csv_string = csv_string + ",";
+            }
+            if (/^=/.test(node) ) {
+                csv_string = csv_string + node;
+            } else {
+                csv_string = csv_string + '"' + node + '"';
+            }
+
+        });
+        
+        return csv_string;
+    },
+    
+    getHeadersFromColumns: function(columns) {
+        var nodes = Ext.Array.map(columns, function(column){
+            return column.text;
+        });
+         
+        var csv_string = "";
+        Ext.Array.each(nodes, function(node,idx){
+            if ( idx > 0 ) {
+                csv_string = csv_string + ",";
+            }
+            if (/^=/.test(node) ) {
+                csv_string = csv_string + node;
+            } else {
+                csv_string = csv_string + '"' + node + '"';
+            }
+
+        });
+        
+        return csv_string;
+        
+    },
+    
+    getColumns: function() {
+        // NOT for models -- it's for a hash
+        var columns = [];
+        
+        columns = Ext.Array.push(columns,this._getGrandparentColumns());
+        columns = Ext.Array.push(columns,this._getParentColumns());
+        
+        return columns;
+    },
+    
+    _getParentColumns: function() {
+        return [
+            {fieldName: 'Parent', text: 'Feature.Parent.FormattedID', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.FormattedID;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Name', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.Name;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.State', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.State) ) { return ""; }
+                
+                return value.State.Name;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PreliminaryState', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryState) ) { return ""; }
+                
+                return value.c_PreliminaryState;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Ready', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
+                
+                return value.Ready;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
+                
+                return Ext.String.format( "{0}%", value.PercentDoneByStoryPlanEstimate * 100 );
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PercentDoneByStoryCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
+                
+                return Ext.String.format( "{0}%", value.PercentDoneByStoryCount * 100 );
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Color', renderer: function(value,record){
+                if (Ext.isEmpty(value) ) { return ""; }
+                
+                return value.DisplayColor;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Description', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.Description;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Project', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
+                return value.Project.Name;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Owner', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
+                return value.Owner._refObjectName;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.InvestmentCategory', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.InvestmentCategory) ) { return ""; }
+                return value.InvestmentCategory;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.ValueScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ValueScore) ) { return ""; }
+                return value.ValueScore;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.RiskScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.RiskScore) ) { return ""; }
+                return value.RiskScore;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.WSJFScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.WSJFScore) ) { return ""; }
+                return value.WSJFScore;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.RefinedEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
+                return value.RefinedEstimate;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PlannedStartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
+                return value.PlannedStartDate;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PlannedEndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
+                return value.PlannedEndDate;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.ActualStartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
+                return value.ActualStartDate;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.ActualEndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
+                return value.ActualEndDate;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Expedite', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
+                return value.Expedite;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.LeafStoryCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
+                return value.LeafStoryCount;
+            }}
+        ];
+    },
+    
+    _getGrandparentColumns: function() {
+        return [
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.FormattedID', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.FormattedID;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Name', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.Name;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.State', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.State) ) { return ""; }
+                
+                return value.State.Name;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PreliminaryState', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryState) ) { return ""; }
+                
+                return value.c_PreliminaryState;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Ready', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
+                
+                return value.Ready;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
+                
+                return Ext.String.format( "{0}%", value.PercentDoneByStoryPlanEstimate * 100 );
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PercentDoneByStoryCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
+                
+                return Ext.String.format( "{0}%", value.PercentDoneByStoryCount * 100 );
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Color', renderer: function(value,record){
+                if (Ext.isEmpty(value) ) { return ""; }
+                
+                return value.DisplayColor;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Description', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.Description;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Project', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
+                return value.Project.Name;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Owner', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
+                return value.Owner._refObjectName;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.InvestmentCategory', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.InvestmentCategory) ) { return ""; }
+                return value.InvestmentCategory;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.ValueScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ValueScore) ) { return ""; }
+                return value.ValueScore;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.RiskScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.RiskScore) ) { return ""; }
+                return value.RiskScore;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.WSJFScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.WSJFScore) ) { return ""; }
+                return value.WSJFScore;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.RefinedEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
+                return value.RefinedEstimate;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlannedStartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
+                return value.PlannedStartDate;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlannedEndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
+                return value.PlannedEndDate;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.ActualStartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
+                return value.ActualStartDate;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.ActualEndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
+                return value.ActualEndDate;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Expedite', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
+                return value.Expedite;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
+                return value.LeafStoryCount;
+            }}
+        ];
+    }
+    
+    
+});
 Ext.define('recordHolder',{
     data: {},
     constructor: function(config) {
@@ -1184,6 +1564,13 @@ Ext.define("TSDependencyStatusReport", {
     PIs: [],
     MilestonesByOID: {},
     
+    pi_fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+                'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+                'Ready', 'DisplayColor', 'Description','InvestmentCategory',
+                'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite'],
+                
     integrationHeaders : {
         name : "TSDependencyStatusReport"
     },
@@ -1196,11 +1583,13 @@ Ext.define("TSDependencyStatusReport", {
 
     launch: function() {
         var me = this;
+        
         if (Ext.isEmpty(this.getSetting('typeField')) ) {
             Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose an item field used to define Platform or Business');
             return;
         }
         this.type_field = this.getSetting('typeField');
+        this.pi_fetch.push(this.type_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -1320,7 +1709,7 @@ Ext.define("TSDependencyStatusReport", {
             listeners: {
                 scope: this,
                 click: function() {
-                    this._export();
+                    this._deepExport();
                 }
             }
         });
@@ -1440,11 +1829,7 @@ Ext.define("TSDependencyStatusReport", {
             model: this._getChildType(this._getParentType()),
             filters: filters,
             context: { project: null },
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+            fetch: this.pi_fetch
         }
         
         this._loadWsapiRecords(config).then({
@@ -1531,10 +1916,8 @@ Ext.define("TSDependencyStatusReport", {
             model: this._getParentType(),
             filters: Rally.data.wsapi.Filter.or(filters),
             context: { project: null },
-            fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',
-                me.type_field,'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+            fetch: this.pi_fetch
+            
         };
         
         this._loadWsapiRecords(config).then({
@@ -1568,9 +1951,7 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         item.getCollection('Predecessors').load({
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
+            fetch: this.pi_fetch,
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -1592,9 +1973,7 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         item.getCollection('Successors').load({
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
+            fetch: this.pi_fetch, 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -1610,7 +1989,6 @@ Ext.define("TSDependencyStatusReport", {
         var me = this,
             rows = [];
 
-        console.log('--bibo', base_items_by_oid);
         Ext.Object.each(base_items_by_oid, function(oid,item){
             var parent_oid = item.get('Parent') && item.get('Parent').ObjectID;
             var grandparent = null;
@@ -2013,6 +2391,29 @@ Ext.define("TSDependencyStatusReport", {
         return deferred.promise;
     },
     
+    _deepExport: function() {
+        var me = this;
+        this.logger.log('_deepExport');
+        
+        var rows = this.rows;
+        
+        // rows are an array of DependencyRow objects
+        this.logger.log('rows', rows);
+        var exporter = Ext.create('CA.techservices.DeepExporter', {
+            records: rows
+        });
+        
+        this.setLoading('Gathering additional data...');
+        
+        exporter.gatherDescendantInformation().then({
+            success: function(results) {
+                var rows = Ext.Array.flatten(results);
+                exporter.saveCSV(rows, "E2E Value Stream_MVP Status.csv");
+            }
+        }).always(function(){ me.setLoading(false)});
+        
+    },
+    
     _export: function(){
         var me = this;
         this.logger.log('_export');
@@ -2156,6 +2557,7 @@ Ext.define("TSDependencyStatusReport", {
     font-size: 12px !important;
     font-family: Helvetica,Arial !important;
 }
+
 .pi-box {
     font: 9px arial, sans-serif !important;
     background-color: #D3D3D3;

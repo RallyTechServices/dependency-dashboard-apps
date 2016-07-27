@@ -15,6 +15,13 @@ Ext.define("TSDependencyStatusReport", {
     PIs: [],
     MilestonesByOID: {},
     
+    pi_fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+                'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+                'Ready', 'DisplayColor', 'Description','InvestmentCategory',
+                'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite'],
+                
     integrationHeaders : {
         name : "TSDependencyStatusReport"
     },
@@ -27,11 +34,13 @@ Ext.define("TSDependencyStatusReport", {
 
     launch: function() {
         var me = this;
+        
         if (Ext.isEmpty(this.getSetting('typeField')) ) {
             Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose an item field used to define Platform or Business');
             return;
         }
         this.type_field = this.getSetting('typeField');
+        this.pi_fetch.push(this.type_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -151,7 +160,7 @@ Ext.define("TSDependencyStatusReport", {
             listeners: {
                 scope: this,
                 click: function() {
-                    this._export();
+                    this._deepExport();
                 }
             }
         });
@@ -271,11 +280,7 @@ Ext.define("TSDependencyStatusReport", {
             model: this._getChildType(this._getParentType()),
             filters: filters,
             context: { project: null },
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+            fetch: this.pi_fetch
         }
         
         this._loadWsapiRecords(config).then({
@@ -362,10 +367,8 @@ Ext.define("TSDependencyStatusReport", {
             model: this._getParentType(),
             filters: Rally.data.wsapi.Filter.or(filters),
             context: { project: null },
-            fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release',
-                me.type_field,'LeafStoryCount','State','LeafStoryPlanEstimateTotal']
+            fetch: this.pi_fetch
+            
         };
         
         this._loadWsapiRecords(config).then({
@@ -399,9 +402,7 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         item.getCollection('Predecessors').load({
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'],
+            fetch: this.pi_fetch,
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -423,9 +424,7 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         item.getCollection('Successors').load({
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','Project','Owner','Release'], 
+            fetch: this.pi_fetch, 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -841,6 +840,29 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         return deferred.promise;
+    },
+    
+    _deepExport: function() {
+        var me = this;
+        this.logger.log('_deepExport');
+        
+        var rows = this.rows;
+        
+        // rows are an array of DependencyRow objects
+        this.logger.log('rows', rows);
+        var exporter = Ext.create('CA.techservices.DeepExporter', {
+            records: rows
+        });
+        
+        this.setLoading('Gathering additional data...');
+        
+        exporter.gatherDescendantInformation().then({
+            success: function(results) {
+                var rows = Ext.Array.flatten(results);
+                exporter.saveCSV(rows, "E2E Value Stream_MVP Status.csv");
+            }
+        }).always(function(){ me.setLoading(false)});
+        
     },
     
     _export: function(){
