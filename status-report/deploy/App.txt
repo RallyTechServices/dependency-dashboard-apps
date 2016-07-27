@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jul 26 2016 19:14:45 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Jul 26 2016 19:51:50 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jul 26 2016 19:14:45 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Jul 26 2016 19:51:50 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 188881547366;
+        var CHECKSUM = 217787791470;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -817,14 +817,12 @@ Ext.define('CA.techservices.DeepExporter',{
         
         me.gatherStoriesForPI(record).then({
             success: function(stories) {
-                record.set('_stories',Ext.Array.map(stories, function(story){
-                    return story.getData();
-                }));
+                record.set('_stories',stories);
                 
                 var rows = [ record.getData() ];
                 Ext.Array.each(stories, function(story){
                     var row = Ext.clone(record.getData());
-                    row.__story = story.getData();
+                    row.Story = story;
                     rows.push(row);
                 });
                 
@@ -840,6 +838,9 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     gatherStoriesForPI: function(record) {
+        var me = this,
+            deferred = Ext.create('Deft.Deferred');
+        
         var filters = Rally.data.wsapi.Filter.or([
             {property:'Feature.ObjectID',value:record.get('ObjectID')},
             {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
@@ -849,10 +850,81 @@ Ext.define('CA.techservices.DeepExporter',{
             model:'HierarchicalRequirement',
             filters: filters,
             limit: Infinity,
-            pageSize: 2000
+            pageSize: 2000,
+            fetch: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
+                'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
+                'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects'
+            ]
         };
         
-        return this._loadWsapiRecords(config);
+        this._loadWsapiRecords(config).then({
+            success: function(stories) {
+                var promises = [];
+                Ext.Array.each(stories, function(story){
+                    promises.push(function() { return me._getTestCasesForStory(story.getData()); });
+                });
+                
+                Deft.Chain.sequence(promises,this).then({
+                    success: function(results) {
+                        deferred.resolve(Ext.Array.flatten(results));
+                    },
+                    failure: function(msg) {
+                        deferred.reject(msg);
+                    }
+                
+                });
+            },
+            failure: function(msg) {
+                deferred.reject(msg);
+            }
+        });
+        
+        return deferred.promise;
+    },
+    
+    _getTestCasesForStory: function(story_data){
+        var deferred = Ext.create('Deft.Deferred');
+        
+        var story_oid = story_data.ObjectID;
+        var config = {
+            model:'TestCase',
+            filters: [{property:'WorkProduct.ObjectID',value:story_oid}],
+            limit: Infinity,
+            pageSize: 2000,
+            fetch: ['ObjectID','FormattedID','Name','Type','LastVerdict']
+        };
+        
+        this._loadWsapiRecords(config).then({
+            success: function(testcases) {
+                story_data._testcases = testcases;
+                story_data._testcasecount_executed = 0;
+                story_data._testcasecount_uat = 0;
+                story_data._testcasecount_uat_executed = 0;
+                Ext.Array.each(testcases, function(testcase){
+                    var type = testcase.get('Type');
+                    var verdict = testcase.get('LastVerdict');
+                    if ( type == 'User Acceptance Testing' ) {
+                        story_data._testcasecount_uat = story_data._testcasecount_uat + 1;
+                    }
+                    
+                    if ( !Ext.isEmpty(verdict) ) {
+                        story_data._testcasecount_executed = story_data._testcasecount_executed + 1 ;
+                    }
+                    
+                    if (!Ext.isEmpty(verdict) && type == 'User Acceptance Testing' ) {
+                        story_data._testcasecount_uat_executed = story_data._testcasecount_uat_executed + 1;
+                    }
+                });
+                
+                deferred.resolve(story_data);
+                
+            },
+            failure: function(msg) {
+                deferred.reject(msg);
+            }
+        });
+        
+        return deferred.promise;
     },
      
     _loadWsapiRecords: function(config){
@@ -954,8 +1026,91 @@ Ext.define('CA.techservices.DeepExporter',{
         columns = Ext.Array.push(columns,this._getGrandparentColumns());
         columns = Ext.Array.push(columns,this._getParentColumns());
         columns = Ext.Array.push(columns,this._getItemColumns());
+        columns = Ext.Array.push(columns,this._getStoryColumns());
         
         return columns;
+    },
+    
+    _getStoryColumns: function() {
+        return [
+            {fieldName: 'Story', text: 'Story.FormattedID', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.FormattedID;
+            }},
+            {fieldName: 'Story', text: 'Story.Name', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.Name;
+            }},
+            {fieldName: 'Story', text: 'Story.ScheduleState', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ScheduleState) ) { return ""; }
+                
+                return value.ScheduleState;
+            }},
+            {fieldName: 'Story', text: 'Story.Description', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Description) ) { return ""; }
+                
+                return value.Description;
+            }},
+            {fieldName: 'Story', text: 'Story.Ready', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
+                
+                return value.Ready;
+            }},
+            {fieldName: 'Story', text: 'Story.Color', renderer: function(value,record){
+                if (Ext.isEmpty(value) ) { return ""; }
+                
+                return value.DisplayColor;
+            }},
+            {fieldName: 'Story', text: 'Story.Project', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
+                return value.Project.Name;
+            }},
+            {fieldName: 'Story', text: 'Story.Owner', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
+                return value.Owner._refObjectName;
+            }},
+            {fieldName: 'Story', text: 'Story.Iteration', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Iteration) ) { return ""; }
+                return value.Iteration.Name;
+            }},
+            {fieldName: 'Story', text: 'Story.Release', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                return value.Release.Name;
+            }},
+            {fieldName: 'Story', text: 'Story.Expedite', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
+                return value.Expedite;
+            }},
+            {fieldName: 'Story', text: 'Story.PlanEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlanEstimate) ) { return "false"; }
+                return value.PlanEstimate;
+            }},
+            {fieldName: 'Story', text: 'Story.AcceptanceCriteria', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
+                return value.c_AcceptanceCriteria;
+            }},
+            {fieldName: 'Story', text: 'Story.TaskEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.TaskEstimateTotal) ) { return ""; }
+                return value.TaskEstimateTotal;
+            }},
+            {fieldName: 'Story', text: 'Story.ExecutedTestCaseCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value._testcasecount_executed;
+            }},
+            {fieldName: 'Story', text: 'Story.UATTestCaseCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value._testcasecount_uat;
+            }},
+            {fieldName: 'Story', text: 'Story.ExecutedUATTestCaseCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value._testcasecount_uat_executed;
+            }},
+            {fieldName: 'Story', text: 'Story.Defects', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Defects) ) { return ""; }
+                return value.Defects.Count;
+            }}
+                
+        ];
     },
     
     _getItemColumns: function() {
