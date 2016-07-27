@@ -22,6 +22,8 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: 'PercentDoneByStoryPlanEstimate', type: 'float', defaultValue: -1 },
         { name: '__RelatedRecords', type:'auto'},
         { name: 'Release', type:'object' },
+        { name: 'Item', type:'object'},
+        
         { name: 'BusinessItem', type: 'object', convert: 
             function(value,record) {
                 if ( !Ext.isEmpty(value) ) { return value; }

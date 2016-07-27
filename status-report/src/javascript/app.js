@@ -20,7 +20,9 @@ Ext.define("TSDependencyStatusReport", {
                 'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
                 'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
                 'Ready', 'DisplayColor', 'Description','InvestmentCategory',
-                'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite'],
+                'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
+                'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
+                'PreliminaryEstimate'],
                 
     integrationHeaders : {
         name : "TSDependencyStatusReport"
@@ -452,7 +454,8 @@ Ext.define("TSDependencyStatusReport", {
                     _Level: 0,
                     Grandparent: grandparent,
                     //Parent: item.get('Parent'),
-                    BusinessItem: item.getData()
+                    BusinessItem: item.getData(),
+                    Item: item.getData()
                 }, item.getData() )
             );
             
@@ -472,7 +475,8 @@ Ext.define("TSDependencyStatusReport", {
                         _Level: 1,
                         Grandparent: grandparent,
                         //Parent: item.get('Parent'),
-                        BusinessItem: item.getData()
+                        BusinessItem: item.getData(),
+                        Item: item.getData()
                     }, dependency.getData() )
                 );
 //                

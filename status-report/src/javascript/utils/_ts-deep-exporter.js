@@ -171,8 +171,133 @@ Ext.define('CA.techservices.DeepExporter',{
         
         columns = Ext.Array.push(columns,this._getGrandparentColumns());
         columns = Ext.Array.push(columns,this._getParentColumns());
+        columns = Ext.Array.push(columns,this._getItemColumns());
         
         return columns;
+    },
+    
+    _getItemColumns: function() {
+        return [
+            {fieldName: 'Item', text: 'Feature.FormattedID', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.FormattedID;
+            }},
+            {fieldName: 'Item', text: 'Feature.Name', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+                return value.Name;
+            }},
+            {fieldName: 'Item', text: 'Feature.State', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.State) ) { return ""; }
+                
+                return value.State.Name;
+            }},
+            {fieldName: 'Item', text: 'Feature.Description', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Description) ) { return ""; }
+                
+                return value.Description;
+            }},
+            {fieldName: 'Item', text: 'Feature.PreliminaryEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
+                
+                return value.PreliminaryEstimate.Name;
+            }},
+            {fieldName: 'Item', text: 'Feature.Ready', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
+                
+                return value.Ready;
+            }},
+            {fieldName: 'Item', text: 'Feature.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
+                
+                return Ext.String.format( "{0}%", value.PercentDoneByStoryPlanEstimate * 100 );
+            }},
+            {fieldName: 'Item', text: 'Feature.PercentDoneByStoryCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
+                
+                return Ext.String.format( "{0}%", value.PercentDoneByStoryCount * 100 );
+            }},
+            {fieldName: 'Item', text: 'Feature.Color', renderer: function(value,record){
+                if (Ext.isEmpty(value) ) { return ""; }
+                
+                return value.DisplayColor;
+            }},
+            {fieldName: 'Item', text: 'Feature.Project', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
+                return value.Project.Name;
+            }},
+            {fieldName: 'Item', text: 'Feature.Owner', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
+                return value.Owner._refObjectName;
+            }},
+            {fieldName: 'Item', text: 'Feature.InvestmentCategory', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.InvestmentCategory) ) { return ""; }
+                return value.InvestmentCategory;
+            }},
+            {fieldName: 'Item', text: 'Feature.ValueScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ValueScore) ) { return ""; }
+                return value.ValueScore;
+            }},
+            {fieldName: 'Item', text: 'Feature.RiskScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.RiskScore) ) { return ""; }
+                return value.RiskScore;
+            }},
+            {fieldName: 'Item', text: 'Feature.WSJFScore', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.WSJFScore) ) { return ""; }
+                return value.WSJFScore;
+            }},
+            {fieldName: 'Item', text: 'Feature.RefinedEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
+                return value.RefinedEstimate;
+            }},
+            {fieldName: 'Item', text: 'Feature.PlannedStartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
+                return value.PlannedStartDate;
+            }},
+            {fieldName: 'Item', text: 'Feature.PlannedEndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
+                return value.PlannedEndDate;
+            }},
+            {fieldName: 'Item', text: 'Feature.ActualStartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
+                return value.ActualStartDate;
+            }},
+            {fieldName: 'Item', text: 'Feature.ActualEndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
+                return value.ActualEndDate;
+            }},
+            {fieldName: 'Item', text: 'Feature.Release.Name', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                return value.Release.Name;
+            }},
+            {fieldName: 'Item', text: 'Feature.Release.StartDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                return value.Release.ReleaseStartDate;
+            }},
+            {fieldName: 'Item', text: 'Feature.Release.EndDate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                return value.Release.ReleaseDate;
+            }},
+            {fieldName: 'Item', text: 'Feature.Expedite', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
+                return value.Expedite;
+            }},
+            {fieldName: 'Item', text: 'Feature.CapabilityType', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
+                return value.c_CapabilityType;
+            }},
+            {fieldName: 'Item', text: 'Feature.PlatformCapability', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
+                return value.c_PlatformCapability;
+            }},
+            {fieldName: 'Item', text: 'Feature.AcceptanceCriteria', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
+                return value.c_AcceptanceCriteria;
+            }},
+            {fieldName: 'Item', text: 'Feature.LeafStoryCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
+                return value.LeafStoryCount;
+            }}
+        ];
     },
     
     _getParentColumns: function() {
@@ -190,10 +315,15 @@ Ext.define('CA.techservices.DeepExporter',{
                 
                 return value.State.Name;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PreliminaryState', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryState) ) { return ""; }
+            {fieldName: 'Parent', text: 'Feature.Parent.Description', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.Description) ) { return ""; }
                 
-                return value.c_PreliminaryState;
+                return value.Description;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PreliminaryEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
+                
+                return value.PreliminaryEstimate.Name;
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.Ready', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
@@ -214,10 +344,6 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) ) { return ""; }
                 
                 return value.DisplayColor;
-            }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Description', renderer: function(value,record){                
-                if (Ext.isEmpty(value) ) { return ""; }
-                return value.Description;
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.Project', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
@@ -267,6 +393,18 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
                 return value.Expedite;
             }},
+            {fieldName: 'Parent', text: 'Feature.Parent.CapabilityType', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
+                return value.c_CapabilityType;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.PlatformCapability', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
+                return value.c_PlatformCapability;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.AcceptanceCriteria', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
+                return value.c_AcceptanceCriteria;
+            }},
             {fieldName: 'Parent', text: 'Feature.Parent.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
@@ -289,10 +427,10 @@ Ext.define('CA.techservices.DeepExporter',{
                 
                 return value.State.Name;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PreliminaryState', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryState) ) { return ""; }
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PreliminaryEstimate', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
                 
-                return value.c_PreliminaryState;
+                return value.PreliminaryEstimate.Name;
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Ready', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
@@ -365,6 +503,14 @@ Ext.define('CA.techservices.DeepExporter',{
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Expedite', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
                 return value.Expedite;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.CapabilityType', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
+                return value.c_CapabilityType;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlatformCapability', renderer: function(value,record){                
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
+                return value.c_PlatformCapability;
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
