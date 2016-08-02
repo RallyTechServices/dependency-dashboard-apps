@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Aug 02 2016 14:29:19 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 02 2016 16:06:44 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Aug 02 2016 14:29:19 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 02 2016 16:06:44 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 256997575382;
+        var CHECKSUM = 265675937211;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -807,10 +807,16 @@ Ext.define('CA.techservices.DeepExporter',{
         var promises = Ext.Array.map(records, function(record){
             return [
                 function() {
-                    return me.gatherDescendantsForPI(record);
+                    return me.getDependencyCounts(record,record.get('Item'));
                 },
                 function() {
-                    return me.getDependencyCounts(record,record.get('Item'));
+                    return me.getDependencyCounts(record,record.get('Parent'));
+                },
+                function() {
+                    return me.getDependencyCounts(record,record.get('Grandparent'));
+                },
+                function() {
+                    return me.gatherDescendantsForPI(record);
                 }
             ]
         });
@@ -822,7 +828,14 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this,
             deferred = Ext.create('Deft.Deferred');
         
-        if (! item.PredecessorsAndSuccessors.Count || item.PredecessorsAndSuccessors.Count === 0 ) {
+        if ( Ext.isEmpty(item.Predecessors) || Ext.isEmpty(item.Predecessors.Count) ) {
+            return [];
+        }
+        if ( Ext.isEmpty(item.Successors) || Ext.isEmpty(item.Successors.Count) ) {
+            return [];
+        }
+        
+        if ( item.Successors.Count === 0 && item.Predecessors.Count === 0 ) {
             return [];
         }
         
@@ -835,6 +848,7 @@ Ext.define('CA.techservices.DeepExporter',{
             fetch: ['Predecessors','Successors'],
             pageSize: 1,
             filters: [{property:'ObjectID',value:oid}],
+            context: { project: null },
             autoLoad: true,
             listeners: {
                 load: function(store, records) {
@@ -1089,8 +1103,6 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     getCSVFromRow: function(row, columns) {
-        console.log("DEEP getCSVFromRow", row);
-        
         if ( Ext.isEmpty(row) ){
             return;
         }
@@ -1544,10 +1556,23 @@ Ext.define('CA.techservices.DeepExporter',{
                     );
                 }).join('| ');
             }},
-            {fieldName: 'Item', text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+            {fieldName: 'Parent', text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+
+                var business = value.__BusinessDependencyCount || 0;
+                var platform = value.__PlatformDependencyCount || 0;
                 
-                return value.PredecessorsAndSuccessors.Count;
+                return platform + business;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Dependencies.Platform', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
+                
+                return value.__PlatformDependencyCount || 0;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Dependencies.Business', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__BusinessDependencyCount) ) { return ""; }
+                
+                return value.__BusinessDependencyCount || 0;
             }}
         ];
     },
@@ -1674,9 +1699,22 @@ Ext.define('CA.techservices.DeepExporter',{
                 }).join('| ');
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.DependenciesCount', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+                if (Ext.isEmpty(value) ) { return ""; }
+
+                var business = value.__BusinessDependencyCount || 0;
+                var platform = value.__PlatformDependencyCount || 0;
                 
-                return value.PredecessorsAndSuccessors.Count;
+                return platform + business;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Dependencies.Platform', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
+                
+                return value.__PlatformDependencyCount || 0;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Dependencies.Business', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__BusinessDependencyCount) ) { return ""; }
+                
+                return value.__BusinessDependencyCount || 0;
             }}
         ];
     }
@@ -2944,7 +2982,6 @@ Ext.define("TSDependencyStatusReport", {
         var rows = this.rows;
         
         // rows are an array of DependencyRow objects
-        this.logger.log('rows', rows);
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
             MilestonesByOID: this.MilestonesByOID,

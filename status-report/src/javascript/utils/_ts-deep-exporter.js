@@ -25,10 +25,16 @@ Ext.define('CA.techservices.DeepExporter',{
         var promises = Ext.Array.map(records, function(record){
             return [
                 function() {
-                    return me.gatherDescendantsForPI(record);
+                    return me.getDependencyCounts(record,record.get('Item'));
                 },
                 function() {
-                    return me.getDependencyCounts(record,record.get('Item'));
+                    return me.getDependencyCounts(record,record.get('Parent'));
+                },
+                function() {
+                    return me.getDependencyCounts(record,record.get('Grandparent'));
+                },
+                function() {
+                    return me.gatherDescendantsForPI(record);
                 }
             ]
         });
@@ -40,7 +46,14 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this,
             deferred = Ext.create('Deft.Deferred');
         
-        if (! item.PredecessorsAndSuccessors.Count || item.PredecessorsAndSuccessors.Count === 0 ) {
+        if ( Ext.isEmpty(item.Predecessors) || Ext.isEmpty(item.Predecessors.Count) ) {
+            return [];
+        }
+        if ( Ext.isEmpty(item.Successors) || Ext.isEmpty(item.Successors.Count) ) {
+            return [];
+        }
+        
+        if ( item.Successors.Count === 0 && item.Predecessors.Count === 0 ) {
             return [];
         }
         
@@ -53,6 +66,7 @@ Ext.define('CA.techservices.DeepExporter',{
             fetch: ['Predecessors','Successors'],
             pageSize: 1,
             filters: [{property:'ObjectID',value:oid}],
+            context: { project: null },
             autoLoad: true,
             listeners: {
                 load: function(store, records) {
@@ -307,8 +321,6 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     getCSVFromRow: function(row, columns) {
-        console.log("DEEP getCSVFromRow", row);
-        
         if ( Ext.isEmpty(row) ){
             return;
         }
@@ -762,10 +774,23 @@ Ext.define('CA.techservices.DeepExporter',{
                     );
                 }).join('| ');
             }},
-            {fieldName: 'Item', text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+            {fieldName: 'Parent', text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
+                if (Ext.isEmpty(value) ) { return ""; }
+
+                var business = value.__BusinessDependencyCount || 0;
+                var platform = value.__PlatformDependencyCount || 0;
                 
-                return value.PredecessorsAndSuccessors.Count;
+                return platform + business;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Dependencies.Platform', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
+                
+                return value.__PlatformDependencyCount || 0;
+            }},
+            {fieldName: 'Parent', text: 'Feature.Parent.Dependencies.Business', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__BusinessDependencyCount) ) { return ""; }
+                
+                return value.__BusinessDependencyCount || 0;
             }}
         ];
     },
@@ -892,9 +917,22 @@ Ext.define('CA.techservices.DeepExporter',{
                 }).join('| ');
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.DependenciesCount', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+                if (Ext.isEmpty(value) ) { return ""; }
+
+                var business = value.__BusinessDependencyCount || 0;
+                var platform = value.__PlatformDependencyCount || 0;
                 
-                return value.PredecessorsAndSuccessors.Count;
+                return platform + business;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Dependencies.Platform', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
+                
+                return value.__PlatformDependencyCount || 0;
+            }},
+            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Dependencies.Business', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__BusinessDependencyCount) ) { return ""; }
+                
+                return value.__BusinessDependencyCount || 0;
             }}
         ];
     }
