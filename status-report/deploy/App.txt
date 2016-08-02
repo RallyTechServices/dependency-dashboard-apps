@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Aug 02 2016 16:06:44 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 02 2016 16:16:32 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Aug 02 2016 16:06:44 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 02 2016 16:16:32 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 265675937211;
+        var CHECKSUM = 270191769044;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -791,7 +791,8 @@ Ext.define('CA.techservices.DeepExporter',{
          */
         records: [],
         MilestonesByOID: {},
-        TypeField: null
+        TypeField: null,
+        PlatformCapabilityField: null
     },
     
     constructor: function(config) {
@@ -844,7 +845,6 @@ Ext.define('CA.techservices.DeepExporter',{
         
         Ext.create('Rally.data.wsapi.Store', {
             model: model,
-            //fetch: ['Predecessors:summary[' + this.TypeField + ']'],
             fetch: ['Predecessors','Successors'],
             pageSize: 1,
             filters: [{property:'ObjectID',value:oid}],
@@ -1381,12 +1381,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Item', text: 'Feature.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
-                return value.c_CapabilityType;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
+                return value[me.TypeField];
             }},
             {fieldName: 'Item', text: 'Feature.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
-                return value.c_PlatformCapability;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                return value[me.PlatformCapabilityField];
             }},
             {fieldName: 'Item', text: 'Feature.AcceptanceCriteria', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
@@ -1525,12 +1525,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
-                return value.c_CapabilityType;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
+                return value[me.TypeField];
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
-                return value.c_PlatformCapability;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                return value[me.PlatformCapabilityField];
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.AcceptanceCriteria', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
@@ -1671,12 +1671,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
-                return value.c_CapabilityType;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
+                return value[me.TypeField];
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
-                return value.c_PlatformCapability;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                return value[me.PlatformCapabilityField];
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
@@ -2156,8 +2156,16 @@ Ext.define("TSDependencyStatusReport", {
             Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose an item field used to define Platform or Business');
             return;
         }
+        
+        if (Ext.isEmpty(this.getSetting('platformCapabilityField')) ) {
+            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to defined Platform Capability');
+        }
+        
         this.type_field = this.getSetting('typeField');
+        this.platform_capability_field = this.getSetting('platformCapabilityField');
+
         this.pi_fetch.push(this.type_field);
+        this.pi_fetch.push(this.platform_capability_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -2985,7 +2993,8 @@ Ext.define("TSDependencyStatusReport", {
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
             MilestonesByOID: this.MilestonesByOID,
-            TypeField: this.type_field
+            TypeField: this.type_field,
+            PlatformCapabilityField: this.platform_capability_field
         });
         
         this.setLoading('Gathering additional data...');
@@ -3102,6 +3111,19 @@ Ext.define("TSDependencyStatusReport", {
                 
                 return ( defn.Constrained && defn.AttributeType == 'STRING' );
             }
+        },
+        {
+            name: 'platformCapabilityField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            _isNotHidden: function(field) {
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }        
+            //
         }];
     }
 });

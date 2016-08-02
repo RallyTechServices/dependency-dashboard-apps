@@ -9,7 +9,8 @@ Ext.define('CA.techservices.DeepExporter',{
          */
         records: [],
         MilestonesByOID: {},
-        TypeField: null
+        TypeField: null,
+        PlatformCapabilityField: null
     },
     
     constructor: function(config) {
@@ -62,7 +63,6 @@ Ext.define('CA.techservices.DeepExporter',{
         
         Ext.create('Rally.data.wsapi.Store', {
             model: model,
-            //fetch: ['Predecessors:summary[' + this.TypeField + ']'],
             fetch: ['Predecessors','Successors'],
             pageSize: 1,
             filters: [{property:'ObjectID',value:oid}],
@@ -599,12 +599,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Item', text: 'Feature.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
-                return value.c_CapabilityType;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
+                return value[me.TypeField];
             }},
             {fieldName: 'Item', text: 'Feature.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
-                return value.c_PlatformCapability;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                return value[me.PlatformCapabilityField];
             }},
             {fieldName: 'Item', text: 'Feature.AcceptanceCriteria', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
@@ -743,12 +743,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
-                return value.c_CapabilityType;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
+                return value[me.TypeField];
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
-                return value.c_PlatformCapability;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                return value[me.PlatformCapabilityField];
             }},
             {fieldName: 'Parent', text: 'Feature.Parent.AcceptanceCriteria', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
@@ -889,12 +889,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_CapabilityType) ) { return ""; }
-                return value.c_CapabilityType;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
+                return value[me.TypeField];
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_PlatformCapability) ) { return ""; }
-                return value.c_PlatformCapability;
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                return value[me.PlatformCapabilityField];
             }},
             {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }

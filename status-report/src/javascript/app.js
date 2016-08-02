@@ -41,8 +41,16 @@ Ext.define("TSDependencyStatusReport", {
             Ext.Msg.alert('Configuration...', 'Please go to Edit App Settings and choose an item field used to define Platform or Business');
             return;
         }
+        
+        if (Ext.isEmpty(this.getSetting('platformCapabilityField')) ) {
+            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to defined Platform Capability');
+        }
+        
         this.type_field = this.getSetting('typeField');
+        this.platform_capability_field = this.getSetting('platformCapabilityField');
+
         this.pi_fetch.push(this.type_field);
+        this.pi_fetch.push(this.platform_capability_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -870,7 +878,8 @@ Ext.define("TSDependencyStatusReport", {
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
             MilestonesByOID: this.MilestonesByOID,
-            TypeField: this.type_field
+            TypeField: this.type_field,
+            PlatformCapabilityField: this.platform_capability_field
         });
         
         this.setLoading('Gathering additional data...');
@@ -987,6 +996,19 @@ Ext.define("TSDependencyStatusReport", {
                 
                 return ( defn.Constrained && defn.AttributeType == 'STRING' );
             }
+        },
+        {
+            name: 'platformCapabilityField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            _isNotHidden: function(field) {
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }        
+            //
         }];
     }
 });
