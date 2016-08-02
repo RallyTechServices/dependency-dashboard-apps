@@ -870,7 +870,8 @@ Ext.define("TSDependencyStatusReport", {
         this.logger.log('rows', rows);
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
-            MilestonesByOID: this.MilestonesByOID
+            MilestonesByOID: this.MilestonesByOID,
+            TypeField: this.type_field
         });
         
         this.setLoading('Gathering additional data...');

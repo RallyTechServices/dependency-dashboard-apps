@@ -8,7 +8,8 @@ Ext.define('CA.techservices.DeepExporter',{
          * An array of records
          */
         records: [],
-        MilestonesByOID: {}
+        MilestonesByOID: {},
+        TypeField: null
     },
     
     constructor: function(config) {
@@ -22,12 +23,70 @@ Ext.define('CA.techservices.DeepExporter',{
         // assume that the row represents a portfolio item of some sort
         
         var promises = Ext.Array.map(records, function(record){
-            return function() {
-                return me.gatherDescendantsForPI(record);
+            return [
+                function() {
+                    return me.gatherDescendantsForPI(record);
+                },
+                function() {
+                    return me.getDependencyCounts(record,record.get('Item'));
+                }
+            ]
+        });
+        
+        return Deft.Chain.sequence(Ext.Array.flatten(promises),this);
+    },
+    
+    getDependencyCounts: function(record,item) {
+        var me = this,
+            deferred = Ext.create('Deft.Deferred');
+        
+        if (! item.PredecessorsAndSuccessors.Count || item.PredecessorsAndSuccessors.Count === 0 ) {
+            return [];
+        }
+        
+        var oid = item.ObjectID;
+        var model = item._type;
+        
+        Ext.create('Rally.data.wsapi.Store', {
+            model: model,
+            //fetch: ['Predecessors:summary[' + this.TypeField + ']'],
+            fetch: ['Predecessors','Successors'],
+            pageSize: 1,
+            filters: [{property:'ObjectID',value:oid}],
+            autoLoad: true,
+            listeners: {
+                load: function(store, records) {
+                    records[0].getCollection('Predecessors').load({
+                        fetch: [me.TypeField],
+                        callback: function(predecessors) {
+                            records[0].getCollection('Successors').load({
+                                fetch: [me.TypeField],
+                                callback: function(successors) {
+                                    var total_count = successors.length + predecessors.length;
+                                    var business_count = 0;
+                                    Ext.Array.each( Ext.Array.flatten([successors,predecessors]), function(dep){
+                                        if ( dep.get(me.TypeField) && dep.get(me.TypeField) == "Business" ) {
+                                            business_count = business_count + 1;
+                                        }
+                                    });
+                                    
+                                    var platform_count = total_count - business_count;
+                                    
+                                    item.__PlatformDependencyCount = platform_count;
+                                    item.__BusinessDependencyCount = business_count;
+                                    
+                                    deferred.resolve([]);
+                                }
+                                
+                            });
+                        }
+                    });
+
+                }
             }
         });
         
-        return Deft.Chain.sequence(promises,this)
+        return deferred.promise;
     },
     
     gatherDescendantsForPI: function(record) {
@@ -248,10 +307,17 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     getCSVFromRow: function(row, columns) {
+        console.log("DEEP getCSVFromRow", row);
+        
+        if ( Ext.isEmpty(row) ){
+            return;
+        }
+        
         var nodes = Ext.Array.map(columns, function(column){
             if ( Ext.isEmpty(column.fieldName) ) {
                 return '';
             }
+            
             
             var value = row[column.fieldName];
             
@@ -556,6 +622,16 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
                 
                 return value.PredecessorsAndSuccessors.Count;
+            }},
+            {fieldName: 'Item', text: 'Feature.Dependencies.Platform', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
+                
+                return value.__PlatformDependencyCount || 0;
+            }},
+            {fieldName: 'Item', text: 'Feature.Dependencies.Business', renderer: function(value,record){
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
+                
+                return value.__BusinessDependencyCount || 0;
             }}
         ];
     },
