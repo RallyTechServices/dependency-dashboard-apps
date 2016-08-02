@@ -161,8 +161,8 @@ Ext.define("TSDependencyStatusReport", {
             disabled: true,
             listeners: {
                 scope: this,
-                click: function() {
-                    this._deepExport();
+                click: function(button) {
+                    this._showExportMenu(button);
                 }
             }
         });
@@ -844,6 +844,20 @@ Ext.define("TSDependencyStatusReport", {
             }
         });
         return deferred.promise;
+    },
+    
+    _showExportMenu: function(button) {
+        var menu = Ext.widget({
+            xtype: 'rallymenu',
+            items: [
+                {text:'Export', scope: this, handler: this._export},
+                {text:'Deep Export', scope: this, handler: this._deepExport}
+            ]
+        });
+        menu.showBy(button.getEl());
+        if(button.toolTip) {
+            button.toolTip.hide();
+        }
     },
     
     _deepExport: function() {
