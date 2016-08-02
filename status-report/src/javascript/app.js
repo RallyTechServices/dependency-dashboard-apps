@@ -887,6 +887,11 @@ Ext.define("TSDependencyStatusReport", {
         exporter.gatherDescendantInformation().then({
             success: function(results) {
                 var rows = Ext.Array.flatten(results);
+                // filter out features that have rows with stories displayed already
+                // (because they're duplicate data)
+                rows = Ext.Array.filter(rows, function(row){
+                    return ( row._stories.length === 0 || !Ext.isEmpty(row.Story) );
+                });
                 exporter.saveCSV(rows, "E2E Value Stream_MVP Status.csv");
             }
         }).always(function(){ me.setLoading(false)});

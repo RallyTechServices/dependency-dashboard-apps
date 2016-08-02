@@ -17,6 +17,10 @@ The app assumes that if the type field is empty, then the item is a "Platform" i
 
 Business item rows are colored light blue.  Platform are white.
 
+The export button now has a menu with two options: one to export the visible grid and another to allow a deep copy.
+
+The deep copy does a whole lot of data gathering for additional information about related items.  This could be very slow.
+
 ## Development Notes
 
 * Caution: PI names (feature/initiative/theme) are hard coded.

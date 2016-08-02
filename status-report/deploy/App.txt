@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Aug 02 2016 16:16:32 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 02 2016 16:31:38 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Aug 02 2016 16:16:32 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 02 2016 16:31:38 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 270191769044;
+        var CHECKSUM = 271602918110;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -3002,6 +3002,11 @@ Ext.define("TSDependencyStatusReport", {
         exporter.gatherDescendantInformation().then({
             success: function(results) {
                 var rows = Ext.Array.flatten(results);
+                // filter out features that have rows with stories displayed already
+                // (because they're duplicate data)
+                rows = Ext.Array.filter(rows, function(row){
+                    return ( row._stories.length === 0 || !Ext.isEmpty(row.Story) );
+                });
                 exporter.saveCSV(rows, "E2E Value Stream_MVP Status.csv");
             }
         }).always(function(){ me.setLoading(false)});
