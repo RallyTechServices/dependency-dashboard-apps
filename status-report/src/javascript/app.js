@@ -101,7 +101,7 @@ Ext.define("TSDependencyStatusReport", {
                 },
                 listeners: {
                     scope: this,
-                    change: this._updateData
+                    select: this._updateData
                 }
             });
             
@@ -111,6 +111,8 @@ Ext.define("TSDependencyStatusReport", {
         this._getChildItems().then({
             scope: this,
             success: function(items) {
+                console.trace('_getChildItems()');
+                
                 var timebox_oids_by_name = {};
                 Ext.Array.each(items, function(item) {
                     var release = item.get('Release');
@@ -146,7 +148,7 @@ Ext.define("TSDependencyStatusReport", {
                         },
                         listeners: {
                             scope: this,
-                            change: this._updateData
+                            select: this._updateData
                         }
                     });
                 }
@@ -245,6 +247,7 @@ Ext.define("TSDependencyStatusReport", {
     _getChildItems: function() {
         if ( Ext.isEmpty(this.PIs) ) { this.PIs = []; }
 
+        console.trace('_getChildItems');
         this.setLoading('Fetching child items...');
         
         var deferred = Ext.create('Deft.Deferred'),
@@ -310,6 +313,7 @@ Ext.define("TSDependencyStatusReport", {
     _getRelatedItems: function(base_items) {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
+        console.trace('_getRelatedItems()');
         this.setLoading('Fetching predecessors/successors...');
         this.base_items = base_items;
         
@@ -350,7 +354,8 @@ Ext.define("TSDependencyStatusReport", {
     _getParents: function(leaf_items) {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
-                    
+         
+        console.trace('_getParents');
         if ( this.base_items.length === 0 ) { return; }
         
         var oids = [];
@@ -500,6 +505,7 @@ Ext.define("TSDependencyStatusReport", {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
         this.setLoading('Fetching Milestone Information...');
+        console.trace('_fetchMilestoneInformation()');
         this.logger.log('Finding milestones from rows:', rows);
         
         var milestone_oids = [-1];
