@@ -228,7 +228,7 @@ Ext.define("TSDependencyStatusReport", {
     
     _getParentType: function() {
         if ( Ext.isEmpty(this.PIs) || this.PIs.length == 0 ) {
-            return null;
+            return 'portfolioitem/Initiative';
         }
         
         return this.PIs[0].get('_type');
@@ -241,7 +241,7 @@ Ext.define("TSDependencyStatusReport", {
             'portfolioitem/theme'     : 'portfolioitem/Initiative'
         };
         
-        return type_map[type] || 'hierarchicalrequirement';
+        return type_map[type] || 'portfolioitem/Feature';
     },
     
     _getChildItems: function() {
