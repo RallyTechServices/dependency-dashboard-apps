@@ -47,16 +47,17 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this,
             deferred = Ext.create('Deft.Deferred');
         
-        if ( Ext.isEmpty(item.Predecessors) || Ext.isEmpty(item.Predecessors.Count) ) {
+        if ( Ext.isEmpty(item) || Ext.isEmpty(item.Predecessors) || Ext.isEmpty(item.Predecessors.Count) ) {
             return [];
         }
-        if ( Ext.isEmpty(item.Successors) || Ext.isEmpty(item.Successors.Count) ) {
+        if ( Ext.isEmpty(item) || Ext.isEmpty(item.Successors) || Ext.isEmpty(item.Successors.Count) ) {
             return [];
         }
         
         if ( item.Successors.Count === 0 && item.Predecessors.Count === 0 ) {
             return [];
         }
+        
         
         var oid = item.ObjectID;
         var model = item._type;
