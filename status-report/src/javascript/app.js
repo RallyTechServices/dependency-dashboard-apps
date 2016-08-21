@@ -898,7 +898,6 @@ Ext.define("TSDependencyStatusReport", {
         this.logger.log('_deepExport');
         
         var rows = this.rows;
-        
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
@@ -912,14 +911,21 @@ Ext.define("TSDependencyStatusReport", {
         
         exporter.gatherDescendantInformation().then({
             success: function(results) {
-                var rows = Ext.Array.flatten(results);
+                var export_rows = Ext.Array.flatten(results);
                 
+                if (  me._getChildType(me._getParentType()) == "portfolioitem/Initiative" ) {
+                    
+                    Ext.Array.each(export_rows, function(row){
+                        row.Feature = row.Story && row.Story.Feature;
+                    });
+                    
+                }
                 // filter out features that have rows with stories displayed already
                 // (because they're duplicate data)
-                rows = Ext.Array.filter(rows, function(row){
+                export_rows = Ext.Array.filter(export_rows, function(row){
                     return ( row._stories.length === 0 || !Ext.isEmpty(row.Story) );
                 });
-                exporter.saveCSV(rows, "E2E Value Stream_MVP Status.csv");
+                exporter.saveCSV(export_rows, "E2E Value Stream_MVP Status.csv");
             }
         }).always(function(){ me.setLoading(false)});
         
