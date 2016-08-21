@@ -904,7 +904,8 @@ Ext.define("TSDependencyStatusReport", {
             records: rows,
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
-            PlatformCapabilityField: this.platform_capability_field
+            PlatformCapabilityField: this.platform_capability_field,
+            BaseType: this._getChildType(this._getParentType())
         });
         
         this.setLoading('Gathering additional data...');
@@ -912,7 +913,6 @@ Ext.define("TSDependencyStatusReport", {
         exporter.gatherDescendantInformation().then({
             success: function(results) {
                 var rows = Ext.Array.flatten(results);
-                console.log('results:', Ext.Array.flatten(results));
                 
                 // filter out features that have rows with stories displayed already
                 // (because they're duplicate data)

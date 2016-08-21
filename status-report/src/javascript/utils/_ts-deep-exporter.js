@@ -10,7 +10,11 @@ Ext.define('CA.techservices.DeepExporter',{
         records: [],
         MilestonesByOID: {},
         TypeField: null,
-        PlatformCapabilityField: null
+        PlatformCapabilityField: null,
+        /*
+         * portfolioitem/Feature|portfolioitem/Initiative
+         */
+        BaseType: 'portfolioitem/Feature' 
     },
     
     constructor: function(config) {
@@ -385,10 +389,13 @@ Ext.define('CA.techservices.DeepExporter',{
     getColumns: function() {
         // NOT for models -- it's for a hash
         var columns = [];
-        
+        // this.BaseType
+
         columns = Ext.Array.push(columns,this._getGrandparentColumns());
         columns = Ext.Array.push(columns,this._getParentColumns());
-        columns = Ext.Array.push(columns,this._getItemColumns());
+        if (this.BaseType == "portfolioitem/Feature") {
+            columns = Ext.Array.push(columns,this._getItemColumns());
+        }
         columns = Ext.Array.push(columns,this._getStoryColumns());
         
         return columns;
@@ -651,115 +658,120 @@ Ext.define('CA.techservices.DeepExporter',{
     
     _getParentColumns: function() {
         var me = this;
+        var field = "Parent";
+        if (this.BaseType == "portfolioitem/Initiative") {
+            field = "Item";
+        }
+        
         return [
-            {fieldName: 'Parent', text: 'Feature.Parent.FormattedID', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.FormattedID', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
                 return value.FormattedID;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Name', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Name', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
                 return value.Name;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.State', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.State', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.State) ) { return ""; }
                 
                 return value.State.Name;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Description', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Description', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Description) ) { return ""; }
                 
                 return value.Description;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PreliminaryEstimate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PreliminaryEstimate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
                 
                 return value.PreliminaryEstimate.Name;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Ready', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Ready', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
                 
                 return value.Ready;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
                 
                 return Ext.String.format( "{0}%", value.PercentDoneByStoryPlanEstimate * 100 );
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PercentDoneByStoryCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PercentDoneByStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
                 
                 return Ext.String.format( "{0}%", value.PercentDoneByStoryCount * 100 );
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Color', renderer: function(value,record){
+            {fieldName: field, text: 'Feature.Parent.Color', renderer: function(value,record){
                 if (Ext.isEmpty(value) ) { return ""; }
                 
                 return value.DisplayColor;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Project', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Project', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
                 return value.Project.Name;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Owner', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Owner', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
                 return value.Owner._refObjectName;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.InvestmentCategory', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.InvestmentCategory', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.InvestmentCategory) ) { return ""; }
                 return value.InvestmentCategory;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.ValueScore', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.ValueScore', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ValueScore) ) { return ""; }
                 return value.ValueScore;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.RiskScore', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.RiskScore', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.RiskScore) ) { return ""; }
                 return value.RiskScore;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.WSJFScore', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.WSJFScore', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.WSJFScore) ) { return ""; }
                 return value.WSJFScore;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.RefinedEstimate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.RefinedEstimate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
                 return value.RefinedEstimate;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PlannedStartDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PlannedStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
                 return value.PlannedStartDate;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PlannedEndDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PlannedEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
                 return value.PlannedEndDate;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.ActualStartDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.ActualStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
                 return value.ActualStartDate;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.ActualEndDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.ActualEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
                 return value.ActualEndDate;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Expedite', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Expedite', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
                 return value.Expedite;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.CapabilityType', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.CapabilityType', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
                 return value[me.TypeField];
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.PlatformCapability', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PlatformCapability', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
                 return value[me.PlatformCapabilityField];
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.AcceptanceCriteria', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.AcceptanceCriteria', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
                 return value.c_AcceptanceCriteria;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.LeafStoryCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Milestones', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.Milestones', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
                 
                 return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
@@ -775,7 +787,7 @@ Ext.define('CA.techservices.DeepExporter',{
                     );
                 }).join('| ');
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.DependenciesCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
 
                 var business = value.__BusinessDependencyCount || 0;
@@ -783,12 +795,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 
                 return platform + business;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Dependencies.Platform', renderer: function(value,record){
+            {fieldName: field, text: 'Feature.Parent.Dependencies.Platform', renderer: function(value,record){
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
                 
                 return value.__PlatformDependencyCount || 0;
             }},
-            {fieldName: 'Parent', text: 'Feature.Parent.Dependencies.Business', renderer: function(value,record){
+            {fieldName: field, text: 'Feature.Parent.Dependencies.Business', renderer: function(value,record){
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.__BusinessDependencyCount) ) { return ""; }
                 
                 return value.__BusinessDependencyCount || 0;
@@ -798,110 +810,115 @@ Ext.define('CA.techservices.DeepExporter',{
     
     _getGrandparentColumns: function() {
         var me = this;
+        
+        var field = "Grandparent";
+        if ( this.BaseType == "portfolioitem/Initiative") {
+            field = "Parent";
+        }
         return [
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.FormattedID', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.FormattedID', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
                 return value.FormattedID;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Name', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Name', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
                 return value.Name;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.State', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.State', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.State) ) { return ""; }
                 
                 return value.State.Name;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PreliminaryEstimate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PreliminaryEstimate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
                 
                 return value.PreliminaryEstimate.Name;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Ready', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Ready', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
                 
                 return value.Ready;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
                 
                 return Ext.String.format( "{0}%", value.PercentDoneByStoryPlanEstimate * 100 );
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PercentDoneByStoryCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PercentDoneByStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
                 
                 return Ext.String.format( "{0}%", value.PercentDoneByStoryCount * 100 );
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Color', renderer: function(value,record){
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Color', renderer: function(value,record){
                 if (Ext.isEmpty(value) ) { return ""; }
                 
                 return value.DisplayColor;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Description', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Description', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
                 return value.Description;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Project', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Project', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
                 return value.Project.Name;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Owner', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Owner', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
                 return value.Owner._refObjectName;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.InvestmentCategory', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.InvestmentCategory', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.InvestmentCategory) ) { return ""; }
                 return value.InvestmentCategory;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.ValueScore', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.ValueScore', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ValueScore) ) { return ""; }
                 return value.ValueScore;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.RiskScore', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.RiskScore', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.RiskScore) ) { return ""; }
                 return value.RiskScore;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.WSJFScore', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.WSJFScore', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.WSJFScore) ) { return ""; }
                 return value.WSJFScore;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.RefinedEstimate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.RefinedEstimate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
                 return value.RefinedEstimate;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlannedStartDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PlannedStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
                 return value.PlannedStartDate;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlannedEndDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PlannedEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
                 return value.PlannedEndDate;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.ActualStartDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.ActualStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
                 return value.ActualStartDate;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.ActualEndDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.ActualEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
                 return value.ActualEndDate;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Expedite', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Expedite', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
                 return value.Expedite;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.CapabilityType', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.CapabilityType', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
                 return value[me.TypeField];
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.PlatformCapability', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PlatformCapability', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
                 return value[me.PlatformCapabilityField];
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.LeafStoryCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Milestones', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Milestones', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
                 
                 return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
@@ -917,7 +934,7 @@ Ext.define('CA.techservices.DeepExporter',{
                     );
                 }).join('| ');
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.DependenciesCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.DependenciesCount', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
 
                 var business = value.__BusinessDependencyCount || 0;
@@ -925,12 +942,12 @@ Ext.define('CA.techservices.DeepExporter',{
                 
                 return platform + business;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Dependencies.Platform', renderer: function(value,record){
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Dependencies.Platform', renderer: function(value,record){
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
                 
                 return value.__PlatformDependencyCount || 0;
             }},
-            {fieldName: 'Grandparent', text: 'Feature.Parent.PortfolioItem.Dependencies.Business', renderer: function(value,record){
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.Dependencies.Business', renderer: function(value,record){
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.__BusinessDependencyCount) ) { return ""; }
                 
                 return value.__BusinessDependencyCount || 0;
