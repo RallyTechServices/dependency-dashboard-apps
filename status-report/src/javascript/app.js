@@ -495,7 +495,26 @@ Ext.define("TSDependencyStatusReport", {
 //                
                 business_item.addRelatedRecord(related_record);
                 rows.push(related_record);
-            });            
+            });
+            // add an extra line with just the business item in it
+            if (dependencies.length > 0) {
+                var row = Ext.create('CA.techservices.row.DependencyRow',
+                    Ext.Object.merge({
+                        _Level: 1,
+                        Grandparent: grandparent,
+                        //Parent: item.get('Parent'),
+                        BusinessItem: item.getData(),
+                        Item: item.getData(),
+                        __Type: 'Business'
+                    }, 
+                    item.getData()) 
+                );
+                
+                row.set('Name',"Not Applicable");
+                row.set('FormattedID', 'Not Applicable');
+                row.set('__Type', 'Not Applicable');
+                rows.push(row);
+            }
 
         });
         return rows;
@@ -586,7 +605,7 @@ Ext.define("TSDependencyStatusReport", {
                             
                             // get color from record data
                             var color = '#fff';
-                            if ( record.get("__Type") === "Business" ) {
+                            if ( record.get("_Level") == 0 ) {
                                 color = "#e7f5fe";
                             }
                             
@@ -596,7 +615,7 @@ Ext.define("TSDependencyStatusReport", {
                             // set bacground color to all row td elements
                             for(var j = 0; j < cells.length; j++) {
                                 Ext.fly(cells[j]).setStyle('background-color', color);
-                                if ( record.get("__Type") === "Business" ) {
+                                if ( record.get("_Level") === 0 ) {
                                     Ext.fly(cells[j]).addCls('business');
                                 }
                             }                                       
@@ -893,6 +912,8 @@ Ext.define("TSDependencyStatusReport", {
         exporter.gatherDescendantInformation().then({
             success: function(results) {
                 var rows = Ext.Array.flatten(results);
+                console.log('results:', Ext.Array.flatten(results));
+                
                 // filter out features that have rows with stories displayed already
                 // (because they're duplicate data)
                 rows = Ext.Array.filter(rows, function(row){
@@ -953,6 +974,7 @@ Ext.define("TSDependencyStatusReport", {
         var filename = 'E2E Value Stream/MVP Status.csv';
 
         this.logger.log('saving file:', filename);
+        
         
         this.setLoading("Generating CSV");
         Deft.Chain.sequence([
