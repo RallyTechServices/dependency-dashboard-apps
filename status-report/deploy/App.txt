@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Aug 21 2016 12:09:35 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Aug 22 2016 16:39:06 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Aug 21 2016 12:09:35 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Aug 22 2016 16:39:06 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 278668601869;
+        var CHECKSUM = 278835326812;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -2201,11 +2201,12 @@ Ext.define("TSDependencyStatusReport", {
                 scope: this,
                 itemschosen: function(picker,items) {
                     this.PIs = items;
+                    this._changeReleaseBox();
+
                     if ( this.PIs.length > 0 ) {
                         this._updateData();
                     }
                     
-                    this._changeReleaseBox();
                 }
             }
         });
@@ -2384,7 +2385,6 @@ Ext.define("TSDependencyStatusReport", {
     _getChildItems: function() {
         if ( Ext.isEmpty(this.PIs) ) { this.PIs = []; }
 
-        console.trace('_getChildItems');
         this.setLoading('Fetching child items...');
         
         var deferred = Ext.create('Deft.Deferred'),
@@ -2396,6 +2396,9 @@ Ext.define("TSDependencyStatusReport", {
             release = this.down('rallyreleasecombobox').getRecord();
         }
         
+        if ( this.PIs.length === 0 && Ext.isEmpty(release) ) {
+            return [];
+        }
         var filters = null;
 
         var release_filter = null;

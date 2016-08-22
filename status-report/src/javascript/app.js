@@ -64,11 +64,12 @@ Ext.define("TSDependencyStatusReport", {
                 scope: this,
                 itemschosen: function(picker,items) {
                     this.PIs = items;
+                    this._changeReleaseBox();
+
                     if ( this.PIs.length > 0 ) {
                         this._updateData();
                     }
                     
-                    this._changeReleaseBox();
                 }
             }
         });
@@ -247,7 +248,6 @@ Ext.define("TSDependencyStatusReport", {
     _getChildItems: function() {
         if ( Ext.isEmpty(this.PIs) ) { this.PIs = []; }
 
-        console.trace('_getChildItems');
         this.setLoading('Fetching child items...');
         
         var deferred = Ext.create('Deft.Deferred'),
@@ -259,6 +259,9 @@ Ext.define("TSDependencyStatusReport", {
             release = this.down('rallyreleasecombobox').getRecord();
         }
         
+        if ( this.PIs.length === 0 && Ext.isEmpty(release) ) {
+            return [];
+        }
         var filters = null;
 
         var release_filter = null;
