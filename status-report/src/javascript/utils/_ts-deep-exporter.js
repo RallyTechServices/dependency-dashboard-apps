@@ -142,11 +142,19 @@ Ext.define('CA.techservices.DeepExporter',{
             {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
         ]);
         
+        filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{
+            property:'DirectChildrenCount',
+            value: 0
+        }));
+        
         var config = {
             model:'HierarchicalRequirement',
             filters: filters,
             limit: Infinity,
             pageSize: 2000,
+            context: {
+                project: null
+            },
             fetch: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
                 'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
                 'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',

@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Aug 22 2016 16:39:06 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Aug 22 2016 17:04:32 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Aug 22 2016 16:39:06 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Aug 22 2016 17:04:32 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 278835326812;
+        var CHECKSUM = 280246103519;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -924,11 +924,19 @@ Ext.define('CA.techservices.DeepExporter',{
             {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
         ]);
         
+        filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{
+            property:'DirectChildrenCount',
+            value: 0
+        }));
+        
         var config = {
             model:'HierarchicalRequirement',
             filters: filters,
             limit: Infinity,
             pageSize: 2000,
+            context: {
+                project: null
+            },
             fetch: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
                 'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
                 'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',
@@ -3035,9 +3043,11 @@ Ext.define("TSDependencyStatusReport", {
     
     _deepExport: function() {
         var me = this;
-        this.logger.log('_deepExport');
+        this.logger.log('_deepExport', this.rows);
         
-        var rows = this.rows;
+        var rows = Ext.Array.filter(this.rows, function(row){
+            return ( row.get('_Level') == 1 );
+        });
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,

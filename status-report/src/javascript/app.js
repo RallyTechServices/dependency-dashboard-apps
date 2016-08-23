@@ -898,9 +898,11 @@ Ext.define("TSDependencyStatusReport", {
     
     _deepExport: function() {
         var me = this;
-        this.logger.log('_deepExport');
+        this.logger.log('_deepExport', this.rows);
         
-        var rows = this.rows;
+        var rows = Ext.Array.filter(this.rows, function(row){
+            return ( row.get('_Level') == 1 );
+        });
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
