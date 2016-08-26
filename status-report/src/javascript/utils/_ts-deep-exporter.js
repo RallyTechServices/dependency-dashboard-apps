@@ -11,6 +11,7 @@ Ext.define('CA.techservices.DeepExporter',{
         MilestonesByOID: {},
         TypeField: null,
         PlatformCapabilityField: null,
+        CapabilityField: null,
         /*
          * portfolioitem/Feature|portfolioitem/Initiative
          */
@@ -634,8 +635,8 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: field, text: 'Feature.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
-                return value[me.TypeField];
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.CapabilityField]) ) { return ""; }
+                return value[me.CapabilityField];
             }},
             {fieldName: field, text: 'Feature.PlatformCapability', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }

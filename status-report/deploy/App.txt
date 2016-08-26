@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Fri Aug 26 2016 12:59:04 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Aug 26 2016 13:12:52 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Aug 26 2016 12:59:04 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Fri Aug 26 2016 13:12:52 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 289539183636;
+        var CHECKSUM = 294959296264;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -793,6 +793,7 @@ Ext.define('CA.techservices.DeepExporter',{
         MilestonesByOID: {},
         TypeField: null,
         PlatformCapabilityField: null,
+        CapabilityField: null,
         /*
          * portfolioitem/Feature|portfolioitem/Initiative
          */
@@ -1416,8 +1417,8 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: field, text: 'Feature.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.TypeField]) ) { return ""; }
-                return value[me.TypeField];
+                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.CapabilityField]) ) { return ""; }
+                return value[me.CapabilityField];
             }},
             {fieldName: field, text: 'Feature.PlatformCapability', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
@@ -2224,14 +2225,21 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         if (Ext.isEmpty(this.getSetting('platformCapabilityField')) ) {
-            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to defined Platform Capability');
+            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Platform Capability');
+        }
+        
+        
+        if (Ext.isEmpty(this.getSetting('capabilityTypeField')) ) {
+            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Capability Type');
         }
         
         this.type_field = this.getSetting('typeField');
         this.platform_capability_field = this.getSetting('platformCapabilityField');
-
+        this.capability_field = this.getSetting('capabilityTypeField');
+        
         this.pi_fetch.push(this.type_field);
         this.pi_fetch.push(this.platform_capability_field);
+        this.pi_fetch.push(this.capability_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -3090,6 +3098,7 @@ Ext.define("TSDependencyStatusReport", {
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
             PlatformCapabilityField: this.platform_capability_field,
+            CapabilityField: this.capability_field,
             BaseType: this._getChildType(this._getParentType())
         });
         
@@ -3214,6 +3223,8 @@ Ext.define("TSDependencyStatusReport", {
             name: 'typeField',
             xtype: 'rallyfieldcombobox',
             model: 'PortfolioItem',
+            label: 'Type Field:',
+            labelWidth: 150,
             _isNotHidden: function(field) {
                 if ( field.hidden ) { return false; }
                 var defn = field.attributeDefinition;
@@ -3226,6 +3237,23 @@ Ext.define("TSDependencyStatusReport", {
             name: 'platformCapabilityField',
             xtype: 'rallyfieldcombobox',
             model: 'PortfolioItem',
+            label: 'Platform Capability Field:',
+            labelWidth: 150,
+            _isNotHidden: function(field) {
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }        
+            //
+        },
+        {
+            name: 'capabilityTypeField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            label: 'Capability Type Field:',
+            labelWidth: 150,
             _isNotHidden: function(field) {
                 if ( field.hidden ) { return false; }
                 var defn = field.attributeDefinition;

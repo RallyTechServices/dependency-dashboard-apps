@@ -43,14 +43,21 @@ Ext.define("TSDependencyStatusReport", {
         }
         
         if (Ext.isEmpty(this.getSetting('platformCapabilityField')) ) {
-            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to defined Platform Capability');
+            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Platform Capability');
+        }
+        
+        
+        if (Ext.isEmpty(this.getSetting('capabilityTypeField')) ) {
+            Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Capability Type');
         }
         
         this.type_field = this.getSetting('typeField');
         this.platform_capability_field = this.getSetting('platformCapabilityField');
-
+        this.capability_field = this.getSetting('capabilityTypeField');
+        
         this.pi_fetch.push(this.type_field);
         this.pi_fetch.push(this.platform_capability_field);
+        this.pi_fetch.push(this.capability_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -909,6 +916,7 @@ Ext.define("TSDependencyStatusReport", {
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
             PlatformCapabilityField: this.platform_capability_field,
+            CapabilityField: this.capability_field,
             BaseType: this._getChildType(this._getParentType())
         });
         
@@ -1033,6 +1041,8 @@ Ext.define("TSDependencyStatusReport", {
             name: 'typeField',
             xtype: 'rallyfieldcombobox',
             model: 'PortfolioItem',
+            label: 'Type Field:',
+            labelWidth: 150,
             _isNotHidden: function(field) {
                 if ( field.hidden ) { return false; }
                 var defn = field.attributeDefinition;
@@ -1045,6 +1055,23 @@ Ext.define("TSDependencyStatusReport", {
             name: 'platformCapabilityField',
             xtype: 'rallyfieldcombobox',
             model: 'PortfolioItem',
+            label: 'Platform Capability Field:',
+            labelWidth: 150,
+            _isNotHidden: function(field) {
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }        
+            //
+        },
+        {
+            name: 'capabilityTypeField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            label: 'Capability Type Field:',
+            labelWidth: 150,
             _isNotHidden: function(field) {
                 if ( field.hidden ) { return false; }
                 var defn = field.attributeDefinition;
