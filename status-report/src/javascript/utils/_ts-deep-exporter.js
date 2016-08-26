@@ -460,7 +460,7 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Story', text: 'Story.PlanEstimate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlanEstimate) ) { return "false"; }
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlanEstimate) ) { return ""; }
                 return value.PlanEstimate;
             }},
             {fieldName: 'Story', text: 'Story.AcceptanceCriteria', renderer: function(value,record){                

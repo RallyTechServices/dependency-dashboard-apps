@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Fri Aug 26 2016 13:12:52 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Aug 26 2016 13:18:03 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Aug 26 2016 13:12:52 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Fri Aug 26 2016 13:18:03 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 294959296264;
+        var CHECKSUM = 294920592726;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -1242,7 +1242,7 @@ Ext.define('CA.techservices.DeepExporter',{
                 return value.Expedite;
             }},
             {fieldName: 'Story', text: 'Story.PlanEstimate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlanEstimate) ) { return "false"; }
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlanEstimate) ) { return ""; }
                 return value.PlanEstimate;
             }},
             {fieldName: 'Story', text: 'Story.AcceptanceCriteria', renderer: function(value,record){                
