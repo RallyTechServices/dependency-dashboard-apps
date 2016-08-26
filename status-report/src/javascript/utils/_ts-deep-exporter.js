@@ -586,21 +586,30 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
                 return value.RefinedEstimate;
             }},
+            
             {fieldName: field, text: 'Feature.PlannedStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
-                return value.PlannedStartDate;
+                var d = value.PlannedStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.PlannedEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
-                return value.PlannedEndDate;
+                var d = value.PlannedEndDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.ActualStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
-                return value.ActualStartDate;
+                var d = value.ActualStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.ActualEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
-                return value.ActualEndDate;
+                var d = value.ActualEndDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.Release.Name', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
@@ -608,11 +617,17 @@ Ext.define('CA.techservices.DeepExporter',{
             }},
             {fieldName: field, text: 'Feature.Release.StartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
-                return value.Release.ReleaseStartDate;
+                var d = value.Release.ReleaseStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
+
             }},
             {fieldName: field, text: 'Feature.Release.EndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
-                return value.Release.ReleaseDate;
+                var d = value.Release.ReleaseDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
+
             }},
             {fieldName: field, text: 'Feature.Expedite', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
@@ -749,19 +764,30 @@ Ext.define('CA.techservices.DeepExporter',{
             }},
             {fieldName: field, text: 'Feature.Parent.PlannedStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
-                return value.PlannedStartDate;
+                var d = value.PlannedStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
+                
             }},
             {fieldName: field, text: 'Feature.Parent.PlannedEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
-                return value.PlannedEndDate;
+                var d = value.PlannedEndDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.Parent.ActualStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
-                return value.ActualStartDate;
+                var d = value.ActualStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
+
             }},
             {fieldName: field, text: 'Feature.Parent.ActualEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
-                return value.ActualEndDate;
+                var d = value.ActualEndDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
+
             }},
             {fieldName: field, text: 'Feature.Parent.Expedite', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
@@ -827,6 +853,7 @@ Ext.define('CA.techservices.DeepExporter',{
         if ( this.BaseType == "portfolioitem/Initiative") {
             field = "Parent";
         }
+        
         return [
             {fieldName: field, text: 'Feature.Parent.PortfolioItem.FormattedID', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
@@ -898,21 +925,30 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
                 return value.RefinedEstimate;
             }},
-            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PlannedStartDate', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.Parent.PortfolioItem.PlannedStartDate', renderer: function(value,record){ 
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
-                return value.PlannedStartDate;
+                var d = value.PlannedStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.Parent.PortfolioItem.PlannedEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
-                return value.PlannedEndDate;
+                var d = value.PlannedEndDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.Parent.PortfolioItem.ActualStartDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
-                return value.ActualStartDate;
+                var d = value.ActualStartDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
+                
             }},
             {fieldName: field, text: 'Feature.Parent.PortfolioItem.ActualEndDate', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
-                return value.ActualEndDate;
+                var d = value.ActualEndDate;
+                if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
+                return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.Parent.PortfolioItem.Expedite', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
