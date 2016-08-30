@@ -633,14 +633,13 @@ Ext.define("TSDependencyTimeline", {
     },
     
     _getCategoryColumns: function() {
-        return [
+        var columns = [
             {
                 dataIndex: 'ObjectID',
                 text: 'Portfolio Item',
                 style: "width:300px",
                 renderer: function(value,meta,record) {
                     var record_type = record.get('_type');
-                    var level = record.get('_Level');
                     
                     var string = record.get('Name');
                     
@@ -652,12 +651,13 @@ Ext.define("TSDependencyTimeline", {
                         );
                     }
                     
+                    var level = record.get('_Level') || 0;
                    
                     if ( level == 2 ) {
-                        string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
+                        //string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
+                        string = "<span style='font-weight:bold;'>" + string + "</span>";
                     } 
                     
-                    var level = record.get('_Level') || 0;
                     var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
                     
                     return prefix + string;
@@ -669,7 +669,15 @@ Ext.define("TSDependencyTimeline", {
                 style: "width:100px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
-                    return value._refObjectName;
+                    var string = value._refObjectName;
+
+                    var level = record.get('_Level') || 0;
+                   
+                    if ( level == 2 ) {
+                        string = "<span style='font-weight:bold;'>" + string + "</span>";
+                    } 
+                    
+                    return string;
                 }
             },
             {
@@ -678,10 +686,20 @@ Ext.define("TSDependencyTimeline", {
                 style: "width:75px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
-                    return value._refObjectName;
+                    var string = value._refObjectName;
+
+                    var level = record.get('_Level') || 0;
+                   
+                    if ( level == 2 ) {
+                        string = "<span style='font-weight:bold;'>" + string + "</span>";
+                    } 
+                    
+                    return string;
                 }
             }
         ];
+        
+        return columns;
     },
     
     _getChartConfig: function(rows) {
