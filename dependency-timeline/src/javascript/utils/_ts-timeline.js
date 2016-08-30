@@ -180,6 +180,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                 
         var planned_series = { 
             name: 'Planned',
+            pointWidth: 12,
             data: this._getPlannedRangesFromItems(records,this.dateCategories)
         };
         
@@ -265,10 +266,8 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             var start_index = this._getPositionOnTimeline(categories, item.get(plannedStartField) );
             var end_index   = this._getPositionOnTimeline(categories, item.get(plannedEndField) );
             
-            var colorObject = {
-                hex: '#acacac'
-            };
-            
+            var colorObject = null;
+                        
             if ( this.showColorOnPlanned ) {
                 var colorObject = Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(item.data, 'PercentDoneByStoryCount');
     
@@ -280,13 +279,18 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                 }
             }
              
+            
             var config = {
-                color: colorObject.hex,
+                color: 'url(#diagonal-up)',
                 low: start_index, 
                 high: end_index ,
-                _status: colorObject.label,
                 _record: item.getData()
             };
+            
+            if ( !Ext.isEmpty(colorObject) ) {
+                config.color = colorObject.hex,
+                config._status = colorObject.label
+            }
             
             if ( this.eventsForPlannedItems ) {
                 config.events = this.eventsForPlannedItems;
