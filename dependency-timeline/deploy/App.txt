@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Thu Jul 21 2016 20:19:52 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Aug 29 2016 20:20:32 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Thu Jul 21 2016 20:19:52 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Aug 29 2016 20:20:32 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 154424624002;
+        var CHECKSUM = 158875251515;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1222,6 +1222,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         );
     },
     
+    // override to put on top of category list (vertical x axis)
+    getCategoryHeader: function() {
+        return null;
+    },
+    
     _processItems: function(records) {
         this.dateCategories = this._getDateCategories();
         
@@ -1575,7 +1580,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             if ( me.percentDoneField ) {
                                 field = me.percentDoneField;
                             }
-
                             if ( this.series.name == "Actual" && this.point.low == this.y 
                                 && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
                                 return parseInt(this.point._record[field] * 100) + "%"; 
@@ -1596,7 +1600,29 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     
     _setChart: function(chart) {
         this.highchart = chart;
+        this._addCategoryHeader(chart);
+        
         this._enableChartButtons();
+    },
+    
+    _addCategoryHeader: function(chart) {
+        var string = this.getCategoryHeader();
+        if ( !Ext.isEmpty(string) ) {
+            var x = 0;
+            var y = 0;
+            var shape = 'rect';
+            var anchorX = null;
+            var anchorY = null;
+            var useHTML = true;
+            
+            var label = chart.renderer.label(string,x,y,shape,anchorX,anchorY,useHTML).add();
+            
+            label.align({
+                align: 'left',
+                x: 0,
+                y: 0
+            });
+        }
     },
     
     _enableChartButtons: function() {
@@ -2432,7 +2458,25 @@ Ext.define("TSDependencyTimeline", {
         this.down('#display_box').add(this._getChartConfig(rows));
     },
     
-    // override to make labels differently
+    getCategoryHeader: function(){
+        var html = "<table><tr>";
+        
+        Ext.Array.each(Rally.getApp()._getCategoryColumns(), function(column){
+            var style = column.style;
+            var string = column.text;
+            
+            html += Ext.String.format("<td class='ts-timeline-category-cell' style='{0}'>{1}</td>",
+                style,
+                string
+            );
+        });
+        
+        html += "</tr></table>";
+
+        console.log(html);
+        return html;
+    },
+    
     getCategoryString: function(record) {
         var html = "<table><tr>";
         
@@ -2441,7 +2485,7 @@ Ext.define("TSDependencyTimeline", {
             var value = record.get(column.dataIndex);
             var string = column.renderer(value,null,record);
             
-            html += Ext.String.format("<td class='ts-cell' style='{0}'>{1}</td>",
+            html += Ext.String.format("<td class='ts-timeline-category-cell' style='{0}'>{1}</td>",
                 style,
                 string
             );
@@ -2455,7 +2499,8 @@ Ext.define("TSDependencyTimeline", {
         return [
             {
                 dataIndex: 'ObjectID',
-                style: "width:150px",
+                text: 'Portfolio Item',
+                style: "width:300px",
                 renderer: function(value,meta,record) {
                     var record_type = record.get('_type');
                     var level = record.get('_Level');
@@ -2483,7 +2528,8 @@ Ext.define("TSDependencyTimeline", {
             },
             {
                 dataIndex: 'Project',
-                style: "width:200px",
+                text: 'Project',
+                style: "width:100px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     return value._refObjectName;
@@ -2491,7 +2537,8 @@ Ext.define("TSDependencyTimeline", {
             },
             {
                 dataIndex: 'Owner',
-                style: "width:100px",
+                text: 'Owner',
+                style: "width:75px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     return value._refObjectName;
@@ -2503,7 +2550,6 @@ Ext.define("TSDependencyTimeline", {
     _getChartConfig: function(rows) {
         var me = this;
         
-        
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
@@ -2512,6 +2558,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
+            getCategoryHeader: me.getCategoryHeader,
             additionalPlotlines: [], //this.milestoneLines,
             actualStartField: '__ActualStartDate',
             actualEndField: '__ActualEndDate',
@@ -2673,13 +2720,6 @@ Ext.define("TSDependencyTimeline", {
 }
 
 
-.ts-cell {
-    padding-left: 5px;
-    padding-right: 5px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-}
 .pi-box {
     font: 9px arial, sans-serif !important;
     background-color: #D3D3D3;
@@ -2718,6 +2758,15 @@ Ext.define("TSDependencyTimeline", {
 
 .x-border-layout-ct {
     background-color: white;
+}
+
+
+.ts-timeline-category-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
 }
     </style>
 

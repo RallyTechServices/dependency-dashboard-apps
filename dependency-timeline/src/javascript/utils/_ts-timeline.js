@@ -165,6 +165,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         );
     },
     
+    // override to put on top of category list (vertical x axis)
+    getCategoryHeader: function() {
+        return null;
+    },
+    
     _processItems: function(records) {
         this.dateCategories = this._getDateCategories();
         
@@ -518,7 +523,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             if ( me.percentDoneField ) {
                                 field = me.percentDoneField;
                             }
-
                             if ( this.series.name == "Actual" && this.point.low == this.y 
                                 && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
                                 return parseInt(this.point._record[field] * 100) + "%"; 
@@ -539,7 +543,29 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     
     _setChart: function(chart) {
         this.highchart = chart;
+        this._addCategoryHeader(chart);
+        
         this._enableChartButtons();
+    },
+    
+    _addCategoryHeader: function(chart) {
+        var string = this.getCategoryHeader();
+        if ( !Ext.isEmpty(string) ) {
+            var x = 0;
+            var y = 0;
+            var shape = 'rect';
+            var anchorX = null;
+            var anchorY = null;
+            var useHTML = true;
+            
+            var label = chart.renderer.label(string,x,y,shape,anchorX,anchorY,useHTML).add();
+            
+            label.align({
+                align: 'left',
+                x: 0,
+                y: 0
+            });
+        }
     },
     
     _enableChartButtons: function() {

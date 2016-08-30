@@ -595,7 +595,25 @@ Ext.define("TSDependencyTimeline", {
         this.down('#display_box').add(this._getChartConfig(rows));
     },
     
-    // override to make labels differently
+    getCategoryHeader: function(){
+        var html = "<table><tr>";
+        
+        Ext.Array.each(Rally.getApp()._getCategoryColumns(), function(column){
+            var style = column.style;
+            var string = column.text;
+            
+            html += Ext.String.format("<td class='ts-timeline-category-cell' style='{0}'>{1}</td>",
+                style,
+                string
+            );
+        });
+        
+        html += "</tr></table>";
+
+        console.log(html);
+        return html;
+    },
+    
     getCategoryString: function(record) {
         var html = "<table><tr>";
         
@@ -604,7 +622,7 @@ Ext.define("TSDependencyTimeline", {
             var value = record.get(column.dataIndex);
             var string = column.renderer(value,null,record);
             
-            html += Ext.String.format("<td class='ts-cell' style='{0}'>{1}</td>",
+            html += Ext.String.format("<td class='ts-timeline-category-cell' style='{0}'>{1}</td>",
                 style,
                 string
             );
@@ -618,7 +636,8 @@ Ext.define("TSDependencyTimeline", {
         return [
             {
                 dataIndex: 'ObjectID',
-                style: "width:150px",
+                text: 'Portfolio Item',
+                style: "width:300px",
                 renderer: function(value,meta,record) {
                     var record_type = record.get('_type');
                     var level = record.get('_Level');
@@ -646,7 +665,8 @@ Ext.define("TSDependencyTimeline", {
             },
             {
                 dataIndex: 'Project',
-                style: "width:200px",
+                text: 'Project',
+                style: "width:100px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     return value._refObjectName;
@@ -654,7 +674,8 @@ Ext.define("TSDependencyTimeline", {
             },
             {
                 dataIndex: 'Owner',
-                style: "width:100px",
+                text: 'Owner',
+                style: "width:75px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     return value._refObjectName;
@@ -666,7 +687,6 @@ Ext.define("TSDependencyTimeline", {
     _getChartConfig: function(rows) {
         var me = this;
         
-        
         var config = {
             xtype: 'tsalternativetimeline',
             height: 500,
@@ -675,6 +695,7 @@ Ext.define("TSDependencyTimeline", {
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
+            getCategoryHeader: me.getCategoryHeader,
             additionalPlotlines: [], //this.milestoneLines,
             actualStartField: '__ActualStartDate',
             actualEndField: '__ActualEndDate',
