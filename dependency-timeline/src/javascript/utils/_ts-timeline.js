@@ -527,11 +527,38 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             if ( me.percentDoneField ) {
                                 field = me.percentDoneField;
                             }
+                            
+                            var display_text = "";
+                            
+                            if ( this.point.low == this.y ) {
+                                var start_field = "PlannedStartDate";
+                                if ( this.series.name == "Actual" ) {
+                                    start_field = "ActualStartDate";
+                                }
+                                
+                                if ( !Ext.isEmpty(this.point._record[start_field]) ) {
+                                    display_text += Ext.util.Format.date(this.point._record[start_field], 'd-M');
+                                }
+                            }
+                            
+                            if ( this.point.high == this.y ) {
+                                var start_field = "PlannedEndDate";
+                                if ( this.series.name == "Actual" ) {
+                                    start_field = "ActualEndDate";
+                                }
+                                
+                                if ( !Ext.isEmpty(this.point._record[start_field]) ) {
+                                    display_text += Ext.util.Format.date(this.point._record[start_field], 'd-M');
+                                }
+                            }
+                            
                             if ( this.series.name == "Actual" && this.point.low == this.y 
                                 && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
-                                return parseInt(this.point._record[field] * 100) + "%"; 
+                                    display_text += Ext.String.format(" ({0}%)",
+                                        parseInt(this.point._record[field] * 100)
+                                    );
                             }
-                            return "";
+                            return display_text;
                         }
                     }
                 },

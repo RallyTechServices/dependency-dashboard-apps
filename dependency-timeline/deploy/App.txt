@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Aug 30 2016 18:55:20 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 30 2016 19:06:57 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Aug 30 2016 18:55:20 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 30 2016 19:06:57 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 187179356484;
+        var CHECKSUM = 190508672961;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1155,7 +1155,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
                 Ext.Array.each(milestones, function(milestone){
                     html += Ext.String.format(" {0} ({1})<br/>",
                         milestone.Name,
-                        Ext.util.Format.date(milestone.TargetDate,'d-m-Y')
+                        Ext.util.Format.date(milestone.TargetDate,'d-M-Y')
                     );
                 });
                 return html;
@@ -1793,11 +1793,38 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             if ( me.percentDoneField ) {
                                 field = me.percentDoneField;
                             }
+                            
+                            var display_text = "";
+                            
+                            if ( this.point.low == this.y ) {
+                                var start_field = "PlannedStartDate";
+                                if ( this.series.name == "Actual" ) {
+                                    start_field = "ActualStartDate";
+                                }
+                                
+                                if ( !Ext.isEmpty(this.point._record[start_field]) ) {
+                                    display_text += Ext.util.Format.date(this.point._record[start_field], 'd-M');
+                                }
+                            }
+                            
+                            if ( this.point.high == this.y ) {
+                                var start_field = "PlannedEndDate";
+                                if ( this.series.name == "Actual" ) {
+                                    start_field = "ActualEndDate";
+                                }
+                                
+                                if ( !Ext.isEmpty(this.point._record[start_field]) ) {
+                                    display_text += Ext.util.Format.date(this.point._record[start_field], 'd-M');
+                                }
+                            }
+                            
                             if ( this.series.name == "Actual" && this.point.low == this.y 
                                 && !Ext.isEmpty(this.point._record[field]) && this.point.high != this.point.low ) {
-                                return parseInt(this.point._record[field] * 100) + "%"; 
+                                    display_text += Ext.String.format(" ({0}%)",
+                                        parseInt(this.point._record[field] * 100)
+                                    );
                             }
-                            return "";
+                            return display_text;
                         }
                     }
                 },

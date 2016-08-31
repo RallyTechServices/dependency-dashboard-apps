@@ -115,7 +115,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
                 Ext.Array.each(milestones, function(milestone){
                     html += Ext.String.format(" {0} ({1})<br/>",
                         milestone.Name,
-                        Ext.util.Format.date(milestone.TargetDate,'d-m-Y')
+                        Ext.util.Format.date(milestone.TargetDate,'d-M-Y')
                     );
                 });
                 return html;
