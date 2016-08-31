@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Aug 29 2016 20:58:25 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 30 2016 18:42:54 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Aug 29 2016 20:58:25 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 30 2016 18:42:54 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 181533320020;
+        var CHECKSUM = 186012563901;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -360,6 +360,8 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: 'Project', type:'object' },
         { name: 'Owner', type:'object' },
         { name: 'Milestones', type:'object' },
+        { name: '__Milestones', type:'object', defaultValue: []},
+
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
         { name: 'ReleaseDate', type: 'object' },
@@ -1112,6 +1114,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
 
         html += '</div>';
 
+        console.log('--', percentDoneData);
         return html;
     },
     
@@ -1122,6 +1125,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
             '{[this.getStateMessage(values)]}',
             '{[this.getGrandparentMessage(values)]}',
             '{[this.getParentMessage(values)]}',
+            '{[this.getMilestoneMessage(values)]}',
             '</tpl>', {
             getStateMessage: _.bind(function(values){
                 //console.log('values', values);
@@ -1141,6 +1145,20 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
                     return "";
                 }
                 return Ext.String.format('{0}: {1}<br/>',values.__ParentFID, values.__ParentName);
+            },this),
+            getMilestoneMessage: _.bind(function(values){
+                var milestones = values.__Milestones;
+                if ( Ext.isEmpty(milestones) || milestones.length === 0 ) {
+                    return "";
+                }
+                var html = "Milestones:<br/>";
+                Ext.Array.each(milestones, function(milestone){
+                    html += Ext.String.format(" {0} ({1})<br/>",
+                        milestone.Name,
+                        Ext.util.Format.date(milestone.TargetDate,'d-m-Y')
+                    );
+                });
+                return html;
             },this)
         });
     },
@@ -2616,6 +2634,18 @@ Ext.define("TSDependencyTimeline", {
                     });
                 });
                 
+                Ext.Array.each(rows, function(row) {
+                    var item_milestones = [];
+                    
+                    Ext.Array.each( row.get('Milestones')._tagsNameArray || [], function(ms){
+                        var ref = ms._ref;
+                        var ms_oid = me._getOidFromRef(ref);
+                        if ( me.MilestonesByOID[ms_oid]  ) {
+                            item_milestones.push(me.MilestonesByOID[ms_oid].getData());
+                        }
+                    });
+                    row.set('__Milestones',item_milestones);
+                });
                 deferred.resolve(rows);
             },
             failure: function(msg) {
@@ -2668,7 +2698,6 @@ Ext.define("TSDependencyTimeline", {
         
         html += "</tr></table>";
 
-        console.log(html);
         return html;
     },
     

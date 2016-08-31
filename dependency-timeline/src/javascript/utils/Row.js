@@ -12,6 +12,8 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: 'Project', type:'object' },
         { name: 'Owner', type:'object' },
         { name: 'Milestones', type:'object' },
+        { name: '__Milestones', type:'object', defaultValue: []},
+
         { name: 'PlannedEndDate', type: 'object' },
         { name: 'PlannedStartDate', type: 'object' },
         { name: 'ReleaseDate', type: 'object' },

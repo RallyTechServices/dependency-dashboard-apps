@@ -74,6 +74,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
 
         html += '</div>';
 
+        console.log('--', percentDoneData);
         return html;
     },
     
@@ -84,6 +85,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
             '{[this.getStateMessage(values)]}',
             '{[this.getGrandparentMessage(values)]}',
             '{[this.getParentMessage(values)]}',
+            '{[this.getMilestoneMessage(values)]}',
             '</tpl>', {
             getStateMessage: _.bind(function(values){
                 //console.log('values', values);
@@ -103,6 +105,20 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
                     return "";
                 }
                 return Ext.String.format('{0}: {1}<br/>',values.__ParentFID, values.__ParentName);
+            },this),
+            getMilestoneMessage: _.bind(function(values){
+                var milestones = values.__Milestones;
+                if ( Ext.isEmpty(milestones) || milestones.length === 0 ) {
+                    return "";
+                }
+                var html = "Milestones:<br/>";
+                Ext.Array.each(milestones, function(milestone){
+                    html += Ext.String.format(" {0} ({1})<br/>",
+                        milestone.Name,
+                        Ext.util.Format.date(milestone.TargetDate,'d-m-Y')
+                    );
+                });
+                return html;
             },this)
         });
     },

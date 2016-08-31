@@ -558,6 +558,18 @@ Ext.define("TSDependencyTimeline", {
                     });
                 });
                 
+                Ext.Array.each(rows, function(row) {
+                    var item_milestones = [];
+                    
+                    Ext.Array.each( row.get('Milestones')._tagsNameArray || [], function(ms){
+                        var ref = ms._ref;
+                        var ms_oid = me._getOidFromRef(ref);
+                        if ( me.MilestonesByOID[ms_oid]  ) {
+                            item_milestones.push(me.MilestonesByOID[ms_oid].getData());
+                        }
+                    });
+                    row.set('__Milestones',item_milestones);
+                });
                 deferred.resolve(rows);
             },
             failure: function(msg) {
@@ -610,7 +622,6 @@ Ext.define("TSDependencyTimeline", {
         
         html += "</tr></table>";
 
-        console.log(html);
         return html;
     },
     
