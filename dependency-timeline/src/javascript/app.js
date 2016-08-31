@@ -60,17 +60,27 @@ Ext.define("TSDependencyTimeline", {
         
         this._changeReleaseBox();
         
+        var store = Ext.create('Rally.data.custom.Store',{
+            xtype:'rallycustom',
+            autoLoad: true,
+            data: [
+                { _refObjectName:'Size', _ref: 'size' },
+                { _refObjectName:'Count',_ref: 'count'}
+            ]
+        });
+        
         this.metric_selector = container.add({
-            xtype: 'tstogglebutton',
-            toggleState: 'size',
+            xtype:'rallycombobox',
+            store: store,
             itemId: 'metric_selector',
             margin: '0 10 0 10',
+            width: 100,
             stateful: true,
-            stateId: 'techservices-timeline-metriccombo',
-            stateEvents:['change'],
+            stateId: 'techservices-timeline-metriccombo-1',
+            stateEvents:['select','change'],
             listeners: {
                 scope: this,
-                toggle: this._updateData
+                change: this._updateData
             }
         });
         
@@ -162,7 +172,6 @@ Ext.define("TSDependencyTimeline", {
         this.baseItemsByOID = {};
         this.metric = this.metric_selector.getValue();
     
-
         this.down('#display_box').removeAll();
 
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {

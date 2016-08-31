@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Aug 30 2016 18:46:53 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 30 2016 18:55:20 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Aug 30 2016 18:46:53 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 30 2016 18:55:20 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 186148840963;
+        var CHECKSUM = 187179356484;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -2136,17 +2136,27 @@ Ext.define("TSDependencyTimeline", {
         
         this._changeReleaseBox();
         
+        var store = Ext.create('Rally.data.custom.Store',{
+            xtype:'rallycustom',
+            autoLoad: true,
+            data: [
+                { _refObjectName:'Size', _ref: 'size' },
+                { _refObjectName:'Count',_ref: 'count'}
+            ]
+        });
+        
         this.metric_selector = container.add({
-            xtype: 'tstogglebutton',
-            toggleState: 'size',
+            xtype:'rallycombobox',
+            store: store,
             itemId: 'metric_selector',
             margin: '0 10 0 10',
+            width: 100,
             stateful: true,
-            stateId: 'techservices-timeline-metriccombo',
-            stateEvents:['change'],
+            stateId: 'techservices-timeline-metriccombo-1',
+            stateEvents:['select','change'],
             listeners: {
                 scope: this,
-                toggle: this._updateData
+                change: this._updateData
             }
         });
         
@@ -2238,7 +2248,6 @@ Ext.define("TSDependencyTimeline", {
         this.baseItemsByOID = {};
         this.metric = this.metric_selector.getValue();
     
-
         this.down('#display_box').removeAll();
 
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
