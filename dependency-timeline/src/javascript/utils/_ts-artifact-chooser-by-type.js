@@ -18,7 +18,7 @@ Ext.define('CA.techservices.dialog.TypedArtifactChooserDialog', {
                 xtype:'rallycustom',
                 autoLoad: true,
                 data: Ext.Array.map(types, function(type) {
-                    var type_name = type.replace(/.*\//,'');
+                    var type_name = Ext.String.capitalize(type.replace(/.*\//,''));
                     
                     return {_refObjectName:type_name, _ref:type};
                 })
