@@ -23,7 +23,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
                 '</div>',
             '</tpl>',
             '<tpl if="!PlannedEndDate && !ActualEndDate">',
-                '<div class="dangerNotification percentDoneLine">Missing Planned End Date</div>',
+                '<div class="dangerNotification percentDoneLine">Item is Missing Planned End Date</div>',
             '</tpl>', {
             renderPercentDoneByStoryPlanEstimate: function(recordData) {
                 return Ext.create('Rally.ui.renderer.template.progressbar.PortfolioItemPercentDoneTemplate', {
@@ -57,7 +57,6 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
             html += this.getActualEndDateTpl().apply(percentDoneData);
         }
 
-        //ajax request
         if(this._shouldShowReleaseSection(percentDoneData)) {
             html += this.getReleaseTpl().apply(percentDoneData);
 
@@ -74,7 +73,6 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
 
         html += '</div>';
 
-        console.log('--', percentDoneData);
         return html;
     },
     
@@ -95,6 +93,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
                 return Ext.String.format('State: {0}<br/>',values.State.Name);
             },this),
             getGrandparentMessage: _.bind(function(values){
+                console.log(values);
                 if (Ext.isEmpty(values.__GrandparentFID)) {
                     return "";
                 }
@@ -135,8 +134,8 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
             getEstimateMessage: _.bind(function(values) {
                 var message;
 
-                var actualEnd = getDate(values.ActualEndDate);
-                var plannedEnd = getDate(values.PlannedEndDate);
+                var actualEnd = values.ActualEndDate;
+                var plannedEnd = values.PlannedEndDate;
 
                 var diff = Rally.util.DateTime.getDifference(plannedEnd, actualEnd, 'day');
                 if (diff === 0) {
@@ -150,7 +149,12 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
 
                 return message;
             }, this),
-            formatDate: formatDate
+            formatDate: function(js_date) {
+                if ( Ext.isEmpty(js_date) || !Ext.isDate(js_date) ) {
+                    return "";
+                }
+                return Ext.util.Format.date(js_date,'d-M-Y');
+            }
         });
     },
 
