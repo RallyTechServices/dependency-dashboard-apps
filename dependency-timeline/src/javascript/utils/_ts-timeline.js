@@ -376,7 +376,11 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         Ext.Array.each( _.range(0,range), function(index) {
             var from_date = Rally.util.DateTime.add(me.chartStartDate, 'day', index);
-            var month_name = Ext.Date.format(from_date, 'M');
+            var month_name = Ext.String.format(
+                "<div class='ts-month-title'>{0}<br/>{1}</div>",
+                Ext.Date.format(from_date, 'M'),
+                Ext.Date.format(from_date, 'Y')
+            );
             if ( month_name != header ) { 
                 header = month_name;
                 var from = index;
@@ -392,13 +396,14 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                     label: {
                         text: header,
                         align: 'center',
-                        y: -2
+                        useHTML: true,
+                        y: -5
                     },
                     zIndex: 3
                 });
             }
         });
-        
+       
 //        var bands = Ext.Array.map( _.range(0,12), function(index) {
 //            var band_start_date = Rally.util.DateTime.add(start_date, 'month', index);
 //            var band_end_date = Rally.util.DateTime.add(band_start_date, 'month', 1);
@@ -447,7 +452,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         return plotlines;
     },
     
-    
     /**
      * Generate a valid Highcharts configuration object to specify the column chart
      */
@@ -461,6 +465,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             chart: {
                 inverted: true,
                 marginLeft: vertical_axis_width,
+                marginTop: 18,
                 type: 'columnrange',
                 zoomType: 'y',
                 events: {
