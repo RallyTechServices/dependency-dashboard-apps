@@ -727,7 +727,8 @@ Ext.define("TSDependencyTimeline", {
         
         var config = {
             xtype: 'tsalternativetimeline',
-            height: 500,
+            //height: 500,
+            allowVerticalScroll: false,
             width: this.getWidth() - 20,
             verticalLabelWidth: 500,
             records: rows,

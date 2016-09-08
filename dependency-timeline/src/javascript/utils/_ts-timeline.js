@@ -5,7 +5,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     layout: 'border', 
     
     items: [
-        {xtype:'container', itemId:'vertical_scroll_box', region: 'west', layout: 'vbox' },
+        {xtype:'container', itemId:'vertical_scroll_box', hidden: true, region: 'west', layout: 'vbox' },
         {xtype:'container', itemId:'display_box',  region:'center'}
     ],
     
@@ -58,6 +58,13 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         allowHorizontalScroll : false, // not yet implemented
         
+        /*
+         * {boolean} fullPageScroll
+         * 
+         * True - ignore height passed in and try to make a giant page
+         * False - fit into height
+         */
+        allowVerticalScroll   : true,
        
         /*
          * additionalPlotlines:  push an array of additional plot lines onto the chart
@@ -107,19 +114,32 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
     _buildChart: function(records) {
         this._processItems(records);
         
-        if ( this.records.length - 1 < this.pageSize) {
+        if ( this.records.length - 1 < this.pageSize ) {
             this.pageSize = this.records.length - 1;
         }
         
-        var vertical_scroll_box = this.down('#vertical_scroll_box');
+        if ( !this.allowVerticalScroll ) {
+            this.pageSize = this.records.length - 1;
+            this.height = this.pageSize * 50;
+            this.setHeight(this.height);
+        }
         
-        var display_box  = this.down('#display_box');
+        this._addScrollBars();
+        
+        var display_box  = this.down('#display_box');        
+        this.highchart = display_box.add(this._getTimelineConfig());
+    },
+    
+    _addScrollBars: function() {
+        
+        var vertical_scroll_box = this.down('#vertical_scroll_box');
         
         vertical_scroll_box.add(this._getUpButtonConfig());
         vertical_scroll_box.add({ xtype:'container', flex: 1 });
         vertical_scroll_box.add(this._getDownButtonConfig());
-                
-        
+        if ( this.allowVerticalScroll) {
+            vertical_scroll_box.show();
+        }
         if ( this.allowHorizontalScroll ) {
             var horizontal_scroll_box = this.add({
                 xtype:'container', 
@@ -132,8 +152,6 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             horizontal_scroll_box.add({ xtype:'container', flex: 1 });
             horizontal_scroll_box.add(this._getRightButtonConfig());
         }
-        
-        this.highchart = display_box.add(this._getTimelineConfig());
     },
     
     _getTimelineConfig: function() {
@@ -148,6 +166,8 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         };
         
         if ( this.height ) { config.height = this.height - 10; }
+        
+        console.log(this.height, config.height);
         
         return config;
     },
