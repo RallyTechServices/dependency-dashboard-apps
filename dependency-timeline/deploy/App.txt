@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 11 2016 14:25:12 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 11 2016 14:37:52 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Sep 11 2016 14:25:12 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Sep 11 2016 14:37:52 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 194914159148;
+        var CHECKSUM = 195380216471;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1140,44 +1140,45 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
     getItemSummaryTpl: function() {
         return Ext.create('Ext.XTemplate',
             '<hr/>',
+            '<table>',
             '<tpl>',
             '{[this.getStateMessage(values)]}',
             '{[this.getGrandparentMessage(values)]}',
             '{[this.getParentMessage(values)]}',
             '{[this.getMilestoneMessage(values)]}',
-            '</tpl>', {
+            '</tpl>',
+            '</table>', {
             getStateMessage: _.bind(function(values){
-                //console.log('values', values);
                 if (Ext.isEmpty(values.State)) {
                     return "";
                 }
-                return Ext.String.format('State: {0}<br/>',values.State.Name);
+                return Ext.String.format('<tr><td>State</td><td>{0}</td></tr>', values.State.Name);
             },this),
             getGrandparentMessage: _.bind(function(values){
-                console.log(values);
                 if (Ext.isEmpty(values.__GrandparentFID)) {
                     return "";
                 }
-                return Ext.String.format('{0}: {1}<br/>',values.__GrandparentFID, values.__GrandparentName);
+                return Ext.String.format('<tr><td>Grandparent</td><td>{0}: {1}</td></tr>',values.__GrandparentFID, values.__GrandparentName);
             },this),
             getParentMessage: _.bind(function(values){
                 if (Ext.isEmpty(values.__ParentFID)) {
                     return "";
                 }
-                return Ext.String.format('{0}: {1}<br/>',values.__ParentFID, values.__ParentName);
+                return Ext.String.format('<tr><td>Parent</td><td>{0}: {1}</td></tr>',values.__ParentFID, values.__ParentName);
             },this),
             getMilestoneMessage: _.bind(function(values){
                 var milestones = values.__Milestones;
                 if ( Ext.isEmpty(milestones) || milestones.length === 0 ) {
                     return "";
                 }
-                var html = "Milestones:<br/>";
+                var html = "<tr><td>Milestones</td><td>";
                 Ext.Array.each(milestones, function(milestone){
                     html += Ext.String.format(" {0} ({1})<br/>",
                         milestone.Name,
                         Ext.util.Format.date(milestone.TargetDate,'d-M-Y')
                     );
                 });
+                html += "</td></tr>";
                 return html;
             },this)
         });
