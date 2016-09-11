@@ -45,8 +45,6 @@ Ext.define("TSDependencyStatusReport", {
         if (Ext.isEmpty(this.getSetting('platformCapabilityField')) ) {
             Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Platform Capability');
         }
-        
-        
         if (Ext.isEmpty(this.getSetting('capabilityTypeField')) ) {
             Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Capability Type');
         }
@@ -118,9 +116,7 @@ Ext.define("TSDependencyStatusReport", {
         
         this._getChildItems().then({
             scope: this,
-            success: function(items) {
-                console.trace('_getChildItems()');
-                
+            success: function(items) {                
                 var timebox_oids_by_name = {};
                 Ext.Array.each(items, function(item) {
                     var release = item.get('Release');
@@ -198,9 +194,7 @@ Ext.define("TSDependencyStatusReport", {
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
             release = this.down('rallyreleasecombobox').getRecord();
         }
-        
-        this.logger.log("_updateData", this.PIs, release);
-        
+                
         if ( ( Ext.isEmpty(release) || release.get('Name') == this.clearText ) && ( Ext.isEmpty(this.PIs) || this.PIs.length === 0 ) ) {
             return;
         }
@@ -249,7 +243,7 @@ Ext.define("TSDependencyStatusReport", {
             'portfolioitem/theme'     : 'portfolioitem/Initiative'
         };
         
-        return type_map[type] || 'portfolioitem/Feature';
+        return type_map[type] || 'hierarchicalrequirement';
     },
     
     _getChildItems: function() {
@@ -323,7 +317,6 @@ Ext.define("TSDependencyStatusReport", {
     _getRelatedItems: function(base_items) {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
-        console.trace('_getRelatedItems()');
         this.setLoading('Fetching predecessors/successors...');
         this.base_items = base_items;
         
@@ -349,7 +342,6 @@ Ext.define("TSDependencyStatusReport", {
             success: function(results) {
                 var related_items = Ext.Array.flatten(results);
                 
-                this.logger.log('Base Items', this.baseItemsByOID);
                 deferred.resolve(related_items);
             },
             failure: function(msg) {
@@ -365,7 +357,6 @@ Ext.define("TSDependencyStatusReport", {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
          
-        console.trace('_getParents');
         if ( this.base_items.length === 0 ) { return; }
         
         var oids = [];
@@ -534,8 +525,6 @@ Ext.define("TSDependencyStatusReport", {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
         this.setLoading('Fetching Milestone Information...');
-        console.trace('_fetchMilestoneInformation()');
-        this.logger.log('Finding milestones from rows:', rows);
         
         var milestone_oids = [-1];
         
@@ -555,9 +544,7 @@ Ext.define("TSDependencyStatusReport", {
                 )
             );
         }
-        
-        this.logger.log('Milestone OIDs:', milestone_oids);
-        
+                
         var config = {
             model:'Milestone',
             filters: Rally.data.wsapi.Filter.or(

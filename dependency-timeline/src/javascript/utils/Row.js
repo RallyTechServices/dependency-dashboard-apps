@@ -164,6 +164,14 @@ Ext.define('CA.techservices.row.DependencyRow',{
         { name: '__ActualEndDate', type: 'object', convert: function(value,record) {
             if ( !Ext.isEmpty(value) ) { return value; }
             return record.get('ActualEndDate') || null;
+        } },
+        { name: '__PlannedStartDate', type: 'object', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('PlannedStartDate') || null;
+        } },
+        { name: '__PlannedEndDate', type: 'object', convert: function(value,record) {
+            if ( !Ext.isEmpty(value) ) { return value; }
+            return record.get('PlannedEndDate') || null;
         } }
     ],
     
@@ -171,20 +179,22 @@ Ext.define('CA.techservices.row.DependencyRow',{
         var records = this.get('__RelatedRecords') || [];
         var new_record_oid = record.get('ObjectID');
         var ok_to_add = true;
-        Ext.Array.each(records, function(record){
-            if ( record.get('ObjectID') == new_record_oid ) {
+
+        Ext.Array.each(records, function(existing_record){
+            if ( existing_record.get('ObjectID') == new_record_oid ) {
                 ok_to_add = false;
+                console.log('-->', ok_to_add);
             }
         });
         
-        if ( ok_to_add ) {
-            records.push(record);
+        if ( !ok_to_add ) {
+            return false;
         }
-//        
-//        console.log(this.get('FormattedID'), record.get('FormattedID'), 'related records: ', records, this.get('__RelatedRecords'));
-//        
-          this.set('__RelatedRecords', records);
-//        
+        
+        records.push(record);
+
+        this.set('__RelatedRecords', records);
+        
         this.set('__LeafStoryCount',0);
         
         var my_count = this.get('LeafStoryCount');
@@ -228,23 +238,34 @@ Ext.define('CA.techservices.row.DependencyRow',{
         
         this.set('__PercentDoneByStoryPlanEstimate', size_ratio);
         
-        var my_actual_start_date = this.get('__ActualStartDate') || new Date();
-        var my_actual_end_date = this.get('__ActualEndDate') || new Date();
+        this.set('__ActualStartDate',this._getLowerStart(this.get('__ActualStartDate') || new Date(), record.get('__ActualStartDate')));
+        this.set('__ActualEndDate',this._getHigherEnd(this.get('__ActualEndDate') || new Date(), record.get('__ActualEndDate')));
         
-        var child_start_date = record.get('__ActualStartDate');
-        var child_end_date = record.get('__ActualEndDate');
+        this.set('__PlannedStartDate',this._getLowerStart(this.get('__PlannedStartDate'), record.get('__PlannedStartDate')));
+        this.set('__PlannedEndDate',this._getHigherEnd(this.get('__PlannedEndDate'), record.get('__PlannedEndDate')));
         
-        if ( !Ext.isEmpty(child_start_date) && my_actual_start_date > child_start_date ) {
-            my_actual_start_date = child_start_date;
-        }
-        
-        if ( !Ext.isEmpty(child_end_date) && my_actual_end_date < child_end_date ) {
-            my_actual_end_date = child_end_date;
-        }
-        
-        this.set('__ActualStartDate',my_actual_start_date);
-        this.set('__ActualEndDate',my_actual_end_date);
+        return true;
     },
+    
+    _getLowerStart: function(my_start,child_start) {
+        if ( Ext.isEmpty(my_start) ) { return child_start; }
+        
+        if ( !Ext.isEmpty(child_start) && my_start > child_start ) {
+            return child_start;
+        }
+        
+        return my_start;
+    },
+    
+    _getHigherEnd: function(my_end, child_end){
+        if ( Ext.isEmpty(my_end) ) { return child_end; }
+        if ( !Ext.isEmpty(child_end) && my_end < child_end ) {
+            return child_end;
+        }
+        
+        return my_end;
+    },
+    
     
     isSearch: function() { return false; }
 });

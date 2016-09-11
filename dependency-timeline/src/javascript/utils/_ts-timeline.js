@@ -556,9 +556,9 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             var display_text = "";
                             
                             if ( this.point.low == this.y ) {
-                                var start_field = "PlannedStartDate";
+                                var start_field = me.plannedStartField;
                                 if ( this.series.name == "Actual" ) {
-                                    start_field = "ActualStartDate";
+                                    start_field = me.actualStartField;
                                 }
                                 
                                 if ( !Ext.isEmpty(this.point._record[start_field]) ) {
@@ -567,9 +567,9 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             }
                             
                             if ( this.point.high == this.y ) {
-                                var start_field = "PlannedEndDate";
+                                var start_field = me.plannedEndField;
                                 if ( this.series.name == "Actual" ) {
-                                    start_field = "ActualEndDate";
+                                    start_field = me.actualEndField;
                                 }
                                 
                                 if ( !Ext.isEmpty(this.point._record[start_field]) ) {

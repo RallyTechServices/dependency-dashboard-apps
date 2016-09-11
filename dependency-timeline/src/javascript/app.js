@@ -15,8 +15,17 @@ Ext.define("TSDependencyTimeline", {
     
     clearText: '-- all releases --',
     PIs: [],
-    MilestonesByOID: {}, 
+    MilestonesByOID: {},
     
+    pi_fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
+                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+                'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+                'Ready', 'DisplayColor', 'Description','InvestmentCategory',
+                'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
+                'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
+                'PreliminaryEstimate'],
+                
     config: {
         defaultSettings: {
             typeField: null
@@ -130,7 +139,7 @@ Ext.define("TSDependencyTimeline", {
                 });
                 
                 if ( filters.length === 0 ) {
-                    //container.add({xtype:'container', html:'No Releases on Features for This Item'});
+                    container.add({xtype:'container', html:'No Releases on Features for This Item'});
                 } else {
                     container.add({ 
                         xtype:'rallyreleasecombobox',
@@ -166,20 +175,18 @@ Ext.define("TSDependencyTimeline", {
     },
     
     _updateData: function() {
+        this.down('#display_box').removeAll();
+
         var release = null;
         this.rows = [];
-        this.base_features = [];
+        this.base_items = [];
         this.baseItemsByOID = {};
         this.metric = this.metric_selector.getValue();
-    
-        this.down('#display_box').removeAll();
 
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
             release = this.down('rallyreleasecombobox').getRecord();
         }
-        
-        this.logger.log("_updateData", this.PIs, release);
-        
+                
         if ( ( Ext.isEmpty(release) || release.get('Name') == this.clearText ) && ( Ext.isEmpty(this.PIs) || this.PIs.length === 0 ) ) {
             return;
         }
@@ -246,6 +253,9 @@ Ext.define("TSDependencyTimeline", {
             release = this.down('rallyreleasecombobox').getRecord();
         }
         
+        if ( this.PIs.length === 0 && Ext.isEmpty(release) ) {
+            return [];
+        }
         var filters = null;
 
         var release_filter = null;
@@ -280,14 +290,7 @@ Ext.define("TSDependencyTimeline", {
             model: this._getChildType(this._getParentType()),
             filters: filters,
             context: { project: null },
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
-                'Project','Owner','Release','Milestones',
-                'TargetDate',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal',
-                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
-                'UnEstimatedLeafStoryCount']
+            fetch: this.pi_fetch
         }
         
         this._loadWsapiRecords(config).then({
@@ -319,6 +322,9 @@ Ext.define("TSDependencyTimeline", {
         
         Ext.Array.each(base_items, function(item){
             this.baseItemsByOID[item.get('ObjectID')] = item;
+            item.set('_successors',[]);
+            item.set('_predecessors',[]);
+            
             promises.push(function() { return this._getPredecessors(item); });
             promises.push(function() { return this._getSuccessors(item); });
         },this);
@@ -368,13 +374,8 @@ Ext.define("TSDependencyTimeline", {
             model: this._getParentType(),
             filters: Rally.data.wsapi.Filter.or(filters),
             context: { project: null },
-            fetch:['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones',
-                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
-                'Project','Owner','Release',me.type_field,
-                'LeafStoryCount','State','LeafStoryPlanEstimateTotal',
-                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
-                'UnEstimatedLeafStoryCount']
+            fetch: this.pi_fetch
+
         };
         
         this._loadWsapiRecords(config).then({
@@ -407,12 +408,7 @@ Ext.define("TSDependencyTimeline", {
         }
         
         item.getCollection('Predecessors').load({
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
-                'Project','Owner','Release',
-                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
-                'UnEstimatedLeafStoryCount'],
+            fetch: this.pi_fetch,
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -434,12 +430,7 @@ Ext.define("TSDependencyTimeline", {
         }
         
         item.getCollection('Successors').load({
-            fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate','Milestones','State',
-                'TargetDate','PlannedEndDate','PlannedStartDate','ActualStartDate','ActualEndDate',
-                'Project','Owner','Release',
-                'AcceptedLeafStoryCount','State','AcceptedLeafStoryPlanEstimateTotal',
-                'UnEstimatedLeafStoryCount'], 
+            fetch: this.pi_fetch, 
             scope: this,
             filters: [Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, operator:'!=', value:'Business'})],
             callback: function(records, operation, success) {
@@ -477,13 +468,14 @@ Ext.define("TSDependencyTimeline", {
                     _Level: 2,
                     Grandparent: grandparent,
                     //Parent: item.get('Parent'),
-                    BusinessItem: item.getData()
+                    BusinessItem: item.getData(),
+                    Item: item.getData()
                 }, item.getData() )
             );
             
             rows.push(business_item);
             
-            var dependencies = Ext.Array.push(item.get('_predecessors') || [], item.get('_successors') || [] );
+            var dependencies = Ext.Array.push(item.get('_predecessors'), item.get('_successors') );
             Ext.Array.each(dependencies, function(dependency){
                 var parent_oid = dependency.get('Parent') && dependency.get('Parent').ObjectID;
                 
@@ -496,15 +488,35 @@ Ext.define("TSDependencyTimeline", {
                 var related_record = Ext.create('CA.techservices.row.DependencyRow', Ext.Object.merge({
                         _Level: 3,
                         Grandparent: grandparent,
-                        //Parent: item.get('Parent'),
-                        BusinessItem: item.getData()
+                        BusinessItem: item.getData(),
+                        Item: item.getData()
                     }, dependency.getData() )
                 );
 //                
-                business_item.addRelatedRecord(related_record);
-                rows.push(related_record);
+                if ( business_item.addRelatedRecord(related_record)  ) {
+                    rows.push(related_record);
+                }
             });            
 
+         // add an extra line with just the business item in it
+            if (dependencies.length > 0) {
+                var row = Ext.create('CA.techservices.row.DependencyRow',
+                    Ext.Object.merge({
+                        _Level: 3,
+                        Grandparent: grandparent,
+                        BusinessItem: item.getData(),
+                        Item: item.getData(),
+                        __Type: 'Business'
+                    }, 
+                    item.getData()) 
+                );
+                
+//                row.set('Name',"Not Applicable");
+//                row.set('FormattedID', 'Not Applicable');
+//                row.set('__Type', 'Not Applicable');
+                rows.push(row);
+            }
+            
         });
         
         return rows;
@@ -738,6 +750,9 @@ Ext.define("TSDependencyTimeline", {
             additionalPlotlines: [], //this.milestoneLines,
             actualStartField: '__ActualStartDate',
             actualEndField: '__ActualEndDate',
+            plannedEndField: '__PlannedEndDate',
+            plannedStartField: '__PlannedStartDate',
+            
             percentDoneField: this.metric == 'count' ? '__PercentDoneByStoryCount':'__PercentDoneByStoryPlanEstimate',
 
             eventsForPlannedItems: {
