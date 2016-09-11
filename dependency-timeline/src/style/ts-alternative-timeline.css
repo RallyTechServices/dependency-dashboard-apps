@@ -2,7 +2,7 @@
     background-color: white;
 }
 
-.ts-timeline-category-cell {
+.old-ts-timeline-category-cell {
     padding-left: 5px;
     padding-right: 5px;
     overflow: hidden;
@@ -10,6 +10,12 @@
     display: inline-block;
 }
 
+.ts-timeline-category-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;
+}
+
 .ts-month-title {
-	text-align: center;
+    text-align: center;
 }

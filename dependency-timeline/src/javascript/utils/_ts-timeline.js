@@ -401,7 +401,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         Ext.Array.each( _.range(0,range), function(index) {
             var from_date = Rally.util.DateTime.add(me.chartStartDate, 'day', index);
             var month_name = Ext.String.format(
-                "<div class='ts-month-title'>{0}<br/>{1}</div>",
+                "<table><tr><th class='ts-month-title'>{0}<br/>{1}</th></tr></table>",
                 Ext.Date.format(from_date, 'M'),
                 Ext.Date.format(from_date, 'Y')
             );

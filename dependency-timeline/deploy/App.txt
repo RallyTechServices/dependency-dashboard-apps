@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 11 2016 15:29:06 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 11 2016 16:56:24 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Sep 11 2016 15:29:06 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Sep 11 2016 16:56:24 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 198499120999;
+        var CHECKSUM = 201501247275;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1700,7 +1700,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         Ext.Array.each( _.range(0,range), function(index) {
             var from_date = Rally.util.DateTime.add(me.chartStartDate, 'day', index);
             var month_name = Ext.String.format(
-                "<div class='ts-month-title'>{0}<br/>{1}</div>",
+                "<table><tr><th class='ts-month-title'>{0}<br/>{1}</th></tr></table>",
                 Ext.Date.format(from_date, 'M'),
                 Ext.Date.format(from_date, 'Y')
             );
@@ -2797,25 +2797,31 @@ Ext.define("TSDependencyTimeline", {
     },
     
     getCategoryHeader: function(){
-        var html = "<table><tr>";
+        var html = "<div style='white-space: normal;'>";
+        html += "<table style='width: 510px; table-layout: fixed;'>";
+        
+        html += "<tr>";
         
         Ext.Array.each(Rally.getApp()._getCategoryColumns(), function(column){
             var style = column.style;
             var string = column.text;
             
-            html += Ext.String.format("<td class='ts-timeline-category-cell' style='{0}'>{1}</td>",
+            html += Ext.String.format("<th class='ts-timeline-category-cell' style='{0}'>{1}</th>",
                 style,
                 string
             );
         });
         
-        html += "</tr></table>";
+        html += "</div></tr></table>";
 
         return html;
     },
     
     getCategoryString: function(record) {
-        var html = "<table><tr>";
+        var html = "<div style='white-space: normal;'>";
+        html += "<table style='width: 510px; table-layout: fixed;'>";
+        
+        html += "<tr>";
         
         Ext.Array.each(Rally.getApp()._getCategoryColumns(), function(column){
             var style = column.style;
@@ -2827,7 +2833,7 @@ Ext.define("TSDependencyTimeline", {
                 string
             );
         });
-        html += "</tr></table>";
+        html += "</div></tr></table>";
 
         return html;
     },
@@ -2837,7 +2843,7 @@ Ext.define("TSDependencyTimeline", {
             {
                 dataIndex: 'ObjectID',
                 text: 'Portfolio Item',
-                style: "width:300px",
+                style: "width:200px",
                 renderer: function(value,meta,record) {
                     var record_type = record.get('_type');
                     
@@ -2852,21 +2858,26 @@ Ext.define("TSDependencyTimeline", {
                     }
                     
                     var level = record.get('_Level') || 0;
-                   
+                    
+                    var indent = level * 8;
+                    
+                    var style = "padding-left: " + indent + "px;";
+                    
                     if ( level == 2 ) {
-                        //string = "<span style='background-color:#e7f5fe;font-weight:bold;'>" + string + "</span>";
+                        style += "font-weight:bold;";
                         string = "<span style='font-weight:bold;'>" + string + "</span>";
                     } 
-                    
-                    var prefix = Ext.String.repeat('&nbsp;&nbsp&nbsp;', level);
-                    
-                    return prefix + string;
+                                        
+                    return Ext.String.format("<div style='{0}'>{1}</div>",
+                        style,
+                        string
+                    );
                 }
             },
             {
                 dataIndex: 'Project',
                 text: 'Project',
-                style: "width:100px",
+                style: "width:200px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     var string = value._refObjectName;
@@ -2883,7 +2894,7 @@ Ext.define("TSDependencyTimeline", {
             {
                 dataIndex: 'Owner',
                 text: 'Owner',
-                style: "width:75px",
+                style: "width:100px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     var string = value._refObjectName;
@@ -2910,7 +2921,7 @@ Ext.define("TSDependencyTimeline", {
             //height: 500,
             allowVerticalScroll: false,
             width: this.getWidth() - 20,
-            verticalLabelWidth: 500,
+            verticalLabelWidth: 513,
             records: rows,
             pageSize: 7,
             getCategoryString: me.getCategoryString,
@@ -3078,6 +3089,20 @@ Ext.define("TSDependencyTimeline", {
     cursor: pointer;
 }
 
+th.ts-timeline-category-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    display: inline-block;
+    background-color: #e6e6e6;
+    border: 1px solid #fff;
+}
+
+.ts-month-title {
+    display: inline-block;
+}
+
 
 .pi-box {
     font: 9px arial, sans-serif !important;
@@ -3119,7 +3144,7 @@ Ext.define("TSDependencyTimeline", {
     background-color: white;
 }
 
-.ts-timeline-category-cell {
+.old-ts-timeline-category-cell {
     padding-left: 5px;
     padding-right: 5px;
     overflow: hidden;
@@ -3127,8 +3152,14 @@ Ext.define("TSDependencyTimeline", {
     display: inline-block;
 }
 
+.ts-timeline-category-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;
+}
+
 .ts-month-title {
-	text-align: center;
+    text-align: center;
 }
     </style>
 
