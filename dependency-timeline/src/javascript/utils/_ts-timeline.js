@@ -119,8 +119,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         }
         
         if ( !this.allowVerticalScroll ) {
+            var min_height = 200;
             this.pageSize = this.records.length - 1;
             this.height = this.pageSize * 50;
+            if ( this.height < min_height ) {
+                this.height = min_height;
+            }
             this.setHeight(this.height);
         }
         
@@ -167,7 +171,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         if ( this.height ) { config.height = this.height - 10; }
         
-        console.log(this.height, config.height);
+        //console.log(this.height, config.height);
         
         return config;
     },
@@ -417,7 +421,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                         text: header,
                         align: 'center',
                         useHTML: true,
-                        y: -5
+                        y: -15
                     },
                     zIndex: 3
                 });
@@ -485,7 +489,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             chart: {
                 inverted: true,
                 marginLeft: vertical_axis_width,
-                marginTop: 18,
+                marginTop: 35,
                 type: 'columnrange',
                 zoomType: 'y',
                 events: {

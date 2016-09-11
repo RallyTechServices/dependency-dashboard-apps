@@ -16,6 +16,7 @@ Ext.define("TSDependencyTimeline", {
     clearText: '-- all releases --',
     PIs: [],
     MilestonesByOID: {},
+    parentsByOID: {},
     
     pi_fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
@@ -346,10 +347,12 @@ Ext.define("TSDependencyTimeline", {
     
     // getting the parents lets us get the grandparents
     _getParents: function(leaf_items) {
+        this.logger.log('_getParents',leaf_items.length);
         var me = this,
             deferred = Ext.create('Deft.Deferred');
                     
-        if ( this.base_items.length === 0 ) { return; }
+        if ( this.base_items.length === 0 ) { return []; }
+        if ( leaf_items.length === 0 ) { return []; }
         
         var oids = [];
         Ext.Object.each(this.baseItemsByOID, function(key,item){
@@ -380,7 +383,6 @@ Ext.define("TSDependencyTimeline", {
         
         this._loadWsapiRecords(config).then({
             success: function(results) {
-                me.parentsByOID = {};
                 Ext.Array.each(results, function(result){
                     var oid = result.get('ObjectID');
                     var data = result.getData();
@@ -625,6 +627,7 @@ Ext.define("TSDependencyTimeline", {
     _makeChart: function(rows) {
         this.down('#display_box').removeAll();
 
+        this.logger.log('_makeChart', rows);
         this.down('#display_box').add(this._getChartConfig(rows));
     },
     

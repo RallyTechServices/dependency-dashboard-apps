@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 11 2016 15:04:14 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 11 2016 15:22:46 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Sep 11 2016 15:04:14 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Sep 11 2016 15:22:46 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 196935082533;
+        var CHECKSUM = 198097499450;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1418,8 +1418,12 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         }
         
         if ( !this.allowVerticalScroll ) {
+            var min_height = 200;
             this.pageSize = this.records.length - 1;
             this.height = this.pageSize * 50;
+            if ( this.height < min_height ) {
+                this.height = min_height;
+            }
             this.setHeight(this.height);
         }
         
@@ -1466,7 +1470,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
         
         if ( this.height ) { config.height = this.height - 10; }
         
-        console.log(this.height, config.height);
+        //console.log(this.height, config.height);
         
         return config;
     },
@@ -1716,7 +1720,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                         text: header,
                         align: 'center',
                         useHTML: true,
-                        y: -5
+                        y: -15
                     },
                     zIndex: 3
                 });
@@ -1784,7 +1788,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
             chart: {
                 inverted: true,
                 marginLeft: vertical_axis_width,
-                marginTop: 18,
+                marginTop: 35,
                 type: 'columnrange',
                 zoomType: 'y',
                 events: {
@@ -2177,6 +2181,7 @@ Ext.define("TSDependencyTimeline", {
     clearText: '-- all releases --',
     PIs: [],
     MilestonesByOID: {},
+    parentsByOID: {},
     
     pi_fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
                 'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
@@ -2507,10 +2512,12 @@ Ext.define("TSDependencyTimeline", {
     
     // getting the parents lets us get the grandparents
     _getParents: function(leaf_items) {
+        this.logger.log('_getParents',leaf_items.length);
         var me = this,
             deferred = Ext.create('Deft.Deferred');
                     
-        if ( this.base_items.length === 0 ) { return; }
+        if ( this.base_items.length === 0 ) { return []; }
+        if ( leaf_items.length === 0 ) { return []; }
         
         var oids = [];
         Ext.Object.each(this.baseItemsByOID, function(key,item){
@@ -2541,7 +2548,6 @@ Ext.define("TSDependencyTimeline", {
         
         this._loadWsapiRecords(config).then({
             success: function(results) {
-                me.parentsByOID = {};
                 Ext.Array.each(results, function(result){
                     var oid = result.get('ObjectID');
                     var data = result.getData();
@@ -2786,6 +2792,7 @@ Ext.define("TSDependencyTimeline", {
     _makeChart: function(rows) {
         this.down('#display_box').removeAll();
 
+        this.logger.log('_makeChart', rows);
         this.down('#display_box').add(this._getChartConfig(rows));
     },
     
