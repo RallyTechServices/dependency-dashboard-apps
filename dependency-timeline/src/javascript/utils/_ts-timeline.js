@@ -559,7 +559,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             
                             var display_text = "";
                             
-                            if ( this.point.low == this.y ) {
+                            if ( this.point.low == this.y && this.point.high != this.point.low ) {
                                 var start_field = me.plannedStartField;
                                 if ( this.series.name == "Actual" ) {
                                     start_field = me.actualStartField;
@@ -570,7 +570,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                                 }
                             }
                             
-                            if ( this.point.high == this.y ) {
+                            if ( this.point.high == this.y && this.point.high != this.point.low ) {
                                 var start_field = me.plannedEndField;
                                 if ( this.series.name == "Actual" ) {
                                     start_field = me.actualEndField;

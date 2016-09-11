@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 11 2016 15:22:46 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 11 2016 15:29:06 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Sep 11 2016 15:22:46 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Sep 11 2016 15:29:06 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 198097499450;
+        var CHECKSUM = 198499120999;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1858,7 +1858,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                             
                             var display_text = "";
                             
-                            if ( this.point.low == this.y ) {
+                            if ( this.point.low == this.y && this.point.high != this.point.low ) {
                                 var start_field = me.plannedStartField;
                                 if ( this.series.name == "Actual" ) {
                                     start_field = me.actualStartField;
@@ -1869,7 +1869,7 @@ Ext.define('CA.technicalservices.AlternativeTimeline',{
                                 }
                             }
                             
-                            if ( this.point.high == this.y ) {
+                            if ( this.point.high == this.y && this.point.high != this.point.low ) {
                                 var start_field = me.plannedEndField;
                                 if ( this.series.name == "Actual" ) {
                                     start_field = me.actualEndField;
