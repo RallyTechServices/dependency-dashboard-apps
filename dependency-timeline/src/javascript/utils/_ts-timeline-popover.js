@@ -2,9 +2,16 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
     extend: 'Rally.ui.popover.PercentDonePopover',
     
     config: {
-        
+        record: null
     },
 
+    _setTitle: function() {
+        this.setTitle(Ext.String.format("{0} ({1})",
+            this.config.percentDoneData.FormattedID,
+            Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(this.config.percentDoneData, this.getPercentDoneName()).label)
+        );
+    },
+    
     getAcceptedTpl: function() {
         return Ext.create('Ext.XTemplate',
             '<h3>% DONE</h3>',

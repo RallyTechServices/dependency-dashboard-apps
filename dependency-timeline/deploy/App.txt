@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 11 2016 14:37:52 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 11 2016 15:04:14 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Sep 11 2016 14:37:52 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Sep 11 2016 15:04:14 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 195380216471;
+        var CHECKSUM = 196935082533;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -1063,9 +1063,16 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
     extend: 'Rally.ui.popover.PercentDonePopover',
     
     config: {
-        
+        record: null
     },
 
+    _setTitle: function() {
+        this.setTitle(Ext.String.format("{0} ({1})",
+            this.config.percentDoneData.FormattedID,
+            Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(this.config.percentDoneData, this.getPercentDoneName()).label)
+        );
+    },
+    
     getAcceptedTpl: function() {
         return Ext.create('Ext.XTemplate',
             '<h3>% DONE</h3>',
