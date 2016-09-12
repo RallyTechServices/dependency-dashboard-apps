@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 11 2016 19:15:04 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 11 2016 19:17:50 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Sep 11 2016 19:15:04 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Sun Sep 11 2016 19:17:50 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 544243432749;
+        var CHECKSUM = 541508823398;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -4292,7 +4292,7 @@ Ext.define("TSDependencyTimeline", {
             {
                 dataIndex: 'ObjectID',
                 text: 'Portfolio Item',
-                style: "width:200px",
+                style: "width:250px",
                 renderer: function(value,meta,record) {
                     var record_type = record.get('_type');
                     
@@ -4326,24 +4326,7 @@ Ext.define("TSDependencyTimeline", {
             {
                 dataIndex: 'Project',
                 text: 'Project',
-                style: "width:200px",
-                renderer: function(value,meta,record) {
-                    if ( Ext.isEmpty(value) ) { return ""; }
-                    var string = value._refObjectName;
-
-                    var level = record.get('_Level') || 0;
-                   
-                    if ( level == 2 ) {
-                        string = "<span style='font-weight:bold;'>" + string + "</span>";
-                    } 
-                    
-                    return string;
-                }
-            },
-            {
-                dataIndex: 'Owner',
-                text: 'Owner',
-                style: "width:100px",
+                style: "width:250px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     var string = value._refObjectName;

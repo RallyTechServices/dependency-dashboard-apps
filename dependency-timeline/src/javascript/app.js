@@ -699,7 +699,7 @@ Ext.define("TSDependencyTimeline", {
             {
                 dataIndex: 'ObjectID',
                 text: 'Portfolio Item',
-                style: "width:200px",
+                style: "width:250px",
                 renderer: function(value,meta,record) {
                     var record_type = record.get('_type');
                     
@@ -733,24 +733,7 @@ Ext.define("TSDependencyTimeline", {
             {
                 dataIndex: 'Project',
                 text: 'Project',
-                style: "width:200px",
-                renderer: function(value,meta,record) {
-                    if ( Ext.isEmpty(value) ) { return ""; }
-                    var string = value._refObjectName;
-
-                    var level = record.get('_Level') || 0;
-                   
-                    if ( level == 2 ) {
-                        string = "<span style='font-weight:bold;'>" + string + "</span>";
-                    } 
-                    
-                    return string;
-                }
-            },
-            {
-                dataIndex: 'Owner',
-                text: 'Owner',
-                style: "width:100px",
+                style: "width:250px",
                 renderer: function(value,meta,record) {
                     if ( Ext.isEmpty(value) ) { return ""; }
                     var string = value._refObjectName;
