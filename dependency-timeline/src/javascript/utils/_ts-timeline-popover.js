@@ -2,7 +2,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
     extend: 'Rally.ui.popover.PercentDonePopover',
     
     config: {
-        record: null
+        typeField: "Name"
     },
 
     _setTitle: function() {
@@ -11,6 +11,7 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
             Rally.util.HealthColorCalculator.calculateHealthColorForPortfolioItemData(this.config.percentDoneData, this.getPercentDoneName()).label)
         );
     },
+    
     
     getAcceptedTpl: function() {
         return Ext.create('Ext.XTemplate',
@@ -83,17 +84,44 @@ Ext.define('CA.techservices.popover.TimelinePopover',{
         return html;
     },
     
+    // TODO:  team, owner, release, type, business feature?
+
     getItemSummaryTpl: function() {
         return Ext.create('Ext.XTemplate',
             '<hr/>',
             '<table>',
             '<tpl>',
-            '{[this.getStateMessage(values)]}',
+            '{[this.getTypeMessage(values)]}',
             '{[this.getGrandparentMessage(values)]}',
             '{[this.getParentMessage(values)]}',
+            '{[this.getStateMessage(values)]}',
+            '{[this.getOwnerMessage(values)]}',
+            '{[this.getReleaseMessage(values)]}',
             '{[this.getMilestoneMessage(values)]}',
+            
             '</tpl>',
             '</table>', {
+            getTypeMessage: _.bind(function(values){
+                var type = "Platform";
+                
+                console.log(values);
+                if ( values._Level == 2 || values.__Type == "Business" ) {
+                    type = "Business";
+                }
+                return Ext.String.format('<tr><td>Type</td><td>{0}</td></tr>', type);
+            },this),    
+            getOwnerMessage: _.bind(function(values){
+                if (Ext.isEmpty(values.Owner)) {
+                    return "";
+                }
+                return Ext.String.format('<tr><td>Owner</td><td>{0}</td></tr>', values.Owner._refObjectName);
+            },this),    
+            getReleaseMessage: _.bind(function(values){
+                if (Ext.isEmpty(values.Release)) {
+                    return "";
+                }
+                return Ext.String.format('<tr><td>Release</td><td>{0}</td></tr>', values.Release._refObjectName);
+            },this),    
             getStateMessage: _.bind(function(values){
                 if (Ext.isEmpty(values.State)) {
                     return "";
