@@ -42,6 +42,7 @@ Ext.define("TSDependencyTimeline", {
         this.type_field = this.getSetting('typeField');
         
         this._addSelectors(this.down('#selector_box'));
+        this._addExportButton(this.down('#selector_box'));
     },
       
     _addSelectors: function(container) {
@@ -95,6 +96,24 @@ Ext.define("TSDependencyTimeline", {
         });
         
        
+    },
+    
+    _addExportButton: function(container) {
+        container.add({xtype:'container',flex: 1});
+        
+        container.add({
+            xtype:'rallybutton',
+            itemId:'export_button',
+            cls: 'secondary',
+            text: '<span class="icon-export"> </span>',
+            disabled: true,
+            listeners: {
+                scope: this,
+                click: function(button) {
+                    this._showExportMenu(button);
+                }
+            }
+        });
     },
     
     _changeReleaseBox: function() {
@@ -177,6 +196,7 @@ Ext.define("TSDependencyTimeline", {
     
     _updateData: function() {
         this.down('#display_box').removeAll();
+        this.down('#export_button').setDisabled(true);
 
         var release = null;
         this.rows = [];
@@ -627,8 +647,9 @@ Ext.define("TSDependencyTimeline", {
     _makeChart: function(rows) {
         this.down('#display_box').removeAll();
 
-        this.logger.log('_makeChart', rows);
         this.down('#display_box').add(this._getChartConfig(rows));
+        this.down('#export_button').setDisabled(false);
+
     },
     
     getCategoryHeader: function(){
@@ -855,6 +876,60 @@ Ext.define("TSDependencyTimeline", {
         }
                 
         return end;
+    },
+    
+    _showExportMenu: function(button) {
+        var menu = Ext.widget({
+            xtype: 'rallymenu',
+            items: [
+                {text:'Deep Export', scope: this, handler: this._deepExport}
+            ]
+        });
+        menu.showBy(button.getEl());
+        if(button.toolTip) {
+            button.toolTip.hide();
+        }
+    },
+    
+    _deepExport: function() {
+        var me = this;
+        this.logger.log('_deepExport', this.rows);
+        
+        var rows = Ext.Array.filter(this.rows, function(row){
+            return ( row.get('_Level') == 3 );
+        });
+        // rows are an array of DependencyRow objects
+        var exporter = Ext.create('CA.techservices.DeepExporter', {
+            records: rows,
+            MilestonesByOID: this.MilestonesByOID,
+            TypeField: this.type_field,
+            PlatformCapabilityField: this.platform_capability_field,
+            CapabilityField: this.capability_field,
+            BaseType: this._getChildType(this._getParentType())
+        });
+        
+        this.setLoading('Gathering additional data...');
+        
+        exporter.gatherDescendantInformation().then({
+            success: function(results) {
+                var export_rows = Ext.Array.flatten(results);
+                
+                if (  me._getChildType(me._getParentType()) == "portfolioitem/Initiative" ) {
+                    
+                    Ext.Array.each(export_rows, function(row){
+                        row.Feature = row.Story && row.Story.Feature;
+                    });
+                    
+                }
+                // filter out features that have rows with stories displayed already
+                // (because they're duplicate data)
+                export_rows = Ext.Array.filter(export_rows, function(row){
+                    return ( Ext.isEmpty(row._stories) || row._stories.length === 0 || !Ext.isEmpty(row.Story) );
+                });
+                exporter.saveCSV(export_rows, "E2E Value Stream_MVP Status.csv");
+            }
+        }).always(function(){ me.setLoading(false)});
+        
     },
     
     getOptions: function() {
