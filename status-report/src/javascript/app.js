@@ -526,7 +526,7 @@ Ext.define("TSDependencyStatusReport", {
                 rows.push(related_record);
             });
             // add an extra line with just the business item in it
-            if (dependencies.length > 0) {
+            //if (dependencies.length > 0) {
                 var row = Ext.create('CA.techservices.row.DependencyRow',
                     Ext.Object.merge({
                         _Level: 1,
@@ -543,7 +543,7 @@ Ext.define("TSDependencyStatusReport", {
                 row.set('FormattedID', 'Not Applicable');
                 row.set('__Type', 'Not Applicable');
                 rows.push(row);
-            }
+            //}
 
         });
         return rows;
@@ -967,6 +967,7 @@ Ext.define("TSDependencyStatusReport", {
         var rows = Ext.Array.filter(this.rows, function(row){
             return ( row.get('_Level') == 1 );
         });
+        
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,

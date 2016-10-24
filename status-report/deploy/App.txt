@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Oct 24 2016 16:30:44 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Oct 24 2016 16:41:09 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Oct 24 2016 16:30:44 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Oct 24 2016 16:41:09 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 300456645615;
+        var CHECKSUM = 300473996106;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -2708,7 +2708,7 @@ Ext.define("TSDependencyStatusReport", {
                 rows.push(related_record);
             });
             // add an extra line with just the business item in it
-            if (dependencies.length > 0) {
+            //if (dependencies.length > 0) {
                 var row = Ext.create('CA.techservices.row.DependencyRow',
                     Ext.Object.merge({
                         _Level: 1,
@@ -2725,7 +2725,7 @@ Ext.define("TSDependencyStatusReport", {
                 row.set('FormattedID', 'Not Applicable');
                 row.set('__Type', 'Not Applicable');
                 rows.push(row);
-            }
+            //}
 
         });
         return rows;
@@ -3149,6 +3149,7 @@ Ext.define("TSDependencyStatusReport", {
         var rows = Ext.Array.filter(this.rows, function(row){
             return ( row.get('_Level') == 1 );
         });
+        
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
