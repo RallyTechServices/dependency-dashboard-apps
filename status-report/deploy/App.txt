@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Fri Aug 26 2016 13:18:03 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Oct 24 2016 16:30:44 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Aug 26 2016 13:18:03 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Oct 24 2016 16:30:44 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 294920592726;
+        var CHECKSUM = 300456645615;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -2226,11 +2226,11 @@ Ext.define("TSDependencyStatusReport", {
         
         if (Ext.isEmpty(this.getSetting('platformCapabilityField')) ) {
             Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Platform Capability');
+            return;
         }
-        
-        
         if (Ext.isEmpty(this.getSetting('capabilityTypeField')) ) {
             Ext.Msg.alert('Configuration...','Please go to Edit App Settings and choose an item field used to define Capability Type');
+            return;
         }
         
         this.type_field = this.getSetting('typeField');
@@ -2241,8 +2241,16 @@ Ext.define("TSDependencyStatusReport", {
         this.pi_fetch.push(this.platform_capability_field);
         this.pi_fetch.push(this.capability_field);
         
-        this._addSelectors(this.down('#selector_box'));
-        this._addExportButton(this.down('#selector_box'));
+        this._fetchPortfolioItemTypes().then({
+            success: function(types) {
+                this.pi_types = types;
+                this._addSelectors(this.down('#selector_box'));
+                this._addExportButton(this.down('#selector_box'));
+            },
+            failure: function(msg) { Ext.Msg.alert('Type Loading', "Cannot load PI types"); },
+            scope: this
+        });
+
     },
       
     _addSelectors: function(container) {
@@ -2300,9 +2308,7 @@ Ext.define("TSDependencyStatusReport", {
         
         this._getChildItems().then({
             scope: this,
-            success: function(items) {
-                console.trace('_getChildItems()');
-                
+            success: function(items) {                
                 var timebox_oids_by_name = {};
                 Ext.Array.each(items, function(item) {
                     var release = item.get('Release');
@@ -2372,6 +2378,8 @@ Ext.define("TSDependencyStatusReport", {
         this.down('#export_button').setDisabled(true);
         this.down('#display_box').removeAll();
         
+        this.logger.log('_updateData');
+        
         var release = null;
         this.rows = [];
         this.base_items = [];
@@ -2380,9 +2388,7 @@ Ext.define("TSDependencyStatusReport", {
         if ( !Ext.isEmpty(this.down('rallyreleasecombobox') ) ) {
             release = this.down('rallyreleasecombobox').getRecord();
         }
-        
-        this.logger.log("_updateData", this.PIs, release);
-        
+                
         if ( ( Ext.isEmpty(release) || release.get('Name') == this.clearText ) && ( Ext.isEmpty(this.PIs) || this.PIs.length === 0 ) ) {
             return;
         }
@@ -2425,13 +2431,20 @@ Ext.define("TSDependencyStatusReport", {
     },
     
     _getChildType: function(type) {
-        var type_map = {
-            'parent'                  : 'child',
-            'portfolioitem/initiative': 'portfolioitem/Feature',
-            'portfolioitem/theme'     : 'portfolioitem/Initiative'
-        };
         
-        return type_map[type] || 'portfolioitem/Feature';
+        if ( type == 'parent' ) { return 'child'; }
+        
+        var pi_types = Ext.Array.map(this.pi_types, function(pi_type) {
+            return pi_type.get('TypePath').toLowerCase();
+        });
+        
+        this.logger.log(type, pi_types);
+        
+        var idx = Ext.Array.indexOf(pi_types, type);
+        if ( idx > -1 ) {
+            return pi_types[idx-1];
+        }
+        return 'hierarchicalrequirement';
     },
     
     _getChildItems: function() {
@@ -2461,12 +2474,16 @@ Ext.define("TSDependencyStatusReport", {
             });
             filters = release_filter;
         }
+
+        this.logger.log("PIs:",this.PIs);
         
         var pi_filter_configs = Ext.Array.map(this.PIs, function(pi) {
             return [
                 {property:'Parent.ObjectID',value:pi.get('ObjectID')}
             ];
         });
+        
+        this.logger.log('pi_filter_configs', pi_filter_configs);
         
         var pi_filters = null;
         if ( pi_filter_configs.length > 0 ) {
@@ -2479,7 +2496,12 @@ Ext.define("TSDependencyStatusReport", {
         
         if ( Ext.isEmpty(filters) ) { return []; }
 
-        filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{property:this.type_field, value:'Business'}));
+        filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{
+            property:this.type_field, 
+            value:'Business'
+        }));
+        
+        this.logger.log('filters:', filters.toString());
         
         var config = {
             model: this._getChildType(this._getParentType()),
@@ -2505,7 +2527,6 @@ Ext.define("TSDependencyStatusReport", {
     _getRelatedItems: function(base_items) {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
-        console.trace('_getRelatedItems()');
         this.setLoading('Fetching predecessors/successors...');
         this.base_items = base_items;
         
@@ -2531,7 +2552,6 @@ Ext.define("TSDependencyStatusReport", {
             success: function(results) {
                 var related_items = Ext.Array.flatten(results);
                 
-                this.logger.log('Base Items', this.baseItemsByOID);
                 deferred.resolve(related_items);
             },
             failure: function(msg) {
@@ -2547,7 +2567,6 @@ Ext.define("TSDependencyStatusReport", {
         var me = this,
             deferred = Ext.create('Deft.Deferred');
          
-        console.trace('_getParents');
         if ( this.base_items.length === 0 ) { return; }
         
         var oids = [];
@@ -2716,8 +2735,6 @@ Ext.define("TSDependencyStatusReport", {
         var deferred = Ext.create('Deft.Deferred'),
             me = this;
         this.setLoading('Fetching Milestone Information...');
-        console.trace('_fetchMilestoneInformation()');
-        this.logger.log('Finding milestones from rows:', rows);
         
         var milestone_oids = [-1];
         
@@ -2737,9 +2754,7 @@ Ext.define("TSDependencyStatusReport", {
                 )
             );
         }
-        
-        this.logger.log('Milestone OIDs:', milestone_oids);
-        
+                
         var config = {
             model:'Milestone',
             filters: Rally.data.wsapi.Filter.or(
@@ -3047,6 +3062,48 @@ Ext.define("TSDependencyStatusReport", {
         });
 
         return columns;
+    },
+    
+    _fetchPortfolioItemTypes: function(workspace) {
+        var deferred = Ext.create('Deft.Deferred');
+                
+        var store_config = {
+            fetch: ['Name','ElementName','TypePath'],
+            model: 'TypeDefinition',
+            filters: [
+                {
+                    property: 'Parent.Name',
+                    operator: '=',
+                    value: 'Portfolio Item'
+                },
+                {
+                    property: 'Creatable',
+                    operator: '=',
+                    value: 'true'
+                }
+            ],
+            autoLoad: true,
+            listeners: {
+                load: function(store, records, successful) {
+                    if (successful){
+                        deferred.resolve(records);
+                    } else {
+                        deferred.reject('Failed to load types');
+                    }
+                }
+            }
+        };
+        
+        if ( !Ext.isEmpty(workspace) ) {
+            store_config.context = { 
+                project:null,
+                workspace: workspace.get('_ref')
+            };
+        }
+        
+        var store = Ext.create('Rally.data.wsapi.Store', store_config );
+                    
+        return deferred.promise;
     },
      
     _loadWsapiRecords: function(config){
