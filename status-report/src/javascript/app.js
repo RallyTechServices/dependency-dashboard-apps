@@ -659,9 +659,11 @@ Ext.define("TSDependencyStatusReport", {
             
         var child_name = this._getChildType(this._getParentType()).replace(/.*\//,'');
         
+        console.log('child name', child_name);
+        
         var theme_level = 'Grandparent';
         
-        if ( child_name == "Initiative" ) {
+        if ( child_name == "initiative" ) {
             theme_level = 'Parent';
         }
 

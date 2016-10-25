@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Oct 24 2016 16:41:09 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Oct 24 2016 16:59:55 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Oct 24 2016 16:41:09 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Oct 24 2016 16:59:55 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 300473996106;
+        var CHECKSUM = 300742272527;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -2841,9 +2841,11 @@ Ext.define("TSDependencyStatusReport", {
             
         var child_name = this._getChildType(this._getParentType()).replace(/.*\//,'');
         
+        console.log('child name', child_name);
+        
         var theme_level = 'Grandparent';
         
-        if ( child_name == "Initiative" ) {
+        if ( child_name == "initiative" ) {
             theme_level = 'Parent';
         }
 
