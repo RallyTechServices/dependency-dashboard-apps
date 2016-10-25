@@ -15,7 +15,13 @@ Ext.define('CA.techservices.DeepExporter',{
         /*
          * portfolioitem/Feature|portfolioitem/Initiative
          */
-        BaseType: 'portfolioitem/Feature' 
+        BaseType: 'portfolioitem/Feature',
+        fetchFields: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
+            'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
+            'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',
+            'State','PreliminaryEstimate','Ready','PercentDoneByStoryPlanEstimate', 
+            'PercentDoneByStoryCount'
+        ]
     },
     
     constructor: function(config) {
@@ -156,12 +162,7 @@ Ext.define('CA.techservices.DeepExporter',{
             context: {
                 project: null
             },
-            fetch: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
-                'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
-                'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',
-                'State','PreliminaryEstimate','Ready','PercentDoneByStoryPlanEstimate', 
-                'PercentDoneByStoryCount'
-            ]
+            fetch: me.fetchFields
         };
         
         this._loadWsapiRecords(config).then({
@@ -646,7 +647,8 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
                 return value.c_AcceptanceCriteria;
             }},
-            {fieldName: field, text: 'Feature.LeafStoryCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.LeafStoryCount', renderer: function(value,record){
+                console.log('--', value, record);
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},

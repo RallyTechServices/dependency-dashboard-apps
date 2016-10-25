@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Oct 24 2016 16:59:55 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Oct 24 2016 17:23:06 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Oct 24 2016 16:59:55 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Oct 24 2016 17:23:06 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 300742272527;
+        var CHECKSUM = 301451674937;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -797,7 +797,13 @@ Ext.define('CA.techservices.DeepExporter',{
         /*
          * portfolioitem/Feature|portfolioitem/Initiative
          */
-        BaseType: 'portfolioitem/Feature' 
+        BaseType: 'portfolioitem/Feature',
+        fetchFields: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
+            'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
+            'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',
+            'State','PreliminaryEstimate','Ready','PercentDoneByStoryPlanEstimate', 
+            'PercentDoneByStoryCount'
+        ]
     },
     
     constructor: function(config) {
@@ -938,12 +944,7 @@ Ext.define('CA.techservices.DeepExporter',{
             context: {
                 project: null
             },
-            fetch: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
-                'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
-                'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',
-                'State','PreliminaryEstimate','Ready','PercentDoneByStoryPlanEstimate', 
-                'PercentDoneByStoryCount'
-            ]
+            fetch: me.fetchFields
         };
         
         this._loadWsapiRecords(config).then({
@@ -1428,7 +1429,8 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
                 return value.c_AcceptanceCriteria;
             }},
-            {fieldName: field, text: 'Feature.LeafStoryCount', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.LeafStoryCount', renderer: function(value,record){
+                console.log('--', value, record);
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},
@@ -2204,7 +2206,7 @@ Ext.define("TSDependencyStatusReport", {
                 'Ready', 'DisplayColor', 'Description','InvestmentCategory',
                 'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
                 'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
-                'PreliminaryEstimate'],
+                'PreliminaryEstimate','Feature'],
                 
     integrationHeaders : {
         name : "TSDependencyStatusReport"
@@ -3155,6 +3157,7 @@ Ext.define("TSDependencyStatusReport", {
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
+            fetchFields: this.pi_fetch,
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
             PlatformCapabilityField: this.platform_capability_field,
