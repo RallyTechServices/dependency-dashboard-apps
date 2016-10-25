@@ -13,20 +13,21 @@ Ext.define("TSDependencyTimeline", {
         name : "TSDependencyTimeline"
     },
     
+    
     clearText: '-- all releases --',
     PIs: [],
     MilestonesByOID: {},
     parentsByOID: {},
     
     pi_fetch: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
-                'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
-                'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
-                'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
-                'Ready', 'DisplayColor', 'Description','InvestmentCategory',
-                'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
-                'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
-                'PreliminaryEstimate'],
-                
+        'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+        'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+        'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+        'Ready', 'DisplayColor', 'Description','InvestmentCategory',
+        'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
+        'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
+        'PreliminaryEstimate','Feature'],
+
     config: {
         defaultSettings: {
             typeField: null
@@ -40,6 +41,12 @@ Ext.define("TSDependencyTimeline", {
             return;
         }
         this.type_field = this.getSetting('typeField');
+        this.platform_capability_field = this.getSetting('platformCapabilityField');
+        this.capability_field = this.getSetting('capabilityTypeField');
+        
+        this.pi_fetch.push(this.type_field);
+        this.pi_fetch.push(this.platform_capability_field);
+        this.pi_fetch.push(this.capability_field);
         
         this._addSelectors(this.down('#selector_box'));
         this._addExportButton(this.down('#selector_box'));
@@ -884,6 +891,7 @@ Ext.define("TSDependencyTimeline", {
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
+            fetchFields: this.pi_fetch,
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
             PlatformCapabilityField: this.platform_capability_field,
@@ -940,6 +948,8 @@ Ext.define("TSDependencyTimeline", {
             name: 'typeField',
             xtype: 'rallyfieldcombobox',
             model: 'PortfolioItem',
+            label: 'Type Field:',
+            labelWidth: 150,
             _isNotHidden: function(field) {
                 if ( field.hidden ) { return false; }
                 var defn = field.attributeDefinition;
@@ -947,6 +957,36 @@ Ext.define("TSDependencyTimeline", {
                 
                 return ( defn.Constrained && defn.AttributeType == 'STRING' );
             }
+        },
+        {
+            name: 'platformCapabilityField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            label: 'Platform Capability Field:',
+            labelWidth: 150,
+            _isNotHidden: function(field) {
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }        
+            //
+        },
+        {
+            name: 'capabilityTypeField',
+            xtype: 'rallyfieldcombobox',
+            model: 'PortfolioItem',
+            label: 'Capability Type Field:',
+            labelWidth: 150,
+            _isNotHidden: function(field) {
+                if ( field.hidden ) { return false; }
+                var defn = field.attributeDefinition;
+                if ( Ext.isEmpty(defn) ) { return false; }
+                
+                return ( defn.Constrained && defn.AttributeType == 'STRING' );
+            }        
+            //
         }];
     },
     
