@@ -23,7 +23,7 @@ Ext.define("TSDependencyStatusReport", {
                 'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
                 'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
                 'PreliminaryEstimate','Feature'],
-                
+   
     integrationHeaders : {
         name : "TSDependencyStatusReport"
     },

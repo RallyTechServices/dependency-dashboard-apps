@@ -13,7 +13,11 @@ module.exports = function(grunt) {
     
         config = grunt.file.readJSON('config.json');
 
-        config.js_files = grunt.file.expand(['src/javascript/utils/*.js','src/javascript/*.js']);
+        config.js_files = grunt.file.expand([
+            '../common/javascript/*.js',
+            'src/javascript/utils/*.js',
+            'src/javascript/*.js'
+        ]);
 
         config.ugly_files = grunt.file.expand(['deploy/app.min.*.js']);
         
@@ -363,7 +367,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     
     //tasks
-    grunt.registerTask('default', ['debug','build','ugly','apikey']);
+    grunt.registerTask('default', ['build','ugly']);
     
     // (uses all the files in src/javascript)
     grunt.registerTask('build', "Create the html for deployment",['template:prod','setPostBuildInfo']);
@@ -372,7 +376,6 @@ module.exports = function(grunt) {
     //
     grunt.registerTask('ugly', "Create the ugly html for deployment",['uglify:ugly','template:ugly']);
     //
-    grunt.registerTask('apikey', "Create an html file that can run on another server", ['template:apikey','template:confluence']);
 
     grunt.registerTask('test-fast', "Run tests that don't need to connect to Rally", ['jasmine:fast']);
     grunt.registerTask('test-slow', "Run tests that need to connect to Rally", ['jasmine:slow']);

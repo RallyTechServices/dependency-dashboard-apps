@@ -16,11 +16,14 @@ Ext.define('CA.techservices.DeepExporter',{
          * portfolioitem/Feature|portfolioitem/Initiative
          */
         BaseType: 'portfolioitem/Feature',
-        fetchFields: ['ObjectID','FormattedID','Name','Description','c_AcceptanceCriteria',
-            'Color','Project','Owner','Iteration','Release','Milestones','Expedite',
-            'PlanEstimate','ScheduleState','Ready','TaskEstimateTotal','Defects','Feature',
-            'State','PreliminaryEstimate','Ready','PercentDoneByStoryPlanEstimate', 
-            'PercentDoneByStoryCount'
+        fetchFields: ['ObjectID','FormattedID','Name','Parent','Predecessors','Successors',
+            'PercentDoneByStoryCount','PercentDoneByStoryPlanEstimate',
+            'PlannedEndDate','PlannedStartDate','Project','Owner','Release','Milestones',
+            'TargetDate','LeafStoryCount','State','LeafStoryPlanEstimateTotal',
+            'Ready', 'DisplayColor', 'Description','InvestmentCategory',
+            'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
+            'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
+            'PreliminaryEstimate','Feature'
         ]
     },
     
@@ -28,6 +31,7 @@ Ext.define('CA.techservices.DeepExporter',{
         config = config || {};
         this.mergeConfig(config);
     },
+    
     
     gatherDescendantInformation: function() {
         var me = this,
