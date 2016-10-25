@@ -652,6 +652,11 @@ Ext.define('CA.techservices.DeepExporter',{
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
                 return value.LeafStoryCount;
             }},
+            {fieldName: field, text: 'LeafStoryPlanEstimateTotal', renderer: function(value,record){
+                console.log('--', value, record);
+                if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryPlanEstimateTotal) ) { return ""; }
+                return value.LeafStoryCount;
+            }},
             {fieldName: field, text: 'Feature.Milestones', renderer: function(value,record){                
                 if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
                 
