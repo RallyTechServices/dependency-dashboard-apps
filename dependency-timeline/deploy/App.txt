@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Oct 24 2016 19:37:59 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Oct 25 2016 17:39:59 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Oct 24 2016 19:37:59 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Oct 25 2016 17:39:59 GMT-0700 (PDT)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 555755946897;
+        var CHECKSUM = 577759980391;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -859,7 +859,8 @@ Ext.define('CA.techservices.DeepExporter',{
             'Ready', 'DisplayColor', 'Description','InvestmentCategory',
             'ValueScore','RiskScore','WSJFScore','RefinedEstimate','Expedite',
             'c_PlatformCapability', 'ReleaseStartDate','ReleaseDate',
-            'PreliminaryEstimate','Feature'
+            'PreliminaryEstimate','Feature','PlanEstimate','c_AcceptanceCriteria',
+            'TaskEstimateTotal','Tasks','Defects','Milestones'
         ]
     },
     
@@ -867,7 +868,6 @@ Ext.define('CA.techservices.DeepExporter',{
         config = config || {};
         this.mergeConfig(config);
     },
-    
     
     gatherDescendantInformation: function() {
         var me = this,
@@ -1352,153 +1352,318 @@ Ext.define('CA.techservices.DeepExporter',{
     _getItemColumns: function() {
         var me = this;
         var field = "Item";
-        if (this.BaseType == "portfolioitem/Initiative") {
-            field = "Feature";
+        var prefix = null;
+        
+        if (this.BaseType == "portfolioitem/initiative") {
+            field = "Story";
+            prefix = "Feature";
         }
         
         return [
-            {fieldName: field, text: 'Feature.FormattedID', renderer: function(value,record){                
+            {fieldName: field, text: 'Feature.FormattedID', renderer: function(value,record){ 
+                console.log('--',prefix, value, record);
                 if (Ext.isEmpty(value) ) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.FormattedID;
             }},
             {fieldName: field, text: 'Feature.Name', renderer: function(value,record){                
                 if (Ext.isEmpty(value) ) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.Name;
             }},
             {fieldName: field, text: 'Feature.State', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.State) ) { return ""; }
-                
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if (Ext.isEmpty(value.State) ) { return ""; }
                 return value.State.Name;
             }},
             {fieldName: field, text: 'Feature.Description', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Description) ) { return ""; }
-                
+                if (Ext.isEmpty(value) ) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.Description;
             }},
             {fieldName: field, text: 'Feature.PreliminaryEstimate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
-                
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if (Ext.isEmpty(value.PreliminaryEstimate) ) { return ""; }
                 return value.PreliminaryEstimate.Name;
             }},
             {fieldName: field, text: 'Feature.Ready', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Ready) ) { return "false"; }
-                
+                if (Ext.isEmpty(value) ) { return "false"; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if (Ext.isEmpty(value.Ready) ) { return "false"; }
                 return value.Ready;
             }},
             {fieldName: field, text: 'Feature.PercentDoneByStoryPlanEstimate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
-                
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if ( Ext.isEmpty(value.PercentDoneByStoryPlanEstimate) ) { return ""; }
                 return Ext.String.format( "{0}%", value.PercentDoneByStoryPlanEstimate * 100 );
             }},
             {fieldName: field, text: 'Feature.PercentDoneByStoryCount', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
-                
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if ( Ext.isEmpty(value.PercentDoneByStoryCount) ) { return ""; }
                 return Ext.String.format( "{0}%", value.PercentDoneByStoryCount * 100 );
             }},
             {fieldName: field, text: 'Feature.Color', renderer: function(value,record){
                 if (Ext.isEmpty(value) ) { return ""; }
-                
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.DisplayColor;
             }},
             {fieldName: field, text: 'Feature.Project', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Project) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if ( Ext.isEmpty(value.Project) ) { return ""; }
+                
                 return value.Project.Name;
             }},
             {fieldName: field, text: 'Feature.Owner', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Owner) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if ( Ext.isEmpty(value.Owner) ) { return ""; }
+                
                 return value.Owner._refObjectName;
             }},
             {fieldName: field, text: 'Feature.InvestmentCategory', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.InvestmentCategory) ) { return ""; }
+                if (Ext.isEmpty(value) ) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.InvestmentCategory;
             }},
             {fieldName: field, text: 'Feature.ValueScore', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.ValueScore) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.ValueScore;
             }},
             {fieldName: field, text: 'Feature.RiskScore', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.RiskScore) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.RiskScore;
             }},
             {fieldName: field, text: 'Feature.WSJFScore', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.WSJFScore) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.WSJFScore;
             }},
             {fieldName: field, text: 'Feature.RefinedEstimate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.RefinedEstimate) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.RefinedEstimate;
             }},
             
             {fieldName: field, text: 'Feature.PlannedStartDate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedStartDate) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.PlannedStartDate)) {
+                    return "";
+                }
                 var d = value.PlannedStartDate;
                 if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
                 return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.PlannedEndDate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PlannedEndDate) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.PlannedEndDate)) {
+                    return "";
+                }
+                
                 var d = value.PlannedEndDate;
                 if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
                 return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.ActualStartDate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualStartDate) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.ActualStartDate)) {
+                    return "";
+                }
+                
                 var d = value.ActualStartDate;
                 if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
                 return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.ActualEndDate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.ActualEndDate) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.ActualEndDate)) {
+                    return "";
+                }
+                
                 var d = value.ActualEndDate;
                 if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
                 return Ext.Date.format(d, 'd-M-Y T');
             }},
             {fieldName: field, text: 'Feature.Release.Name', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.Release)) {
+                    return "";
+                }
+                
                 return value.Release.Name;
             }},
             {fieldName: field, text: 'Feature.Release.StartDate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.Release)) {
+                    return "";
+                }
+                
                 var d = value.Release.ReleaseStartDate;
                 if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
                 return Ext.Date.format(d, 'd-M-Y T');
 
             }},
             {fieldName: field, text: 'Feature.Release.EndDate', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Release) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.Release)) {
+                    return "";
+                }
+                
                 var d = value.Release.ReleaseDate;
                 if ( Ext.isString(d) ) { d = Rally.util.DateTime.fromIsoString(d); }
                 return Ext.Date.format(d, 'd-M-Y T');
 
             }},
             {fieldName: field, text: 'Feature.Expedite', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Expedite) ) { return "false"; }
+                if (Ext.isEmpty(value)) { return "false"; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(value.Expedite)) {
+                    return "";
+                }
+                
                 return value.Expedite;
             }},
             {fieldName: field, text: 'Feature.CapabilityType', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.CapabilityField]) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty(Ext.isEmpty(value[me.CapabilityField]) )) {
+                    return "";
+                }
+                
                 return value[me.CapabilityField];
             }},
             {fieldName: field, text: 'Feature.PlatformCapability', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value[me.PlatformCapabilityField]) ) { return ""; }
+                if (Ext.isEmpty(value) ) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                if(Ext.isEmpty( Ext.isEmpty(value[me.PlatformCapabilityField]))) {
+                    return "";
+                }
                 return value[me.PlatformCapabilityField];
             }},
             {fieldName: field, text: 'Feature.AcceptanceCriteria', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.c_AcceptanceCriteria) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.c_AcceptanceCriteria;
             }},
             {fieldName: field, text: 'Feature.LeafStoryCount', renderer: function(value,record){
-                console.log('--', value, record);
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryCount) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.LeafStoryCount;
             }},
             {fieldName: field, text: 'LeafStoryPlanEstimateTotal', renderer: function(value,record){
-                console.log('--', value, record);
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.LeafStoryPlanEstimateTotal) ) { return ""; }
+                if (Ext.isEmpty(value) ) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                
                 return value.LeafStoryCount;
             }},
             {fieldName: field, text: 'Feature.Milestones', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                
+                if (  Ext.isEmpty(value.Milestones) || value.Milestones.Count === 0 ) { return ""; }
                 
                 return Ext.Array.map(value.Milestones._tagsNameArray, function(ms){
                     var oid = me._getOidFromRef(ms._ref);
@@ -1514,18 +1679,32 @@ Ext.define('CA.techservices.DeepExporter',{
                 }).join('| ');
             }},
             {fieldName: field, text: 'Feature.DependenciesCount', renderer: function(value,record){                
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.PredecessorsAndSuccessors) ) { return ""; }
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
+                
+                if (  Ext.isEmpty(value.PredecessorsAndSuccessors) || value.PredecessorsAndSuccessors.Count === 0 ) { 
+                    return "";
+                }
                 
                 return value.PredecessorsAndSuccessors.Count;
             }},
             {fieldName: field, text: 'Feature.Dependencies.Platform', renderer: function(value,record){
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
-                
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.__PlatformDependencyCount || 0;
             }},
             {fieldName: field, text: 'Feature.Dependencies.Business', renderer: function(value,record){
-                if (Ext.isEmpty(value) || Ext.isEmpty(value.__PlatformDependencyCount) ) { return ""; }
-                
+                if (Ext.isEmpty(value)) { return ""; }
+                if (prefix) {
+                    value = value[prefix];
+                    if (Ext.isEmpty(value) ) { return ""; }
+                }
                 return value.__BusinessDependencyCount || 0;
             }}
         ];
@@ -1534,7 +1713,8 @@ Ext.define('CA.techservices.DeepExporter',{
     _getParentColumns: function() {
         var me = this;
         var field = "Parent";
-        if (this.BaseType == "portfolioitem/Initiative") {
+        
+        if (this.BaseType == "portfolioitem/initiative") {
             field = "Item";
         }
         
@@ -1698,7 +1878,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         
         var field = "Grandparent";
-        if ( this.BaseType == "portfolioitem/Initiative") {
+        if ( this.BaseType == "portfolioitem/initiative") {
             field = "Parent";
         }
         
@@ -4495,7 +4675,6 @@ Ext.define("TSDependencyTimeline", {
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
-            fetchFields: this.pi_fetch,
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
             PlatformCapabilityField: this.platform_capability_field,

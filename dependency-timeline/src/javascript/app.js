@@ -891,7 +891,6 @@ Ext.define("TSDependencyTimeline", {
         // rows are an array of DependencyRow objects
         var exporter = Ext.create('CA.techservices.DeepExporter', {
             records: rows,
-            fetchFields: this.pi_fetch,
             MilestonesByOID: this.MilestonesByOID,
             TypeField: this.type_field,
             PlatformCapabilityField: this.platform_capability_field,
