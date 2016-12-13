@@ -3,12 +3,12 @@
 <head>
     <title>Dependency Timeline</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Oct 25 2016 17:39:59 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Dec 12 2016 19:50:31 GMT-0800 (PST) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Oct 25 2016 17:39:59 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Dec 12 2016 19:50:31 GMT-0800 (PST)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 577759980391;
+        var CHECKSUM = 579124909634;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk-debug.js"></script>
@@ -46,7 +46,7 @@
                     {
 
                         xtype: 'rallybutton',
-                        text: 'Step 1: Choose Business Theme / Initiative',
+                        text: 'Step 1: Choose Business Initiative / Capability',
                         itemId: 'portfolioItemButton',
                         cls: 'piButton primary small'
                     },
@@ -249,7 +249,7 @@
 
         _getChooserConfig: function () {
             return {
-                artifactTypes: ['portfolioitem/initiative','portfolioitem/theme'],
+                artifactTypes: ['portfolioitem/capability','portfolioitem/initiative'],
                 multiple: false,
                 height: 350,
                 title: 'Choose Portfolio Item to Add',
@@ -870,6 +870,8 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     gatherDescendantInformation: function() {
+        console.log("base type:", this.BaseType);
+        
         var me = this,
             records = this.records;
         // assume that the row represents a portfolio item of some sort
@@ -986,7 +988,8 @@ Ext.define('CA.techservices.DeepExporter',{
         
         var filters = Rally.data.wsapi.Filter.or([
             {property:'Feature.ObjectID',value:record.get('ObjectID')},
-            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
+            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')},
+            {property:'Feature.Parent.Parent.ObjectID',value:record.get('ObjectID')}
         ]);
         
         filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{
@@ -1354,14 +1357,13 @@ Ext.define('CA.techservices.DeepExporter',{
         var field = "Item";
         var prefix = null;
         
-        if (this.BaseType == "portfolioitem/initiative") {
+        if (this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Story";
             prefix = "Feature";
         }
         
         return [
             {fieldName: field, text: 'Feature.FormattedID', renderer: function(value,record){ 
-                console.log('--',prefix, value, record);
                 if (Ext.isEmpty(value) ) { return ""; }
                 if (prefix) {
                     value = value[prefix];
@@ -1714,7 +1716,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         var field = "Parent";
         
-        if (this.BaseType == "portfolioitem/initiative") {
+        if (this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Item";
         }
         
@@ -1878,7 +1880,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         
         var field = "Grandparent";
-        if ( this.BaseType == "portfolioitem/initiative") {
+        if ( this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Parent";
         }
         
@@ -4044,8 +4046,8 @@ Ext.define("TSDependencyTimeline", {
     _getChildType: function(type) {
         var type_map = {
             'parent'                  : 'child',
-            'portfolioitem/initiative': 'portfolioitem/Feature',
-            'portfolioitem/theme'     : 'portfolioitem/Initiative'
+            'portfolioitem/capability': 'portfolioitem/Feature',
+            'portfolioitem/initiative': 'portfolioitem/Capability'
         };
         
         return type_map[type] || 'hierarchicalrequirement';
@@ -4688,7 +4690,7 @@ Ext.define("TSDependencyTimeline", {
             success: function(results) {
                 var export_rows = Ext.Array.flatten(results);
                 
-                if (  me._getChildType(me._getParentType()) == "portfolioitem/Initiative" ) {
+                if (  me._getChildType(me._getParentType()) == "portfolioitem/Capability" ) {
                     
                     Ext.Array.each(export_rows, function(row){
                         row.Feature = row.Story && row.Story.Feature;

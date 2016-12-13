@@ -69,7 +69,7 @@ Ext.define("TSDependencyStatusReport", {
             scope: this
         });
 
-    },
+    }, 
       
     _addSelectors: function(container) {
         container.add({ 
@@ -242,7 +242,7 @@ Ext.define("TSDependencyStatusReport", {
     
     _getParentType: function() {
         if ( Ext.isEmpty(this.PIs) || this.PIs.length == 0 ) {
-            return 'portfolioitem/Initiative';
+            return 'portfolioitem/Capability';
         }
         
         return this.PIs[0].get('_type');
@@ -658,18 +658,16 @@ Ext.define("TSDependencyStatusReport", {
             me = this;
             
         var child_name = this._getChildType(this._getParentType()).replace(/.*\//,'');
-        
-        console.log('child name', child_name);
-        
+                
         var theme_level = 'Grandparent';
         
-        if ( child_name == "initiative" ) {
+        if ( child_name == "capability" ) {
             theme_level = 'Parent';
         }
 
         columns.push({
             dataIndex: '__' + theme_level + 'FID',
-            text:'Theme ID',
+            text:'Initiative ID',
             exportRenderer: function(value,meta,record) {
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return value;
@@ -684,9 +682,10 @@ Ext.define("TSDependencyStatusReport", {
                 );
             }
         });
+        
         columns.push({
             dataIndex: '__' + theme_level + 'Name',
-            text:'Theme Name',
+            text:'Initiative Name',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return value;
@@ -696,7 +695,7 @@ Ext.define("TSDependencyStatusReport", {
         if ( theme_level == 'Grandparent' ) {
             columns.push({
                 dataIndex:'__ParentFID',
-                text:'Initiative ID',
+                text:'Capability ID',
                 _csvIgnoreRender: true,
                 renderer: function(value,meta,record){
                     if ( Ext.isEmpty(value) ) {
@@ -711,7 +710,7 @@ Ext.define("TSDependencyStatusReport", {
             
             columns.push({
                 dataIndex:'__ParentName',
-                text:'Initiative Name',
+                text:'Capability Name',
                 renderer: function(value,meta,record){
                     if ( Ext.isEmpty(value) ) { return ""; }
                     return value;
@@ -980,18 +979,19 @@ Ext.define("TSDependencyStatusReport", {
             BaseType: this._getChildType(this._getParentType())
         });
         
+        
         this.setLoading('Gathering additional data...');
         
         exporter.gatherDescendantInformation().then({
             success: function(results) {
                 var export_rows = Ext.Array.flatten(results);
                 
-                if (  me._getChildType(me._getParentType()) == "portfolioitem/Initiative" ) {
+                if (  me._getChildType(me._getParentType()) == "portfolioitem/capability" ) {
                     
                     Ext.Array.each(export_rows, function(row){
                         row.Feature = row.Story && row.Story.Feature;
                     });
-                    
+                  
                 }
                 // filter out features that have rows with stories displayed already
                 // (because they're duplicate data)
@@ -1001,7 +1001,6 @@ Ext.define("TSDependencyStatusReport", {
                 exporter.saveCSV(export_rows, "E2E Value Stream_MVP Status.csv");
             }
         }).always(function(){ me.setLoading(false)});
-        
     },
     
     _export: function(){

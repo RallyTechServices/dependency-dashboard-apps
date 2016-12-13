@@ -3,12 +3,12 @@
 <head>
     <title>TS Status Report</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Oct 25 2016 17:32:44 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Dec 12 2016 19:45:28 GMT-0800 (PST) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Oct 25 2016 17:32:44 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Mon Dec 12 2016 19:45:28 GMT-0800 (PST)";
         var BUILDER = "jmartin";
-        var CHECKSUM = 333942008509;
+        var CHECKSUM = 334741815493;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -44,7 +44,7 @@
                     {
 
                         xtype: 'rallybutton',
-                        text: 'Step 1: Choose Business Theme / Initiative',
+                        text: 'Step 1: Choose Business Initiative / Capability',
                         itemId: 'portfolioItemButton',
                         cls: 'piButton primary small'
                     },
@@ -247,7 +247,7 @@
 
         _getChooserConfig: function () {
             return {
-                artifactTypes: ['portfolioitem/initiative','portfolioitem/theme'],
+                artifactTypes: ['portfolioitem/capability','portfolioitem/initiative'],
                 multiple: false,
                 height: 350,
                 title: 'Choose Portfolio Item to Add',
@@ -868,6 +868,8 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     gatherDescendantInformation: function() {
+        console.log("base type:", this.BaseType);
+        
         var me = this,
             records = this.records;
         // assume that the row represents a portfolio item of some sort
@@ -984,7 +986,8 @@ Ext.define('CA.techservices.DeepExporter',{
         
         var filters = Rally.data.wsapi.Filter.or([
             {property:'Feature.ObjectID',value:record.get('ObjectID')},
-            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
+            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')},
+            {property:'Feature.Parent.Parent.ObjectID',value:record.get('ObjectID')}
         ]);
         
         filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{
@@ -1352,14 +1355,13 @@ Ext.define('CA.techservices.DeepExporter',{
         var field = "Item";
         var prefix = null;
         
-        if (this.BaseType == "portfolioitem/initiative") {
+        if (this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Story";
             prefix = "Feature";
         }
         
         return [
             {fieldName: field, text: 'Feature.FormattedID', renderer: function(value,record){ 
-                console.log('--',prefix, value, record);
                 if (Ext.isEmpty(value) ) { return ""; }
                 if (prefix) {
                     value = value[prefix];
@@ -1712,7 +1714,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         var field = "Parent";
         
-        if (this.BaseType == "portfolioitem/initiative") {
+        if (this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Item";
         }
         
@@ -1876,7 +1878,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         
         var field = "Grandparent";
-        if ( this.BaseType == "portfolioitem/initiative") {
+        if ( this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Parent";
         }
         
@@ -2494,7 +2496,7 @@ Ext.define("TSDependencyStatusReport", {
             scope: this
         });
 
-    },
+    }, 
       
     _addSelectors: function(container) {
         container.add({ 
@@ -2667,7 +2669,7 @@ Ext.define("TSDependencyStatusReport", {
     
     _getParentType: function() {
         if ( Ext.isEmpty(this.PIs) || this.PIs.length == 0 ) {
-            return 'portfolioitem/Initiative';
+            return 'portfolioitem/Capability';
         }
         
         return this.PIs[0].get('_type');
@@ -3083,18 +3085,16 @@ Ext.define("TSDependencyStatusReport", {
             me = this;
             
         var child_name = this._getChildType(this._getParentType()).replace(/.*\//,'');
-        
-        console.log('child name', child_name);
-        
+                
         var theme_level = 'Grandparent';
         
-        if ( child_name == "initiative" ) {
+        if ( child_name == "capability" ) {
             theme_level = 'Parent';
         }
 
         columns.push({
             dataIndex: '__' + theme_level + 'FID',
-            text:'Theme ID',
+            text:'Initiative ID',
             exportRenderer: function(value,meta,record) {
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return value;
@@ -3109,9 +3109,10 @@ Ext.define("TSDependencyStatusReport", {
                 );
             }
         });
+        
         columns.push({
             dataIndex: '__' + theme_level + 'Name',
-            text:'Theme Name',
+            text:'Initiative Name',
             renderer: function(value,meta,record){
                 if ( Ext.isEmpty(value) ) { return ""; }
                 return value;
@@ -3121,7 +3122,7 @@ Ext.define("TSDependencyStatusReport", {
         if ( theme_level == 'Grandparent' ) {
             columns.push({
                 dataIndex:'__ParentFID',
-                text:'Initiative ID',
+                text:'Capability ID',
                 _csvIgnoreRender: true,
                 renderer: function(value,meta,record){
                     if ( Ext.isEmpty(value) ) {
@@ -3136,7 +3137,7 @@ Ext.define("TSDependencyStatusReport", {
             
             columns.push({
                 dataIndex:'__ParentName',
-                text:'Initiative Name',
+                text:'Capability Name',
                 renderer: function(value,meta,record){
                     if ( Ext.isEmpty(value) ) { return ""; }
                     return value;
@@ -3405,18 +3406,19 @@ Ext.define("TSDependencyStatusReport", {
             BaseType: this._getChildType(this._getParentType())
         });
         
+        
         this.setLoading('Gathering additional data...');
         
         exporter.gatherDescendantInformation().then({
             success: function(results) {
                 var export_rows = Ext.Array.flatten(results);
                 
-                if (  me._getChildType(me._getParentType()) == "portfolioitem/Initiative" ) {
+                if (  me._getChildType(me._getParentType()) == "portfolioitem/capability" ) {
                     
                     Ext.Array.each(export_rows, function(row){
                         row.Feature = row.Story && row.Story.Feature;
                     });
-                    
+                  
                 }
                 // filter out features that have rows with stories displayed already
                 // (because they're duplicate data)
@@ -3426,7 +3428,6 @@ Ext.define("TSDependencyStatusReport", {
                 exporter.saveCSV(export_rows, "E2E Value Stream_MVP Status.csv");
             }
         }).always(function(){ me.setLoading(false)});
-        
     },
     
     _export: function(){

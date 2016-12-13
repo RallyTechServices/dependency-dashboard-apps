@@ -260,8 +260,8 @@ Ext.define("TSDependencyTimeline", {
     _getChildType: function(type) {
         var type_map = {
             'parent'                  : 'child',
-            'portfolioitem/initiative': 'portfolioitem/Feature',
-            'portfolioitem/theme'     : 'portfolioitem/Initiative'
+            'portfolioitem/capability': 'portfolioitem/Feature',
+            'portfolioitem/initiative': 'portfolioitem/Capability'
         };
         
         return type_map[type] || 'hierarchicalrequirement';
@@ -904,7 +904,7 @@ Ext.define("TSDependencyTimeline", {
             success: function(results) {
                 var export_rows = Ext.Array.flatten(results);
                 
-                if (  me._getChildType(me._getParentType()) == "portfolioitem/Initiative" ) {
+                if (  me._getChildType(me._getParentType()) == "portfolioitem/Capability" ) {
                     
                     Ext.Array.each(export_rows, function(row){
                         row.Feature = row.Story && row.Story.Feature;

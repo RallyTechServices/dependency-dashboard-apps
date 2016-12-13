@@ -34,6 +34,8 @@ Ext.define('CA.techservices.DeepExporter',{
     },
     
     gatherDescendantInformation: function() {
+        console.log("base type:", this.BaseType);
+        
         var me = this,
             records = this.records;
         // assume that the row represents a portfolio item of some sort
@@ -150,7 +152,8 @@ Ext.define('CA.techservices.DeepExporter',{
         
         var filters = Rally.data.wsapi.Filter.or([
             {property:'Feature.ObjectID',value:record.get('ObjectID')},
-            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')}
+            {property:'Feature.Parent.ObjectID',value:record.get('ObjectID')},
+            {property:'Feature.Parent.Parent.ObjectID',value:record.get('ObjectID')}
         ]);
         
         filters = filters.and(Ext.create('Rally.data.wsapi.Filter',{
@@ -518,14 +521,13 @@ Ext.define('CA.techservices.DeepExporter',{
         var field = "Item";
         var prefix = null;
         
-        if (this.BaseType == "portfolioitem/initiative") {
+        if (this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Story";
             prefix = "Feature";
         }
         
         return [
             {fieldName: field, text: 'Feature.FormattedID', renderer: function(value,record){ 
-                console.log('--',prefix, value, record);
                 if (Ext.isEmpty(value) ) { return ""; }
                 if (prefix) {
                     value = value[prefix];
@@ -878,7 +880,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         var field = "Parent";
         
-        if (this.BaseType == "portfolioitem/initiative") {
+        if (this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Item";
         }
         
@@ -1042,7 +1044,7 @@ Ext.define('CA.techservices.DeepExporter',{
         var me = this;
         
         var field = "Grandparent";
-        if ( this.BaseType == "portfolioitem/initiative") {
+        if ( this.BaseType.toLowerCase() == "portfolioitem/capability") {
             field = "Parent";
         }
         

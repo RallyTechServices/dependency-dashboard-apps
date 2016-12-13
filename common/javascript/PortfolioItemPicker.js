@@ -26,7 +26,7 @@
                     {
 
                         xtype: 'rallybutton',
-                        text: 'Step 1: Choose Business Theme / Initiative',
+                        text: 'Step 1: Choose Business Initiative / Capability',
                         itemId: 'portfolioItemButton',
                         cls: 'piButton primary small'
                     },
@@ -229,7 +229,7 @@
 
         _getChooserConfig: function () {
             return {
-                artifactTypes: ['portfolioitem/initiative','portfolioitem/theme'],
+                artifactTypes: ['portfolioitem/capability','portfolioitem/initiative'],
                 multiple: false,
                 height: 350,
                 title: 'Choose Portfolio Item to Add',
